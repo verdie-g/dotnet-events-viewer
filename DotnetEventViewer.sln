@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventPipe", "EventPipe\EventPipe.csproj", "{2D12A7D8-1159-46A4-A908-74A7801B1908}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotnetEventViewer", "DotnetEventViewer\DotnetEventViewer.csproj", "{BEB973B8-6DF4-4582-8849-BDF119703EB2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventPipe.Test", "EventPipe.Test\EventPipe.Test.csproj", "{C90A60F8-CE55-464A-B9FE-A073F28D8334}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2D12A7D8-1159-46A4-A908-74A7801B1908}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D12A7D8-1159-46A4-A908-74A7801B1908}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D12A7D8-1159-46A4-A908-74A7801B1908}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D12A7D8-1159-46A4-A908-74A7801B1908}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEB973B8-6DF4-4582-8849-BDF119703EB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEB973B8-6DF4-4582-8849-BDF119703EB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEB973B8-6DF4-4582-8849-BDF119703EB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEB973B8-6DF4-4582-8849-BDF119703EB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C90A60F8-CE55-464A-B9FE-A073F28D8334}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C90A60F8-CE55-464A-B9FE-A073F28D8334}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C90A60F8-CE55-464A-B9FE-A073F28D8334}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C90A60F8-CE55-464A-B9FE-A073F28D8334}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

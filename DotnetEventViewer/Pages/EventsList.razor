@@ -1,0 +1,80 @@
+﻿@page "/list"
+
+@using DotnetEventViewer.State
+@using System.Text
+@using EventPipe
+
+@inject StateContainer StateContainer
+
+<PageTitle>Events List</PageTitle>
+
+<h1>Events List</h1>
+
+<FluentDataGrid
+    Items="@_items"
+    ItemKey="@(e => e.Index)"
+    Virtualize="true"
+    ResizableColumns="true"
+    ItemSize="32">
+    <ChildContent>
+        <PropertyColumn Title="Timestamp" Property="@(e => e.TimeStamp)" Sortable="true" Style="width: 150px" />
+        <PropertyColumn Title="Thread" Property="@(e => e.ThreadId)" Sortable="true" Style="width: 150px" />
+        <PropertyColumn Title="Event" Property="@(e => e.Metadata.EventName)" Sortable="true" Style="width: 200px" />
+        <TemplateColumn Title="Payload">
+            @(GetEventPayloadAsString(context))
+        </TemplateColumn>
+    </ChildContent>
+    <EmptyContent>
+        No events.
+    </EmptyContent>
+</FluentDataGrid>
+
+@code {
+    private IQueryable<Event> _items = Enumerable.Empty<Event>().AsQueryable();
+
+    protected override Task OnInitializedAsync()
+    {
+        if (StateContainer.Trace == null)
+        {
+            return Task.CompletedTask;
+        }
+
+        _items = StateContainer.Trace.Events.AsQueryable();
+        return Task.CompletedTask;
+    }
+
+    private string GetEventPayloadAsString(Event evt)
+    {
+        StringBuilder sb = new();
+        AppendEventPayloadToStringBuilder(evt.Payload, sb);
+        return sb.ToString();
+    }
+
+    private void AppendEventPayloadToStringBuilder(Dictionary<string, object> payload, StringBuilder sb)
+    {
+        sb.Append("{ ");
+        foreach (var kvp in payload)
+        {
+            sb.Append('"');
+            sb.Append(kvp.Key);
+            sb.Append("\": ");
+            if (kvp.Value is Dictionary<string, object> subPayload)
+            {
+                AppendEventPayloadToStringBuilder(subPayload, sb);
+            }
+            else
+            {
+                sb.Append(kvp.Value);
+            }
+
+            sb.Append(", ");
+        }
+
+        if (payload.Count > 0)
+        {
+            sb.Length -= ", ".Length;
+        }
+
+        sb.Append(" }");
+    }
+}

@@ -1,0 +1,81 @@
+﻿@page "/"
+@using DotnetEventViewer.State
+@using EventPipe
+@using DotnetEventViewer.Models
+
+@layout HomeLayout
+
+@inject StateContainer StateContainer
+@inject NavigationManager NavigationManager
+
+<PageTitle>Home</PageTitle>
+
+<FluentInputFile Id="input-nettrace-file"
+                 Mode="InputFileMode.Stream"
+                 MaximumFileCount="1"
+                 MaximumFileSize="@(1*1024*1024*1024)"
+                 Accept=".nettrace"
+                 @bind-ProgressPercent="@_progressPercent"
+                 OnFileUploaded="@OnFileUploadedAsync"
+                 Style="height: 300px; border: 1px dashed var(--accent-fill-rest);">
+    <ChildContent>
+        <label for="input-nettrace-file">
+            <FluentIcon Value="@(new Icons.Regular.Size24.ArrowUpload())" />
+        </label>
+
+        <div>
+            Drag nettrace file here you wish to analyze, or <label for="input-nettrace-file">browse</label> for it.
+            <br />
+            <em>Files never exit your browser.</em>
+        </div>
+    </ChildContent>
+</FluentInputFile>
+
+@code {
+    private int _progressPercent;
+
+    private async Task OnFileUploadedAsync(FluentInputFileEventArgs inputFile)
+    {
+        EventPipeReader reader = new(inputFile.Stream!);
+        reader.AddProgress(new Progress<EventPipeReader.Progression>(p =>
+        {
+            int progressPercent = (int)(100f * p.BytesRead / inputFile.Size);
+            if (progressPercent == _progressPercent)
+            {
+                return;
+            }
+
+            _progressPercent = progressPercent;
+            StateHasChanged();
+        }));
+        StateContainer.Trace = await reader.ReadFullTraceAsync();
+        StateContainer.TraceExtraMetadata = CreateTraceExtraMetadata(inputFile.Name, StateContainer.Trace);
+
+        NavigationManager.NavigateTo("list");
+    }
+
+    private TraceExtraMetadata CreateTraceExtraMetadata(string filename, Trace trace)
+    {
+        const int processInfoEventId = 1;
+
+        // Find ProcessInfo event by first looking at the first and last event which are the most common cases. Otherwise,
+        // iterate over all the events to find it.
+        Event processInfoEvent;
+        if (trace.Events[0].Metadata.EventId == processInfoEventId)
+        {
+            processInfoEvent = trace.Events[0];
+        }
+        else if (trace.Events[^1].Metadata.EventId == processInfoEventId)
+        {
+            processInfoEvent = trace.Events[^1];
+        }
+        else
+        {
+            processInfoEvent = trace.Events.First(e => e.Metadata.EventId == processInfoEventId);
+        }
+
+        string commandLine = (string)processInfoEvent.Payload["CommandLine"];
+        string osFamily = (string)processInfoEvent.Payload["OSInformation"];
+        return new TraceExtraMetadata(filename, commandLine, osFamily);
+    }
+}

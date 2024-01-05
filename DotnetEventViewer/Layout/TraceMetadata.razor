@@ -1,0 +1,28 @@
+﻿@using DotnetEventViewer.State
+
+@inject StateContainer StateContainer
+
+@if (StateContainer.Trace == null || StateContainer.TraceExtraMetadata == null)
+{
+    return;
+}
+
+<FluentButton Id="trace-metadata" @onclick="() => _visible = !_visible">
+    <FluentIcon Value="@(new Icons.Regular.Size24.Info())" Title="Trace Metadata" />
+</FluentButton>
+
+<FluentPopover Style="width: 300px;background-color: var(--accent-fill-rest)" AnchorId="trace-metadata" @bind-Open="_visible">
+    <Header>@(StateContainer.TraceExtraMetadata.Filename)</Header>
+    <Body>
+        <ul>
+            <li>Date: @(StateContainer.Trace.Metadata.Date)</li>
+            <li>CPUs: @(StateContainer.Trace.Metadata.NumberOfProcessors)</li>
+            <li>OS: @(StateContainer.TraceExtraMetadata.OsFamily) @(StateContainer.Trace.Metadata.PointerSize == 8 ? "x64" : "x32")</li>
+            <li>Command Line: @(StateContainer.TraceExtraMetadata.CommandLine)</li>
+        </ul>
+    </Body>
+</FluentPopover>
+
+@code {
+    private bool _visible;
+}
