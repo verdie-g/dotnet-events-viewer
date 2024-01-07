@@ -21,7 +21,6 @@ public class EventPipeReader(Stream stream)
             new EventMetadata(default, string.Empty, default, "MethodLoadUnloadVerbose", default, default, default,
                 null, new EventFieldDefinition[]
                 {
-                    new("MethodLoadUnloadVerbose", TypeCode.UInt64),
                     new("MethodID", TypeCode.UInt64),
                     new("ModuleID", TypeCode.UInt64),
                     new("MethodStartAddress", TypeCode.UInt64),
@@ -91,6 +90,11 @@ public class EventPipeReader(Stream stream)
         }
 
         await reader.CompleteAsync();
+
+        foreach (var evt in _events)
+        {
+            evt.StackTrace = _stackResolver.ResolveStackTrace(evt.StackId);
+        }
 
         return new Trace(_traceMetadata!, _events);
     }
@@ -596,10 +600,11 @@ public class EventPipeReader(Stream stream)
                 case 144:
                 {
                     var address = (ulong)evt.Payload["MethodStartAddress"];
+                    var size = (uint)evt.Payload["MethodSize"];
                     var @namespace = (string)evt.Payload["MethodNamespace"];
                     var name = (string)evt.Payload["MethodName"];
                     var signature = (string)evt.Payload["MethodSignature"];
-                    _stackResolver.AddMethod(new MethodInfo(name, @namespace, signature, address));
+                    _stackResolver.AddMethodSymbolInfo(new MethodSymbolInfo(name, @namespace, signature, address, size));
                     break;
                 }
                 case 152:

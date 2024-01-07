@@ -16,6 +16,7 @@ public class Event
     public Guid RelatedActivityId { get; }
     public Dictionary<string, object> Payload { get; }
     public EventMetadata Metadata { get; }
+    public StackTrace StackTrace { get; internal set; }
 
     internal Event(int index, int sequenceNumber, long captureThreadId, long threadId, int stackId, long timeStamp,
         Guid activityId, Guid relatedActivityId, Dictionary<string, object> payload, EventMetadata metadata)
@@ -30,5 +31,6 @@ public class Event
         RelatedActivityId = relatedActivityId;
         Payload = payload;
         Metadata = metadata;
+        StackTrace = StackTrace.Empty;
     }
 }
