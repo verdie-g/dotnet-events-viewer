@@ -2,12 +2,11 @@
 
 internal class StackResolver
 {
-	private static readonly MethodSymbolInfo UnresolvedMethodSymbolInfo = new("??", "??", "??", 0, 0);
+	private static readonly MethodSymbolInfo UnresolvedMethodSymbolInfo = new("??", "", "", 0, 0);
 
     private readonly Dictionary<int, ulong[]> _stacksAddresses = [];
     private readonly Dictionary<ulong, MethodSymbolInfo> _methodSymbolInfosByMethodAddress = [];
     private readonly List<ulong> _methodAddresses = [];
-    private bool _methodAddressesSorted;
 
     public void AddStackAddresses(int stackId, ulong[] addresses)
     {
@@ -18,25 +17,26 @@ internal class StackResolver
     {
         _methodSymbolInfosByMethodAddress[methodSymbolInfo.Address] = methodSymbolInfo;
         _methodAddresses.Add(methodSymbolInfo.Address);
-        _methodAddressesSorted = false;
     }
 
-    public StackTrace ResolveStackTrace(int stackId)
+    public Dictionary<int, StackTrace> ResolveAllStackTraces()
     {
-	    if (!_stacksAddresses.TryGetValue(stackId, out ulong[]? addresses))
+	    _methodAddresses.Sort();
+
+	    Dictionary<int, StackTrace> resolvedStackTraces = new(_stacksAddresses.Count);
+	    foreach (var kvp in _stacksAddresses)
 	    {
-		    return StackTrace.Empty;
+		    resolvedStackTraces[kvp.Key] = ResolveStackTrace(kvp.Key, kvp.Value);
 	    }
 
+	    return resolvedStackTraces;
+    }
+
+    private StackTrace ResolveStackTrace(int stackId, ulong[] addresses)
+    {
 	    if (addresses.Length == 0)
 	    {
 		    return StackTrace.Empty;
-	    }
-
-	    if (!_methodAddressesSorted)
-	    {
-		    _methodAddressesSorted = true;
-		    _methodAddresses.Sort();
 	    }
 
 	    var stackTrace = new MethodSymbolInfo[addresses.Length];

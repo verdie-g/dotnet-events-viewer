@@ -91,12 +91,13 @@ public class EventPipeReader(Stream stream)
 
         await reader.CompleteAsync();
 
+        var stackTraces = _stackResolver.ResolveAllStackTraces();
         foreach (var evt in _events)
         {
-            evt.StackTrace = _stackResolver.ResolveStackTrace(evt.StackId);
+            evt.StackTrace = stackTraces[evt.StackId];
         }
 
-        return new Trace(_traceMetadata!, _events);
+        return new Trace(_traceMetadata!, _events, stackTraces);
     }
 
     private SequencePosition HandleBuffer(in ReadOnlySequence<byte> buffer)

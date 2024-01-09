@@ -2,7 +2,6 @@
 
 namespace EventPipe;
 
-[DebuggerDisplay("{Namespace}.{Name}")]
 public class MethodSymbolInfo
 {
     public string Name { get; }
@@ -18,5 +17,15 @@ public class MethodSymbolInfo
         Signature = signature;
         Address = address;
         Size = size;
+    }
+
+    public override string ToString()
+    {
+        if (Namespace.Length != 0 && Name.Length != 0)
+        {
+            return Namespace + '.' + Name;
+        }
+
+        return Name;
     }
 }
