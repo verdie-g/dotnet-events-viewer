@@ -2,10 +2,10 @@
 
 internal class StackResolver
 {
-	private static readonly MethodSymbolInfo UnresolvedMethodSymbolInfo = new("??", "", "", 0, 0);
+    private static readonly MethodDescription UnresolvedMethodDescription = new("??", "", "", 0, 0, 0);
 
     private readonly Dictionary<int, ulong[]> _stacksAddresses = [];
-    private readonly Dictionary<ulong, MethodSymbolInfo> _methodSymbolInfosByMethodAddress = [];
+    private readonly Dictionary<ulong, MethodDescription> _methodSymbolInfosByMethodAddress = [];
     private readonly List<ulong> _methodAddresses = [];
 
     public void AddStackAddresses(int stackId, ulong[] addresses)
@@ -13,59 +13,67 @@ internal class StackResolver
         _stacksAddresses[stackId] = addresses;
     }
 
-    public void AddMethodSymbolInfo(MethodSymbolInfo methodSymbolInfo)
+    public void AddMethodSymbolInfo(MethodDescription methodDescription)
     {
-        _methodSymbolInfosByMethodAddress[methodSymbolInfo.Address] = methodSymbolInfo;
-        _methodAddresses.Add(methodSymbolInfo.Address);
+        _methodSymbolInfosByMethodAddress[methodDescription.Address] = methodDescription;
+        _methodAddresses.Add(methodDescription.Address);
     }
 
     public Dictionary<int, StackTrace> ResolveAllStackTraces()
     {
-	    _methodAddresses.Sort();
+        _methodAddresses.Sort();
 
-	    Dictionary<int, StackTrace> resolvedStackTraces = new(_stacksAddresses.Count);
-	    foreach (var kvp in _stacksAddresses)
-	    {
-		    resolvedStackTraces[kvp.Key] = ResolveStackTrace(kvp.Key, kvp.Value);
-	    }
+        Dictionary<int, StackTrace> resolvedStackTraces = new(_stacksAddresses.Count);
+        foreach (var kvp in _stacksAddresses)
+        {
+            resolvedStackTraces[kvp.Key] = ResolveStackTrace(kvp.Key, kvp.Value);
+        }
 
-	    return resolvedStackTraces;
+        return resolvedStackTraces;
     }
 
     private StackTrace ResolveStackTrace(int stackId, ulong[] addresses)
     {
-	    if (addresses.Length == 0)
-	    {
-		    return StackTrace.Empty;
-	    }
+        if (addresses.Length == 0)
+        {
+            return StackTrace.Empty;
+        }
 
-	    var stackTrace = new MethodSymbolInfo[addresses.Length];
-	    for (int i = 0; i < stackTrace.Length; i += 1)
-	    {
-		    stackTrace[i] = ResolveSymbol(addresses[i]);
-	    }
+        var stackTrace = new MethodDescription[addresses.Length];
+        for (int i = 0; i < stackTrace.Length; i += 1)
+        {
+            stackTrace[i] = ResolveSymbol(addresses[i]);
 
-	    return new StackTrace(stackId, stackTrace);
+        }
+
+        return new StackTrace(stackId, stackTrace);
     }
 
-    private MethodSymbolInfo ResolveSymbol(ulong address)
+    private MethodDescription ResolveSymbol(ulong address)
     {
-	    if (_methodAddresses.Count == 0)
-	    {
-		    return UnresolvedMethodSymbolInfo;
-	    }
+        if (_methodAddresses.Count == 0)
+        {
+            return UnresolvedMethodDescription;
+        }
 
-	    int methodAddressIdx = _methodAddresses.BinarySearch(address);
-	    methodAddressIdx = methodAddressIdx >= 0 ? methodAddressIdx : Math.Max(~methodAddressIdx - 1, 0);
+        int methodAddressIdx = _methodAddresses.BinarySearch(address);
+        if (methodAddressIdx < 0)
+        {
+            methodAddressIdx = ~methodAddressIdx - 1;
+            if (methodAddressIdx == -1) // Input address is lower than the lowest method address.
+            {
+                return UnresolvedMethodDescription;
+            }
+        }
 
-	    var methodAddress = _methodAddresses[methodAddressIdx];
-	    var methodSymbolInfo = _methodSymbolInfosByMethodAddress[methodAddress];
+        var methodAddress = _methodAddresses[methodAddressIdx];
+        var methodSymbolInfo = _methodSymbolInfosByMethodAddress[methodAddress];
 
-	    if (methodSymbolInfo.Address + methodSymbolInfo.Size < address)
-	    {
-		    return UnresolvedMethodSymbolInfo;
-	    }
+        if (methodSymbolInfo.Address + methodSymbolInfo.Size < address)
+        {
+            return UnresolvedMethodDescription;
+        }
 
-	    return methodSymbolInfo;
+        return methodSymbolInfo;
     }
 }

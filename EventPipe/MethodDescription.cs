@@ -1,20 +1,27 @@
-﻿using System.Diagnostics;
+﻿namespace EventPipe;
 
-namespace EventPipe;
-
-public class MethodSymbolInfo
+public class MethodDescription
 {
     public string Name { get; }
     public string Namespace { get; }
     public string Signature { get; }
+    public ulong ModuleId { get; }
     public ulong Address { get; }
     public ulong Size { get; }
 
-    internal MethodSymbolInfo(string name, string @namespace, string signature, ulong address, uint size)
+    public MethodDescription(string name, string @namespace)
+        : this(name, @namespace, "", 0, 0, 0)
+    {
+
+    }
+
+    internal MethodDescription(string name, string @namespace, string signature, ulong moduleId, ulong address,
+        uint size)
     {
         Name = name;
         Namespace = @namespace;
         Signature = signature;
+        ModuleId = moduleId;
         Address = address;
         Size = size;
     }
@@ -23,7 +30,7 @@ public class MethodSymbolInfo
     {
         if (Namespace.Length != 0 && Name.Length != 0)
         {
-            return Namespace + '.' + Name;
+            return Namespace + '.' + Name + $" ({Address})";
         }
 
         return Name;

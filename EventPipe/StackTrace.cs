@@ -4,12 +4,12 @@ namespace EventPipe;
 
 public class StackTrace
 {
-    public static StackTrace Empty { get; } = new(-1, Array.Empty<MethodSymbolInfo>());
+    public static StackTrace Empty { get; } = new(-1, Array.Empty<MethodDescription>());
 
     public int Id { get; }
-    public MethodSymbolInfo[] Frames { get; }
+    public MethodDescription[] Frames { get; }
 
-    internal StackTrace(int id, MethodSymbolInfo[] frames)
+    internal StackTrace(int id, MethodDescription[] frames)
     {
         Id = id;
         Frames = frames;
