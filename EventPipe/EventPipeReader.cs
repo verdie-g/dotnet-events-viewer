@@ -8,6 +8,8 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using EventPipe.FastSerializer;
 
+// ReSharper disable UnusedVariable
+
 namespace EventPipe;
 
 public class EventPipeReader(Stream stream)
@@ -15,11 +17,10 @@ public class EventPipeReader(Stream stream)
     private const int ReaderVersion = 4;
     private const string RundownProvider = "Microsoft-Windows-DotNETRuntimeRundown";
 
-    // The rundown events are missing their field definitions in nettrace files (https://github.com/dotnet/runtime/issues/96365).
     private static readonly FrozenDictionary<MetadataKey, EventMetadata> KnownEventMetadata = new Dictionary<MetadataKey, EventMetadata>
     {
         [new MetadataKey(RundownProvider, 144, 1)] =
-            new EventMetadata(default, string.Empty, default, "MethodLoadUnloadVerbose", default, default, default,
+            new(default, string.Empty, default, "MethodLoadUnloadVerbose", default, default, default,
                 null, new EventFieldDefinition[]
                 {
                     new("MethodID", TypeCode.UInt64),
@@ -33,17 +34,20 @@ public class EventPipeReader(Stream stream)
                     new("MethodSignature", TypeCode.String),
                     new("ClrInstanceID", TypeCode.UInt16),
                 }),
-        [new MetadataKey(RundownProvider, 152, 1)] =
-            new EventMetadata(default, string.Empty, default, "DomainModuleLoadUnloadRundown", default, default,
-                default, null, new EventFieldDefinition[]
+        [new MetadataKey(RundownProvider, 144, 2)] =
+            new(default, string.Empty, default, "MethodLoadUnloadVerbose", default, default, default,
+                null, new EventFieldDefinition[]
                 {
+                    new("MethodID", TypeCode.UInt64),
                     new("ModuleID", TypeCode.UInt64),
-                    new("AssemblyID", TypeCode.UInt64),
-                    new("AppDomainID", TypeCode.UInt64),
-                    new("ModuleFlags", TypeCode.UInt32),
-                    new("Reserved1", TypeCode.UInt32),
-                    new("ModuleILPath", TypeCode.String),
-                    new("ModuleNativePath", TypeCode.String),
+                    new("MethodStartAddress", TypeCode.UInt64),
+                    new("MethodSize", TypeCode.UInt32),
+                    new("MethodToken", TypeCode.UInt32),
+                    new("MethodFlags", TypeCode.UInt32),
+                    new("MethodNamespace", TypeCode.String),
+                    new("MethodName", TypeCode.String),
+                    new("MethodSignature", TypeCode.String),
+                    new("ReJITID", TypeCode.UInt64),
                     new("ClrInstanceID", TypeCode.UInt16),
                 }),
     }.ToFrozenDictionary();
@@ -95,10 +99,13 @@ public class EventPipeReader(Stream stream)
         var stackTraces = _stackResolver.ResolveAllStackTraces();
         foreach (var evt in _events)
         {
-            evt.StackTrace = stackTraces[evt.StackId];
+            if (stackTraces.TryGetValue(evt.StackId, out var stackTrace))
+            {
+                evt.StackTrace = stackTrace;
+            }
         }
 
-        return new Trace(_traceMetadata!, _events, stackTraces);
+        return new Trace(_traceMetadata!, _eventMetadata, _events, stackTraces);
     }
 
     private SequencePosition HandleBuffer(in ReadOnlySequence<byte> buffer)
@@ -287,7 +294,6 @@ public class EventPipeReader(Stream stream)
         {
             int stackSize = reader.ReadInt32();
             int addressesCount = stackSize / sizeof(ulong);
-            Debug.Assert(stackSize % sizeof(ulong) == 0, "Stack size is not a multiple of 8");
             var addresses = new ulong[addressesCount];
             for (int j = 0; j < addressesCount; j += 1)
             {
@@ -602,13 +608,12 @@ public class EventPipeReader(Stream stream)
             {
                 case 144:
                 {
-                    var moduleId = (ulong)evt.Payload["ModuleID"];
                     var address = (ulong)evt.Payload["MethodStartAddress"];
                     var size = (uint)evt.Payload["MethodSize"];
                     var @namespace = (string)evt.Payload["MethodNamespace"];
                     var name = (string)evt.Payload["MethodName"];
                     var signature = (string)evt.Payload["MethodSignature"];
-                    _stackResolver.AddMethodSymbolInfo(new MethodDescription(name, @namespace, signature, moduleId, address, size));
+                    _stackResolver.AddMethodSymbolInfo(new MethodDescription(name, @namespace, signature, address, size));
                     break;
                 }
             }

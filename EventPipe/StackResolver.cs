@@ -2,7 +2,7 @@
 
 internal class StackResolver
 {
-    private static readonly MethodDescription UnresolvedMethodDescription = new("??", "", "", 0, 0, 0);
+    private static readonly MethodDescription UnresolvedMethodDescription = new("??", "", "", 0, 0);
 
     private readonly Dictionary<int, ulong[]> _stacksAddresses = [];
     private readonly Dictionary<ulong, MethodDescription> _methodSymbolInfosByMethodAddress = [];
