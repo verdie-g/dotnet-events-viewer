@@ -105,7 +105,11 @@ public class EventPipeReader(Stream stream)
             }
         }
 
-        return new Trace(_traceMetadata!, _eventMetadata, _events, stackTraces);
+        return new Trace(
+            _traceMetadata!,
+            _eventMetadata.Values.ToArray(),
+            _events,
+            stackTraces.Values.ToArray());
     }
 
     private SequencePosition HandleBuffer(in ReadOnlySequence<byte> buffer)

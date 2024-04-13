@@ -2,8 +2,8 @@
 
 public class Trace
 {
-    internal Trace(TraceMetadata metadata, IReadOnlyDictionary<int, EventMetadata> eventMetadata,
-        IReadOnlyList<Event> events, IReadOnlyDictionary<int, StackTrace> stackTraces)
+    internal Trace(TraceMetadata metadata, IReadOnlyList<EventMetadata> eventMetadata,
+        IReadOnlyList<Event> events, IReadOnlyList<StackTrace> stackTraces)
     {
         Metadata = metadata;
         Events = events;
@@ -12,7 +12,7 @@ public class Trace
     }
 
     public TraceMetadata Metadata { get; }
-    public IReadOnlyDictionary<int, EventMetadata> EventMetadata { get; }
+    public IReadOnlyList<EventMetadata> EventMetadata { get; }
     public IReadOnlyList<Event> Events { get; }
-    public IReadOnlyDictionary<int, StackTrace> StackTraces { get; }
+    public IReadOnlyList<StackTrace> StackTraces { get; }
 }
