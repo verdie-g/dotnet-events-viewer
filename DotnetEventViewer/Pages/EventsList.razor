@@ -1,7 +1,6 @@
 ﻿@page "/list"
 
 @using DotnetEventViewer.State
-@using System.Text
 @using EventPipe
 
 @inject StateContainer StateContainer
@@ -10,6 +9,19 @@
 
 <h1>Events List</h1>
 
+<FluentStack Orientation="Orientation.Horizontal">
+    <div>
+        <FluentAutocomplete TOption="FieldSelector"
+                            AutoComplete="off"
+                            Label="Fields"
+                            Placeholder="Select fields"
+                            OnOptionsSearch="@OnFieldSearchAsync"
+                            MaximumSelectedOptions="6"
+                            OptionText="@(s => s.FieldName)"
+                            @bind-SelectedOptions="@_selectedFieldSelectors" />
+    </div>
+</FluentStack>
+
 <FluentDataGrid
     Items="@_items"
     ItemKey="@(e => e.Index)"
@@ -17,12 +29,10 @@
     ResizableColumns="true"
     ItemSize="32">
     <ChildContent>
-        <PropertyColumn Title="Timestamp" Property="@(e => e.TimeStamp)" Sortable="true" Style="width: 150px" />
-        <PropertyColumn Title="Thread" Property="@(e => e.ThreadId)" Sortable="true" Style="width: 150px" />
-        <PropertyColumn Title="Event" Property="@(e => e.Metadata.EventName)" Sortable="true" Style="width: 200px" />
-        <TemplateColumn Title="Payload">
-            @(GetEventPayloadAsString(context))
-        </TemplateColumn>
+        @foreach (var s in _selectedFieldSelectors)
+        {
+            <PropertyColumn Title="@s.FieldName" Property="@(e => s.Selector(e))" Sortable="true"/>
+        }
     </ChildContent>
     <EmptyContent>
         No events.
@@ -30,7 +40,28 @@
 </FluentDataGrid>
 
 @code {
+    private static readonly FieldSelector[] StaticEventFieldSelectors =
+    [
+        new FieldSelector(nameof(Event.CaptureThreadId), e => e.CaptureThreadId),
+        new FieldSelector(nameof(Event.ThreadId), e => e.ThreadId),
+        new FieldSelector(nameof(Event.TimeStamp), e => e.TimeStamp),
+        new FieldSelector(nameof(Event.ActivityId), e => e.ActivityId),
+        new FieldSelector(nameof(Event.RelatedActivityId), e => e.RelatedActivityId),
+        new FieldSelector(nameof(EventMetadata.EventName), e => e.Metadata.EventName),
+    ];
+
+    private static readonly string[] DefaultFieldNames =
+    [
+        nameof(Event.TimeStamp),
+        nameof(Event.ThreadId),
+        nameof(EventMetadata.EventName)
+    ];
+
     private IQueryable<Event> _items = Enumerable.Empty<Event>().AsQueryable();
+    private FieldSelector[] _allFieldSelectors = StaticEventFieldSelectors;
+    private IEnumerable<FieldSelector> _selectedFieldSelectors = DefaultFieldNames
+        .Select(n => Array.Find(StaticEventFieldSelectors, s => s.FieldName == n)!)
+        .ToArray();
 
     protected override Task OnInitializedAsync()
     {
@@ -40,41 +71,33 @@
         }
 
         _items = StateContainer.Trace.Events.AsQueryable();
+        _allFieldSelectors = StaticEventFieldSelectors.Concat(EnumerateDynamicFieldSelectors(StateContainer.Trace)).ToArray();
         return Task.CompletedTask;
     }
 
-    private string GetEventPayloadAsString(Event evt)
+    private Task OnFieldSearchAsync(OptionsSearchEventArgs<FieldSelector> e)
     {
-        StringBuilder sb = new();
-        AppendEventPayloadToStringBuilder(evt.Payload, sb);
-        return sb.ToString();
+        e.Items = _allFieldSelectors.Where(s => s.FieldName.StartsWith(e.Text, StringComparison.OrdinalIgnoreCase));
+        return Task.CompletedTask;
     }
 
-    private void AppendEventPayloadToStringBuilder(Dictionary<string, object> payload, StringBuilder sb)
+    private IEnumerable<FieldSelector> EnumerateDynamicFieldSelectors(Trace trace)
     {
-        sb.Append("{ ");
-        foreach (var kvp in payload)
-        {
-            sb.Append('"');
-            sb.Append(kvp.Key);
-            sb.Append("\": ");
-            if (kvp.Value is Dictionary<string, object> subPayload)
-            {
-                AppendEventPayloadToStringBuilder(subPayload, sb);
-            }
-            else
-            {
-                sb.Append(kvp.Value);
-            }
+        return trace.EventMetadata
+            .SelectMany(m => m.FieldDefinitions
+                .Select(f => FieldSelector.FromPayloadFieldName(f.Name)));
+    }
 
-            sb.Append(", ");
+    private class FieldSelector(string fieldName, Func<Event, object> selector)
+    {
+        public static FieldSelector FromPayloadFieldName(string fieldName)
+        {
+            return new FieldSelector(
+                fieldName,
+                e => e.Payload.GetValueOrDefault(fieldName, ""));
         }
 
-        if (payload.Count > 0)
-        {
-            sb.Length -= ", ".Length;
-        }
-
-        sb.Append(" }");
+        public string FieldName { get; } = fieldName;
+        public Func<Event, object> Selector { get; } = selector;
     }
 }
