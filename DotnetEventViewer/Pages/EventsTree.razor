@@ -27,19 +27,25 @@
         return Task.CompletedTask;
     }
 
-    private static RenderFragment RenderCallTreeNode(CallTreeNode node)
+    private static RenderFragment RenderCallTreeNode(CallTreeNode node, CallTreeNode? parent = null)
     {
         return builder =>
         {
             builder.OpenComponent<FluentTreeItem>(0);
             builder.AddAttribute(1, "Text", node.MethodDescription.ToString());
+
             if (node.Children != null)
             {
-                builder.AddAttribute(2, "ChildContent", (RenderFragment)(b =>
+                if (node.Children.Count == 1 && parent?.Children is { Count: 1 })
+                {
+                    builder.AddAttribute(2, "InitiallyExpanded", true);
+                }
+
+                builder.AddAttribute(3, "ChildContent", (RenderFragment)(b =>
                 {
                     foreach (var child in node.Children)
                     {
-                        RenderCallTreeNode(child.Value)(b);
+                        RenderCallTreeNode(child.Value, node)(b);
                     }
                 }));
             }
