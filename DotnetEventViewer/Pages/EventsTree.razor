@@ -1,6 +1,7 @@
 ﻿@page "/tree"
 
 @using DotnetEventViewer.State
+@using DotnetEventViewer.Models
 
 @inject StateContainer StateContainer
 
@@ -8,6 +9,42 @@
 
 <h1>Events Tree</h1>
 
-@code {
+<FluentTreeView RenderCollapsedNodes="true">
+    @RenderCallTreeNode(_callTree)
+</FluentTreeView>
 
+@code {
+    private CallTreeNode _callTree = default!;
+
+    protected override Task OnInitializedAsync()
+    {
+        if (StateContainer.Trace == null)
+        {
+            return Task.CompletedTask;
+        }
+
+        _callTree = CallTreeNode.Create(StateContainer.Trace.StackTraces);
+        return Task.CompletedTask;
+    }
+
+    private static RenderFragment RenderCallTreeNode(CallTreeNode node)
+    {
+        return builder =>
+        {
+            builder.OpenComponent<FluentTreeItem>(0);
+            builder.AddAttribute(1, "Text", node.MethodDescription.ToString());
+            if (node.Children != null)
+            {
+                builder.AddAttribute(2, "ChildContent", (RenderFragment)(b =>
+                {
+                    foreach (var child in node.Children)
+                    {
+                        RenderCallTreeNode(child.Value)(b);
+                    }
+                }));
+            }
+
+            builder.CloseComponent();
+        };
+    }
 }
