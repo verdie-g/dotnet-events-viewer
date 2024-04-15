@@ -15,10 +15,25 @@ namespace EventPipe;
 public class EventPipeReader(Stream stream)
 {
     private const int ReaderVersion = 4;
+    private const string RuntimeProvider = "Microsoft-Windows-DotNETRuntime";
     private const string RundownProvider = "Microsoft-Windows-DotNETRuntimeRundown";
 
     private static readonly FrozenDictionary<MetadataKey, EventMetadata> KnownEventMetadata = new Dictionary<MetadataKey, EventMetadata>
     {
+        [new MetadataKey(RuntimeProvider, 10, 4)] =
+            new(default, string.Empty, default, "GCAllocationTick", default, default, default,
+                null, new EventFieldDefinition[]
+                {
+                    new("AllocationAmount", TypeCode.UInt32),
+                    new("AllocationKind", TypeCode.UInt32),
+                    new("ClrInstanceID", TypeCode.UInt16),
+                    new("AllocationAmount64", TypeCode.UInt64),
+                    new("TypeID", TypeCode.UInt64),
+                    new("TypeName", TypeCode.String),
+                    new("HeapIndex", TypeCode.UInt32),
+                    new("Address", TypeCode.UInt64),
+                    new("ObjectSize", TypeCode.UInt64),
+                }),
         [new MetadataKey(RundownProvider, 144, 1)] =
             new(default, string.Empty, default, "MethodLoadUnloadVerbose", default, default, default,
                 null, new EventFieldDefinition[]
