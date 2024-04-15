@@ -1,56 +1,74 @@
 ﻿@page "/tree"
 
+@using DotnetEventViewer.CallTree
+@using DotnetEventViewer.CallTree.Decorators
 @using DotnetEventViewer.State
-@using DotnetEventViewer.Models
 
-@inject StateContainer StateContainer
+@inject StateContainer State
 
 <PageTitle>Events Tree</PageTitle>
 
 <h1>Events Tree</h1>
 
 <FluentTreeView RenderCollapsedNodes="true">
-    @RenderCallTreeNode(_callTree)
+    @RenderCallTreeNode(_callTree, _callTreeDecorator)
 </FluentTreeView>
 
 @code {
     private CallTreeNode _callTree = default!;
+    private ICallTreeNodeDecorator _callTreeDecorator = default!;
 
     protected override Task OnInitializedAsync()
     {
-        if (StateContainer.Trace == null)
+        if (State.Trace == null)
         {
             return Task.CompletedTask;
         }
 
-        _callTree = CallTreeNode.Create(StateContainer.Trace.StackTraces);
+        _callTreeDecorator = new EventsCountDecorator();
+        _callTree = CallTreeNode.Create(State.Trace.Events, _callTreeDecorator);
         return Task.CompletedTask;
     }
 
-    private static RenderFragment RenderCallTreeNode(CallTreeNode node, CallTreeNode? parent = null)
+    private static RenderFragment RenderCallTreeNode(CallTreeNode root, ICallTreeNodeDecorator decorator)
+    {
+        return RenderCallTreeNode(root, root, null, decorator);
+    }
+
+    private static RenderFragment RenderCallTreeNode(
+        CallTreeNode root,
+        CallTreeNode node,
+        CallTreeNode? parent,
+        ICallTreeNodeDecorator decorator)
     {
         return builder =>
         {
             builder.OpenComponent<FluentTreeItem>(0);
-            builder.AddAttribute(1, "Text", node.MethodDescription.ToString());
+            builder.AddAttribute(1, nameof(FluentTreeItem.Text), GenerateNodeText(root, node, decorator));
 
             if (node.Children != null)
             {
                 if (node.Children.Count == 1 && parent?.Children is { Count: 1 })
                 {
-                    builder.AddAttribute(2, "InitiallyExpanded", true);
+                    builder.AddAttribute(2, nameof(FluentTreeItem.InitiallyExpanded), true);
                 }
 
-                builder.AddAttribute(3, "ChildContent", (RenderFragment)(b =>
+                builder.AddAttribute(3, nameof(FluentTreeItem.ChildContent), (RenderFragment)(b =>
                 {
-                    foreach (var child in node.Children)
+                    foreach (var child in node.Children.Values.OrderByDescending(n => n.Count))
                     {
-                        RenderCallTreeNode(child.Value, node)(b);
+                        RenderCallTreeNode(root, child, node, decorator)(b);
                     }
                 }));
             }
 
             builder.CloseComponent();
         };
+    }
+
+    private static string GenerateNodeText(CallTreeNode root, CallTreeNode node, ICallTreeNodeDecorator decorator)
+    {
+        float ratio = node.Count / (float)root.Count;
+        return $"({100 * ratio:0.00}% - {node.Count.ToString(decorator.Format)} {decorator.Unit}) {node.MethodDescription}";
     }
 }
