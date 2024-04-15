@@ -69,8 +69,15 @@ public class EventPipeReader(Stream stream)
 
     private static ReadOnlySpan<byte> MagicBytes => "Nettrace"u8;
     private static ReadOnlySpan<byte> SerializerSignature => "!FastSerialization.1"u8;
+    private static readonly object TrueBoolean = true;
+    private static readonly object FalseBoolean = false;
 
     private readonly HashSet<string> _internedStrings = [];
+    private readonly Dictionary<byte, object> _internedByte = [];
+    private readonly Dictionary<sbyte, object> _internedSByte = [];
+    private readonly Dictionary<short, object> _internedInt16 = [];
+    private readonly Dictionary<ushort, object> _internedUInt16 = [];
+
     private readonly Dictionary<int, EventMetadata> _eventMetadata = [];
     private readonly List<Event> _events = [];
     private readonly StackResolver _stackResolver = new();
@@ -588,11 +595,11 @@ public class EventPipeReader(Stream stream)
 
         return fieldDefinition.TypeCode switch
         {
-            TypeCode.Boolean => reader.ReadInt32(),
-            TypeCode.SByte => (sbyte)reader.ReadInt32(),
-            TypeCode.Byte => reader.ReadByte(),
-            TypeCode.Int16 => reader.ReadInt16(),
-            TypeCode.UInt16 => (ushort)reader.ReadInt16(),
+            TypeCode.Boolean => InternBoolean(reader.ReadInt32() != 0),
+            TypeCode.SByte => Intern((sbyte)reader.ReadInt32(), _internedSByte),
+            TypeCode.Byte => Intern(reader.ReadByte(), _internedByte),
+            TypeCode.Int16 => Intern(reader.ReadInt16(), _internedInt16),
+            TypeCode.UInt16 => Intern((ushort)reader.ReadInt16(), _internedUInt16),
             TypeCode.Int32 => reader.ReadInt32(),
             TypeCode.UInt32 => (uint)reader.ReadInt32(),
             TypeCode.Int64 => reader.ReadInt64(),
@@ -759,6 +766,24 @@ public class EventPipeReader(Stream stream)
 
         _internedStrings.Add(str);
         return str;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private object InternBoolean(bool b)
+    {
+        return b ? TrueBoolean : FalseBoolean;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static object Intern<T>(T val, Dictionary<T, object> dictionary) where T : notnull
+    {
+        if (!dictionary.TryGetValue(val, out object? obj))
+        {
+            obj = val;
+            dictionary[val] = obj;
+        }
+
+        return obj;
     }
 
     private async Task FillPipeWithStreamAsync(PipeWriter writer, CancellationToken cancellationToken)
