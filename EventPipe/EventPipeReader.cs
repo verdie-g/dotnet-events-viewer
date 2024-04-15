@@ -166,7 +166,7 @@ public class EventPipeReader(Stream stream)
         return consumed;
     }
 
-    private bool TryReadHeader(ref FastSerializerSequenceReader reader)
+    private static bool TryReadHeader(ref FastSerializerSequenceReader reader)
     {
         if (!reader.TryReadBytes(MagicBytes.Length, out var magicBytesSeq))
         {
@@ -611,7 +611,7 @@ public class EventPipeReader(Stream stream)
         };
     }
 
-    private string ReadNullTerminatedUtf16String(ref FastSerializerSequenceReader reader)
+    private static string ReadNullTerminatedUtf16String(ref FastSerializerSequenceReader reader)
     {
         StringBuilder sb = new();
 
@@ -660,19 +660,19 @@ public class EventPipeReader(Stream stream)
         }
     }
 
-    private void ReadThreadSequencePoint(ref FastSerializerSequenceReader reader)
+    private static void ReadThreadSequencePoint(ref FastSerializerSequenceReader reader)
     {
         long threadId = reader.ReadInt64();
         int sequenceNumber = reader.ReadInt32();
     }
 
-    private TEnum ReadByteAsEnum<TEnum>(ref FastSerializerSequenceReader reader) where TEnum : Enum
+    private static TEnum ReadByteAsEnum<TEnum>(ref FastSerializerSequenceReader reader) where TEnum : Enum
     {
         CorruptedBlockException.ThrowIfFalse(TryReadByteAsEnum<TEnum>(ref reader, out var value), reader.AbsolutePosition);
         return value;
     }
 
-    private bool TryReadByteAsEnum<TEnum>(
+    private static bool TryReadByteAsEnum<TEnum>(
         ref FastSerializerSequenceReader reader,
         [MaybeNullWhen(false)] out TEnum value) where TEnum : Enum
     {
@@ -692,13 +692,13 @@ public class EventPipeReader(Stream stream)
         return Unsafe.As<short, TEnum>(ref value);
     }
 
-    private TEnum ReadInt32AsEnum<TEnum>(ref FastSerializerSequenceReader reader) where TEnum : Enum
+    private static TEnum ReadInt32AsEnum<TEnum>(ref FastSerializerSequenceReader reader) where TEnum : Enum
     {
         CorruptedBlockException.ThrowIfFalse(TryReadInt32AsEnum<TEnum>(ref reader, out var value), reader.AbsolutePosition);
         return value;
     }
 
-    private bool TryReadInt32AsEnum<TEnum>(
+    private static bool TryReadInt32AsEnum<TEnum>(
         ref FastSerializerSequenceReader reader,
         [MaybeNullWhen(false)] out TEnum value) where TEnum : Enum
     {
@@ -712,7 +712,7 @@ public class EventPipeReader(Stream stream)
         return true;
     }
 
-    private bool TryReadAndAssertTag(ref FastSerializerSequenceReader reader, FastSerializerTag expectedTag)
+    private static bool TryReadAndAssertTag(ref FastSerializerSequenceReader reader, FastSerializerTag expectedTag)
     {
         if (!TryReadByteAsEnum(ref reader, out FastSerializerTag tag))
         {
@@ -723,7 +723,7 @@ public class EventPipeReader(Stream stream)
         return true;
     }
 
-    private void AssertTag(FastSerializerTag expectedTag, FastSerializerTag actualTag)
+    private static void AssertTag(FastSerializerTag expectedTag, FastSerializerTag actualTag)
     {
         if (expectedTag != actualTag)
         {
@@ -731,12 +731,12 @@ public class EventPipeReader(Stream stream)
         }
     }
 
-    private void ReadPadding(ref FastSerializerSequenceReader reader)
+    private static void ReadPadding(ref FastSerializerSequenceReader reader)
     {
         CorruptedBlockException.ThrowIfFalse(TryReadPadding(ref reader), reader.AbsolutePosition);
     }
 
-    private bool TryReadPadding(ref FastSerializerSequenceReader reader)
+    private static bool TryReadPadding(ref FastSerializerSequenceReader reader)
     {
         const int padding = 4;
 
@@ -769,7 +769,7 @@ public class EventPipeReader(Stream stream)
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private object InternBoolean(bool b)
+    private static object InternBoolean(bool b)
     {
         return b ? TrueBoolean : FalseBoolean;
     }
