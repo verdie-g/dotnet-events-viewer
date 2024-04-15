@@ -207,7 +207,7 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
                 return false;
             }
 
-            res |= (b & 0x7Fu) << i;
+            res |= (b & 0x7Ful) << i;
             if (b <= 0x7F)
             {
                 value = (long)res;
