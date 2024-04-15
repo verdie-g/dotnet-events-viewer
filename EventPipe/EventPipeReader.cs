@@ -111,6 +111,9 @@ public class EventPipeReader(Stream stream)
 
         await reader.CompleteAsync();
 
+        // Sort the events because correlation algorithms expect a Stop event to appear after a Start.
+        _events.Sort((x, y) => x.TimeStamp.CompareTo(y.TimeStamp));
+
         var stackTraces = _stackResolver.ResolveAllStackTraces();
         foreach (var evt in _events)
         {
