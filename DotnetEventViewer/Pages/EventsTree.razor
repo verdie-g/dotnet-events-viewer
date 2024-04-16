@@ -48,7 +48,7 @@
 
             if (node.Children != null)
             {
-                if (node.Children.Count == 1 && parent?.Children is { Count: 1 })
+                if (parent?.Children is { Count: 1 })
                 {
                     builder.AddAttribute(2, nameof(FluentTreeItem.InitiallyExpanded), true);
                 }
