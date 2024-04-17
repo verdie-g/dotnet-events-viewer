@@ -286,7 +286,7 @@ public class EventPipeReader(Stream stream)
 
         if (serializationType.MinReaderVersion > ReaderVersion)
         {
-            _ = reader.ReadBytes(blockSize); // Skip the block for forward compatibility.
+            reader.Advance(blockSize); // Skip the block for forward compatibility.
             return true;
         }
 
@@ -305,7 +305,7 @@ public class EventPipeReader(Stream stream)
                 ReadSequencePointBlock(ref reader);
                 break;
             default:
-                _ = reader.ReadBytes(blockSize); // Skip the block for forward compatibility.
+                reader.Advance(blockSize); // Skip the block for forward compatibility.
                 break;
         }
 
@@ -344,7 +344,7 @@ public class EventPipeReader(Stream stream)
         var flags = ReadInt16AsEnum<EventBlockFlags>(ref reader);
         long minTimestamp = reader.ReadInt64();
         long maxTimestamp = reader.ReadInt64();
-        _ = reader.ReadBytes((int)(headerSize - reader.AbsolutePosition + headerStartPosition));
+        reader.Advance(headerSize - reader.AbsolutePosition + headerStartPosition);
 
         if (flags.HasFlag(EventBlockFlags.Compressed))
         {
@@ -452,7 +452,7 @@ public class EventPipeReader(Stream stream)
             // a payload. Skip them.
             if (metadata.FieldDefinitions.Count == 0)
             {
-                _ = reader.ReadBytes((int)(payloadEndPosition - reader.AbsolutePosition));
+                reader.Advance(payloadEndPosition - reader.AbsolutePosition);
             }
             else
             {
