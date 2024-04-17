@@ -1,6 +1,5 @@
 ﻿using System.Buffers;
 using System.Buffers.Binary;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace EventPipe.FastSerializer;
@@ -17,6 +16,12 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
     public long Consumed => _reader.Consumed;
     public long Remaining => _reader.Remaining;
     public bool End => _reader.End;
+    public ReadOnlySpan<byte> UnreadSpan => _reader.UnreadSpan;
+
+    public void Advance(long count)
+    {
+        _reader.Advance(count);
+    }
 
     public byte ReadByte()
     {

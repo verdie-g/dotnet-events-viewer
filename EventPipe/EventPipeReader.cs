@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using EventPipe.FastSerializer;
 
@@ -612,6 +613,27 @@ public class EventPipeReader(Stream stream)
     }
 
     private static string ReadNullTerminatedUtf16String(ref FastSerializerSequenceReader reader)
+    {
+        var unreadCharSpan = MemoryMarshal.Cast<byte, char>(reader.UnreadSpan);
+        int nullIdx = unreadCharSpan.IndexOf((char)0);
+        if (nullIdx == 0)
+        {
+            reader.Advance(sizeof(char));
+            return "";
+        }
+
+        if (nullIdx != -1)
+        {
+            string str = new(unreadCharSpan[..nullIdx]);
+            reader.Advance((nullIdx + 1) * sizeof(char));
+            return str;
+        }
+
+        // Ain't nobody got time for that.
+        return ReadNullTerminatedUtf16StringSlow(ref reader);
+    }
+
+    private static string ReadNullTerminatedUtf16StringSlow(ref FastSerializerSequenceReader reader)
     {
         StringBuilder sb = new();
 
