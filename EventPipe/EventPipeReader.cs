@@ -575,8 +575,11 @@ public class EventPipeReader(Stream stream)
         ref FastSerializerSequenceReader reader,
         EventMetadata metadata)
     {
-        Dictionary<string, object> payload = new(capacity: metadata.FieldDefinitions.Count);
-        foreach (var fieldDefinition in metadata.FieldDefinitions)
+        // Cast to array to avoid the IEnumerator allocation.
+        var fieldDefinitions = (EventFieldDefinition[])metadata.FieldDefinitions;
+
+        Dictionary<string, object> payload = new(capacity: fieldDefinitions.Length);
+        foreach (var fieldDefinition in fieldDefinitions)
         {
             object value = ReadFieldValue(ref reader, fieldDefinition);
             payload[fieldDefinition.Name] = value;
