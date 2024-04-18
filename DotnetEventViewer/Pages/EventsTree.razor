@@ -3,6 +3,8 @@
 @using DotnetEventViewer.CallTree
 @using DotnetEventViewer.CallTree.Decorators
 @using DotnetEventViewer.State
+@using DotnetEventViewer.Components
+@using EventPipe
 
 @inject StateContainer State
 
@@ -10,12 +12,17 @@
 
 <h1>Events Tree</h1>
 
-<FluentTreeView RenderCollapsedNodes="true">
-    @RenderCallTreeNode(_callTree, _callTreeDecorator)
-</FluentTreeView>
+<QueryBuilder OnEventsFiltered="OnEventsFiltered" />
+
+@if (_callTree != null)
+{
+    <FluentTreeView>
+        @RenderCallTreeNode(_callTree, _callTreeDecorator)
+    </FluentTreeView>
+}
 
 @code {
-    private CallTreeNode _callTree = default!;
+    private CallTreeNode? _callTree;
     private ICallTreeNodeDecorator _callTreeDecorator = default!;
 
     protected override Task OnInitializedAsync()
@@ -26,8 +33,12 @@
         }
 
         _callTreeDecorator = new EventsCountDecorator();
-        _callTree = CallTreeNode.Create(State.Trace.Events, _callTreeDecorator);
         return Task.CompletedTask;
+    }
+
+    private void OnEventsFiltered(IReadOnlyList<Event> evts)
+    {
+        _callTree = CallTreeNode.Create(evts, _callTreeDecorator);
     }
 
     private static RenderFragment RenderCallTreeNode(CallTreeNode root, ICallTreeNodeDecorator decorator)

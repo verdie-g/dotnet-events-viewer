@@ -2,6 +2,8 @@
 @using DotnetEventViewer.State
 @using EventPipe
 @using DotnetEventViewer.Models
+@using DotnetEventViewer.Querying
+@using DotnetEventViewer.Querying.Operators
 
 @layout HomeLayout
 
@@ -50,6 +52,7 @@
         }));
         StateContainer.Trace = await reader.ReadFullTraceAsync();
         StateContainer.TraceExtraMetadata = CreateTraceExtraMetadata(inputFile.Name, StateContainer.Trace);
+        StateContainer.Query = CreateInitialQuery(StateContainer.Trace);
 
         NavigationManager.NavigateTo("list");
     }
@@ -77,5 +80,21 @@
         string commandLine = (string)processInfoEvent.Payload["CommandLine"];
         string osFamily = (string)processInfoEvent.Payload["OSInformation"];
         return new TraceExtraMetadata(filename, commandLine, osFamily);
+    }
+
+    private Query CreateInitialQuery(Trace trace)
+    {
+        var metadata = trace.EventMetadata.FirstOrDefault(m =>
+            m.ProviderName != "Microsoft-Windows-DotNETRuntimeRundown"
+            && m.EventName.Length != 0);
+        if (metadata == null)
+        {
+            return new Query { Filters = [] };
+        }
+
+        return new Query
+        {
+            Filters = [new Filter(Field.EventNameField, EqualOperator.Instance, metadata.EventName)],
+        };
     }
 }

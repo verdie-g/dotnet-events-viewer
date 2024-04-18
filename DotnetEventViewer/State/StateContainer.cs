@@ -1,4 +1,5 @@
 ﻿using DotnetEventViewer.Models;
+using DotnetEventViewer.Querying;
 using EventPipe;
 
 namespace DotnetEventViewer.State;
@@ -7,6 +8,7 @@ internal class StateContainer
 {
     private Trace? _trace;
     private TraceExtraMetadata? _traceExtraMetadata;
+    private Query? _query;
 
     public Trace? Trace
     {
@@ -24,6 +26,16 @@ internal class StateContainer
         set
         {
             _traceExtraMetadata = value;
+            NotifyStateChanged();
+        }
+    }
+
+    public Query? Query
+    {
+        get => _query;
+        set
+        {
+            _query = value;
             NotifyStateChanged();
         }
     }

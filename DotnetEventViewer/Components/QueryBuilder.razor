@@ -1,0 +1,204 @@
+@using System.Runtime.InteropServices
+@using System.Text.RegularExpressions
+@using DotnetEventViewer.Querying
+@using DotnetEventViewer.Querying.Operators
+@using DotnetEventViewer.State
+@using EventPipe
+
+@inject StateContainer State
+
+<EditForm EditContext="_editContext" OnValidSubmit="@HandleValidSubmit" FormName="query-builder" novalidate>
+    <FluentStack Orientation="Orientation.Vertical">
+
+        @for (int i = 0; i < Query.Filters.Count; i += 1)
+        {
+            int idx = i;
+            <div>
+                <FluentStack Orientation="Orientation.Horizontal">
+                    <FluentCombobox TOption="Field"
+                                    Width="200px"
+                                    Placeholder="Select the field to filter on"
+                                    Items="_allFieldSelectors"
+                                    Autocomplete="ComboboxAutocomplete.Both"
+                                    OptionText="@(s => s.Name)"
+                                    @bind-SelectedOption="Query.Filters[idx].Field"
+                                    Required />
+                    <FluentSelect TOption="IOperator"
+                                  Width="80px"
+                                  Items="AllOperators"
+                                  OptionText="@(o => o.Text)"
+                                  @bind-SelectedOption="Query.Filters[idx].Operator"/>
+                    <FluentTextField @bind-Value="Query.Filters[idx].Value"
+                                     Minlength="1"
+                                     Required />
+                    <FluentButton Title="Remove filter"
+                                  IconStart="@(new Icons.Regular.Size24.Dismiss())"
+                                  OnClick="_ => OnRemoveFilter(idx)" />
+                </FluentStack>
+                <FluentValidationMessage For="() => Query.Filters[idx]" />
+            </div>
+        }
+
+        <FluentStack Orientation="Orientation.Horizontal">
+            <FluentButton OnClick="@OnAddFilter"
+                          IconStart="@(new Icons.Regular.Size24.Add())">
+                Add Filter
+            </FluentButton>
+            <FluentButton Type="ButtonType.Submit"
+                          Appearance="Appearance.Accent"
+                          IconStart="@(new Icons.Regular.Size24.ArrowSync())">
+                Run query
+            </FluentButton>
+        </FluentStack>
+    </FluentStack>
+</EditForm>
+
+@code
+{
+    private static readonly IOperator[] AllOperators =
+    [
+        EqualOperator.Instance,
+        NotEqualOperator.Instance,
+        LessOperator.Instance,
+        LessOrEqualOperator.Instance,
+        GreaterOperator.Instance,
+        GreaterOrEqualOperator.Instance,
+        MatchOperator.Instance,
+        NotMatchOperator.Instance,
+    ];
+
+    private Field[] _allFieldSelectors = [];
+    private Filter? _lastRemovedFilter;
+    private EditContext _editContext = default!;
+    private ValidationMessageStore _messageStore = default!;
+
+    [Parameter]
+    public EventCallback<IReadOnlyList<Event>> OnEventsFiltered { get; set; }
+
+    [SupplyParameterFromForm]
+    private Query Query { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        _allFieldSelectors = Field.StaticEventFieldSelectors
+            .Concat(EnumerateDynamicFieldSelectors(State.Trace!))
+            .OrderBy(s => s.Name)
+            .ToArray();
+        Query = State.Query!;
+        _editContext = new EditContext(Query);
+        _editContext.OnValidationRequested += OnValidationRequested;
+        _messageStore = new ValidationMessageStore(_editContext);
+    }
+
+    private IEnumerable<Field> EnumerateDynamicFieldSelectors(Trace trace)
+    {
+        return trace.EventMetadata
+            .SelectMany(m => m.FieldDefinitions.Select(Field.FromPayloadFieldDefinition))
+            .DistinctBy(s => s.Name);
+    }
+
+    private void OnAddFilter()
+    {
+        var lastFilter = _lastRemovedFilter ?? Query.Filters[^1];
+        Query.Filters.Add(new Filter(lastFilter.Field, lastFilter.Operator, lastFilter.Value));
+    }
+
+    private void OnRemoveFilter(int idx)
+    {
+        _lastRemovedFilter = Query.Filters[idx];
+        Query.Filters.RemoveAt(idx);
+    }
+
+    private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
+    {
+        _messageStore.Clear();
+
+        for (int i = 0; i < Query.Filters.Count; i += 1)
+        {
+            int idx = i;
+            var filter = Query.Filters[idx];
+
+            if (!filter.Operator.IsCompatible(filter.Field.Type))
+            {
+                _messageStore.Add(() => Query.Filters[idx], $"Operator {filter.Operator.Text} is not compatible with this field.");
+            }
+
+            if (filter.Operator is MatchOperator or NotMatchOperator)
+            {
+                try
+                {
+                    filter.ParsedValue = new Regex(filter.Value);
+                }
+                catch
+                {
+                    _messageStore.Add(() => Query.Filters[idx], $"\"{filter.Value}\" is not a valid regex.");
+                }
+            }
+            else if (TryParseFilterValue(filter.Field.Type, filter.Value, out object parsedValue))
+            {
+                filter.ParsedValue = parsedValue;
+            }
+            else
+            {
+                _messageStore.Add(() => Query.Filters[idx], $"\"{filter.Value}\" is not a valid {filter.Field.Type}.");
+            }
+        }
+    }
+
+    private bool TryParseFilterValue(TypeCode fieldType, string value, out object parsedValue)
+    {
+        bool ok;
+        switch (fieldType)
+        {
+            case TypeCode.Boolean when value == "0":
+                ok = true;
+                parsedValue = false;
+                break;
+            case TypeCode.Boolean when value == "1":
+                ok = true;
+                parsedValue = true;
+                break;
+            case TypeCodeExtensions.Guid:
+                ok = Guid.TryParse(value, out Guid guidValue);
+                parsedValue = guidValue;
+                break;
+            default:
+                try
+                {
+                    parsedValue = Convert.ChangeType(value, fieldType);
+                    ok = true;
+                }
+                catch
+                {
+                    parsedValue = "";
+                    ok = false;
+                }
+                break;
+        }
+
+        return ok;
+
+    }
+
+    private void HandleValidSubmit()
+    {
+        var filteredEvents = State.Trace!.Events
+            .Where(evt => FilterEvent(evt, Query))
+            .ToArray();
+        _ = OnEventsFiltered.InvokeAsync(filteredEvents);
+    }
+
+    private bool FilterEvent(Event evt, Query query)
+    {
+        foreach (var filter in CollectionsMarshal.AsSpan(query.Filters))
+        {
+            var operand = filter.Field.Selector(evt);
+            if (!filter.Operator.Match(operand, filter.ParsedValue))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
