@@ -2,6 +2,7 @@
 
 @using DotnetEventViewer.State
 @using EventPipe
+@using DotnetEventViewer.Components
 
 @inject StateContainer StateContainer
 
@@ -13,7 +14,6 @@
     <div>
         <FluentAutocomplete TOption="FieldSelector"
                             AutoComplete="off"
-                            Label="Fields"
                             Placeholder="Select fields"
                             OnOptionsSearch="@OnFieldSearchAsync"
                             MaximumSelectedOptions="6"
@@ -22,8 +22,10 @@
     </div>
 </FluentStack>
 
+<QueryBuilder OnEventsFiltered="OnEventsFiltered" />
+
 <FluentDataGrid
-    Items="@_items"
+    Items="@_events"
     ItemKey="@(e => e.Index)"
     Virtualize="true"
     ResizableColumns="true"
@@ -57,7 +59,7 @@
         nameof(EventMetadata.EventName)
     ];
 
-    private IQueryable<Event> _items = Enumerable.Empty<Event>().AsQueryable();
+    private IQueryable<Event> _events = Enumerable.Empty<Event>().AsQueryable();
     private FieldSelector[] _allFieldSelectors = StaticEventFieldSelectors;
     private IEnumerable<FieldSelector> _selectedFieldSelectors = DefaultFieldNames
         .Select(n => Array.Find(StaticEventFieldSelectors, s => s.FieldName == n)!)
@@ -70,7 +72,6 @@
             return Task.CompletedTask;
         }
 
-        _items = StateContainer.Trace.Events.AsQueryable();
         _allFieldSelectors = StaticEventFieldSelectors.Concat(EnumerateDynamicFieldSelectors(StateContainer.Trace)).ToArray();
         return Task.CompletedTask;
     }
@@ -86,6 +87,11 @@
         return trace.EventMetadata
             .SelectMany(m => m.FieldDefinitions
                 .Select(f => FieldSelector.FromPayloadFieldName(f.Name)));
+    }
+
+    private void OnEventsFiltered(IReadOnlyList<Event> events)
+    {
+        _events = events.AsQueryable();
     }
 
     private class FieldSelector(string fieldName, Func<Event, object> selector)

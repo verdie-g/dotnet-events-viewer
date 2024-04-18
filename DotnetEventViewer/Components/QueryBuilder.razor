@@ -182,9 +182,18 @@
 
     private void HandleValidSubmit()
     {
-        var filteredEvents = State.Trace!.Events
-            .Where(evt => FilterEvent(evt, Query))
-            .ToArray();
+        IReadOnlyList<Event> filteredEvents;
+        if (Query.Filters.Count == 0)
+        {
+            filteredEvents = State.Trace!.Events;
+        }
+        else
+        {
+            filteredEvents = State.Trace!.Events
+                .Where(evt => FilterEvent(evt, Query))
+                .ToArray();
+        }
+
         _ = OnEventsFiltered.InvokeAsync(filteredEvents);
     }
 
