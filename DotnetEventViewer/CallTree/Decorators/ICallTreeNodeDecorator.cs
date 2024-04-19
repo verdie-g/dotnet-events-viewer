@@ -5,8 +5,10 @@ namespace DotnetEventViewer.CallTree.Decorators;
 /// <summary>
 /// Adds metadata (e.g. events count) to a <see cref="CallTreeNode"/>.
 /// </summary>
-internal interface ICallTreeNodeDecorator
+public interface ICallTreeNodeDecorator
 {
+    string Name { get; }
+
     /// <summary>
     /// The events this decorator is compatible with. Use null to indicates it's compatible with all events.
     /// </summary>

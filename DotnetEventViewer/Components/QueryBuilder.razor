@@ -1,5 +1,6 @@
 @using System.Runtime.InteropServices
 @using System.Text.RegularExpressions
+@using DotnetEventViewer.CallTree.Decorators
 @using DotnetEventViewer.Querying
 @using DotnetEventViewer.Querying.Operators
 @using DotnetEventViewer.State
@@ -44,6 +45,24 @@
                           IconStart="@(new Icons.Regular.Size24.Add())">
                 Add Filter
             </FluentButton>
+            @if (QueryType == QueryType.List)
+            {
+                <FluentAutocomplete TOption="Field"
+                                    Width="500px"
+                                    AutoComplete="off"
+                                    Placeholder="Select column"
+                                    OnOptionsSearch="@OnColumnFieldSearch"
+                                    MaximumSelectedOptions="6"
+                                    OptionText="@(f => f.Name)"
+                                    @bind-SelectedOptions="_selectedColumnFields" />
+            }
+            else if (QueryType == QueryType.Tree)
+            {
+                <FluentSelect TOption="ICallTreeNodeDecorator"
+                              Items="AllDecorators"
+                              OptionText="@(d => d.Name)"
+                              @bind-SelectedOption="_selectedDecorator" />
+            }
             <FluentButton Type="ButtonType.Submit"
                           Appearance="Appearance.Accent"
                           IconStart="@(new Icons.Regular.Size24.ArrowSync())">
@@ -67,13 +86,31 @@
         NotMatchOperator.Instance,
     ];
 
+    private static readonly Field[] DefaultColumnFields =
+    [
+        Field.TimeStampField,
+        Field.ThreadIdField,
+        Field.EventNameField,
+    ];
+
+    private static readonly ICallTreeNodeDecorator[] AllDecorators =
+    [
+        EventsCountDecorator.Instance,
+        AllocationSizeDecorator.Instance,
+    ];
+
     private Field[] _allFieldSelectors = [];
     private Filter? _lastRemovedFilter;
+    private IEnumerable<Field>? _selectedColumnFields;
+    private ICallTreeNodeDecorator? _selectedDecorator;
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
 
+    [Parameter, EditorRequired]
+    public QueryType QueryType { get; set; }
+
     [Parameter]
-    public EventCallback<IReadOnlyList<Event>> OnEventsFiltered { get; set; }
+    public EventCallback<QueryResult> OnQuery { get; set; }
 
     [SupplyParameterFromForm]
     private Query Query { get; set; } = default!;
@@ -84,6 +121,8 @@
             .Concat(EnumerateDynamicFieldSelectors(State.Trace!))
             .OrderBy(s => s.Name)
             .ToArray();
+        _selectedColumnFields = DefaultColumnFields;
+        _selectedDecorator = EventsCountDecorator.Instance;
         Query = State.Query!;
         _editContext = new EditContext(Query);
         _editContext.OnValidationRequested += OnValidationRequested;
@@ -107,6 +146,11 @@
     {
         _lastRemovedFilter = Query.Filters[idx];
         Query.Filters.RemoveAt(idx);
+    }
+
+    private void OnColumnFieldSearch(OptionsSearchEventArgs<Field> e)
+    {
+        e.Items = _allFieldSelectors.Where(s => s.Name.Contains(e.Text, StringComparison.OrdinalIgnoreCase));
     }
 
     private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
@@ -194,7 +238,7 @@
                 .ToArray();
         }
 
-        _ = OnEventsFiltered.InvokeAsync(filteredEvents);
+        _ = OnQuery.InvokeAsync(new QueryResult(filteredEvents, _selectedColumnFields, _selectedDecorator));
     }
 
     private bool FilterEvent(Event evt, Query query)
@@ -210,4 +254,5 @@
 
         return true;
     }
+
 }

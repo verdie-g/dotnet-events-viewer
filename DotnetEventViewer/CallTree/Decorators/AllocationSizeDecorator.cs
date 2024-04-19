@@ -2,8 +2,12 @@ using EventPipe;
 
 namespace DotnetEventViewer.CallTree.Decorators;
 
-internal class ObjectSizeDecorator : ICallTreeNodeDecorator
+internal class AllocationSizeDecorator : ICallTreeNodeDecorator
 {
+    public static AllocationSizeDecorator Instance { get; } = new();
+
+    public string Name => "Allocation Size";
+
     public ISet<string>? CompatibleEventNames { get; } = new HashSet<string> { "GCAllocationTick" };
 
     public string Format(long count)

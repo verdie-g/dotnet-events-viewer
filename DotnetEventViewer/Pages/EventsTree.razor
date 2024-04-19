@@ -2,43 +2,30 @@
 
 @using DotnetEventViewer.CallTree
 @using DotnetEventViewer.CallTree.Decorators
-@using DotnetEventViewer.State
 @using DotnetEventViewer.Components
-@using EventPipe
-
-@inject StateContainer State
+@using DotnetEventViewer.Querying
 
 <PageTitle>Events Tree</PageTitle>
 
 <h1>Events Tree</h1>
 
-<QueryBuilder OnEventsFiltered="OnEventsFiltered" />
+<QueryBuilder QueryType="QueryType.Tree" OnQuery="OnQuery" />
 
 @if (_callTree != null)
 {
     <FluentTreeView>
-        @RenderCallTreeNode(_callTree, _callTreeDecorator)
+        @RenderCallTreeNode(_callTree, _callTreeDecorator!)
     </FluentTreeView>
 }
 
 @code {
     private CallTreeNode? _callTree;
-    private ICallTreeNodeDecorator _callTreeDecorator = default!;
+    private ICallTreeNodeDecorator? _callTreeDecorator;
 
-    protected override Task OnInitializedAsync()
+    private void OnQuery(QueryResult queryResult)
     {
-        if (State.Trace == null)
-        {
-            return Task.CompletedTask;
-        }
-
-        _callTreeDecorator = new EventsCountDecorator();
-        return Task.CompletedTask;
-    }
-
-    private void OnEventsFiltered(IReadOnlyList<Event> evts)
-    {
-        _callTree = CallTreeNode.Create(evts, _callTreeDecorator);
+        _callTree = CallTreeNode.Create(queryResult.FilteredEvents, queryResult.CallTreeDecorator!);
+        _callTreeDecorator = queryResult.CallTreeDecorator;
     }
 
     private static RenderFragment RenderCallTreeNode(CallTreeNode root, ICallTreeNodeDecorator decorator)

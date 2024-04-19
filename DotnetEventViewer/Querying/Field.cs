@@ -2,7 +2,7 @@ using EventPipe;
 
 namespace DotnetEventViewer.Querying;
 
-internal class Field(string name, TypeCode type, Func<Event, object> selector)
+public class Field(string name, TypeCode type, Func<Event, object> selector)
 {
     public static readonly Field CaptureThreadIdField = new(nameof(Event.CaptureThreadId), TypeCode.Int64, e => e.CaptureThreadId);
     public static readonly Field ThreadIdField = new(nameof(Event.ThreadId), TypeCode.Int64, e => e.ThreadId);
