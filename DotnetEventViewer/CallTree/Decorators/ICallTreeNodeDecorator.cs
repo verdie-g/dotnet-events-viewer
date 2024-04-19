@@ -7,9 +7,12 @@ namespace DotnetEventViewer.CallTree.Decorators;
 /// </summary>
 internal interface ICallTreeNodeDecorator
 {
-    IFormatProvider? Format { get; }
+    /// <summary>
+    /// The events this decorator is compatible with. Use null to indicates it's compatible with all events.
+    /// </summary>
+    ISet<string>? CompatibleEventNames { get; }
 
-    string Unit { get; }
+    string Format(long count);
 
     /// <summary>
     /// A method called for each event. Can be used to build correlations between Start and Stop events.

@@ -80,6 +80,6 @@
     private static string GenerateNodeText(CallTreeNode root, CallTreeNode node, ICallTreeNodeDecorator decorator)
     {
         float ratio = node.Count / (float)root.Count;
-        return $"({100 * ratio:0.00}% - {node.Count.ToString(decorator.Format)} {decorator.Unit}) {node.MethodDescription}";
+        return $"({100 * ratio:0.00}% - {decorator.Format(node.Count)}) {node.MethodDescription}";
     }
 }

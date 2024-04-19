@@ -4,9 +4,12 @@ namespace DotnetEventViewer.CallTree.Decorators;
 
 internal class EventsCountDecorator : ICallTreeNodeDecorator
 {
-    public IFormatProvider? Format { get; }
+    public ISet<string>? CompatibleEventNames => null;
 
-    public string Unit => "events";
+    public string Format(long count)
+    {
+        return count + " events";
+    }
 
     public void ProcessEvent(Event evt)
     {
