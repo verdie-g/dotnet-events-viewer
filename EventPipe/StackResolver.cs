@@ -5,8 +5,7 @@ internal class StackResolver
     private static readonly MethodDescription UnresolvedMethodDescription = new("??", "", "", 0, 0);
 
     private readonly Dictionary<int, ulong[]> _stacksAddresses = [];
-    private readonly Dictionary<ulong, MethodDescription> _methodSymbolInfosByMethodAddress = [];
-    private readonly List<ulong> _methodAddresses = [];
+    private readonly List<MethodDescription> _methodDescriptions = [];
 
     public void AddStackAddresses(int stackId, ulong[] addresses)
     {
@@ -15,24 +14,36 @@ internal class StackResolver
 
     public void AddMethodSymbolInfo(MethodDescription methodDescription)
     {
-        _methodSymbolInfosByMethodAddress[methodDescription.Address] = methodDescription;
-        _methodAddresses.Add(methodDescription.Address);
+        _methodDescriptions.Add(methodDescription);
     }
 
     public Dictionary<int, StackTrace> ResolveAllStackTraces()
     {
-        _methodAddresses.Sort();
+        ulong[] methodAddresses = new ulong[_methodDescriptions.Count];
+        Dictionary<ulong, MethodDescription> methodDescriptions = new(_methodDescriptions.Count);
+        for (int i = 0; i < _methodDescriptions.Count; i += 1)
+        {
+            var methodDescription = _methodDescriptions[i];
+            methodAddresses[i] = methodDescription.Address;
+            methodDescriptions[methodDescription.Address] = methodDescription;
+        }
+
+        Array.Sort(methodAddresses);
 
         Dictionary<int, StackTrace> resolvedStackTraces = new(_stacksAddresses.Count);
         foreach (var kvp in _stacksAddresses)
         {
-            resolvedStackTraces[kvp.Key] = ResolveStackTrace(kvp.Key, kvp.Value);
+            resolvedStackTraces[kvp.Key] = ResolveStackTrace(kvp.Key, kvp.Value, methodAddresses, methodDescriptions);
         }
 
         return resolvedStackTraces;
     }
 
-    private StackTrace ResolveStackTrace(int stackId, ulong[] addresses)
+    private static StackTrace ResolveStackTrace(
+        int stackId,
+        ulong[] addresses,
+        ulong[] methodAddresses,
+        Dictionary<ulong, MethodDescription> methodDescriptions)
     {
         if (addresses.Length == 0)
         {
@@ -42,21 +53,19 @@ internal class StackResolver
         var stackTrace = new MethodDescription[addresses.Length];
         for (int i = 0; i < stackTrace.Length; i += 1)
         {
-            stackTrace[i] = ResolveSymbol(addresses[i]);
+            stackTrace[i] = ResolveSymbol(addresses[i], methodAddresses, methodDescriptions);
 
         }
 
         return new StackTrace(stackId, stackTrace);
     }
 
-    private MethodDescription ResolveSymbol(ulong address)
+    private static MethodDescription ResolveSymbol(
+        ulong address,
+        ulong[] methodAddresses,
+        Dictionary<ulong, MethodDescription> methodDescriptions)
     {
-        if (_methodAddresses.Count == 0)
-        {
-            return UnresolvedMethodDescription;
-        }
-
-        int methodAddressIdx = _methodAddresses.BinarySearch(address);
+        int methodAddressIdx = Array.BinarySearch(methodAddresses, address);
         if (methodAddressIdx < 0)
         {
             methodAddressIdx = ~methodAddressIdx - 1;
@@ -66,14 +75,14 @@ internal class StackResolver
             }
         }
 
-        var methodAddress = _methodAddresses[methodAddressIdx];
-        var methodSymbolInfo = _methodSymbolInfosByMethodAddress[methodAddress];
+        var methodAddress = methodAddresses[methodAddressIdx];
+        var methodDescription = methodDescriptions[methodAddress];
 
-        if (methodSymbolInfo.Address + methodSymbolInfo.Size < address)
+        if (methodDescription.Address + methodDescription.Size < address)
         {
             return UnresolvedMethodDescription;
         }
 
-        return methodSymbolInfo;
+        return methodDescription;
     }
 }
