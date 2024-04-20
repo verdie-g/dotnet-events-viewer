@@ -35,6 +35,45 @@ public class EventPipeReader(Stream stream)
                     new("Address", TypeCode.UInt64),
                     new("ObjectSize", TypeCode.UInt64),
                 }),
+        [new MetadataKey(RuntimeProvider, 81, 1)] =
+            new(default, string.Empty, default, "ContentionStart", default, default, default,
+                EventOpcode.Start, new EventFieldDefinition[]
+                {
+                    new("ContentionFlags", TypeCode.Byte),
+                    new("ClrInstanceID", TypeCode.UInt16),
+                }),
+        [new MetadataKey(RuntimeProvider, 81, 2)] =
+            new(default, string.Empty, default, "ContentionStart", default, default, default,
+                EventOpcode.Start, new EventFieldDefinition[]
+                {
+                    new("ContentionFlags", TypeCode.Byte),
+                    new("ClrInstanceID", TypeCode.UInt16),
+                    new("LockID", TypeCode.UInt64),
+                    new("AssociatedObjectID", TypeCode.UInt64),
+                    new("LockOwnerThreadID", TypeCode.UInt64),
+                }),
+        [new MetadataKey(RuntimeProvider, 91, 1)] =
+            new(default, string.Empty, default, "ContentionStop", default, default, default,
+                EventOpcode.Stop, new EventFieldDefinition[]
+                {
+                    new("ContentionFlags", TypeCode.Byte),
+                    new("ClrInstanceID", TypeCode.UInt16),
+                    new("DurationNs", TypeCode.Double),
+                }),
+        [new MetadataKey(RuntimeProvider, 301, 1)] =
+            new(default, string.Empty, default, "WaitHandleWaitStart", default, default, default,
+                EventOpcode.Start, new EventFieldDefinition[]
+                {
+                    new("WaitSource", TypeCode.Byte),
+                    new("AssociatedObjectID", TypeCode.UInt64),
+                    new("ClrInstanceID", TypeCode.UInt16),
+                }),
+        [new MetadataKey(RuntimeProvider, 302, 1)] =
+            new(default, string.Empty, default, "WaitHandleWaitStop", default, default, default,
+                EventOpcode.Stop, new EventFieldDefinition[]
+                {
+                    new("ClrInstanceID", TypeCode.UInt16),
+                }),
         [new MetadataKey(RundownProvider, 144, 1)] =
             new(default, string.Empty, default, "MethodLoadUnloadVerbose", default, default, default,
                 null, new EventFieldDefinition[]
@@ -521,11 +560,12 @@ public class EventPipeReader(Stream stream)
                 $"Event metadata tag end was not reached (expected: {tagPayloadEndPosition}, actual: {reader.AbsolutePosition})");
         }
 
-        // Some Microsoft-Windows-DotNETRuntimeRundown events are needed to resolve stack symbols but for some reasons
+        // Some Microsoft-Windows-DotNETRuntimeRundown events are needed to resolve stack symbols but for some reason
         // their metadata are incomplete in the trace (https://github.com/dotnet/runtime/issues/96365) so they are hardcoded.
         if (KnownEventMetadata.TryGetValue(new MetadataKey(providerName, eventId, version), out var knownMetadata))
         {
             eventName = knownMetadata.EventName;
+            opCode = knownMetadata.OpCode;
             fieldDefinitions = knownMetadata.FieldDefinitions;
         }
 
