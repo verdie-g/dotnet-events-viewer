@@ -3,7 +3,7 @@ using EventPipe;
 
 namespace DotnetEventViewer.CallTree;
 
-internal class CallTreeNode
+public class CallTreeNode
 {
     public static CallTreeNode Create(
         IEnumerable<Event> events,

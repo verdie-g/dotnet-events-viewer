@@ -1,0 +1,124 @@
+@using DotnetEventViewer.CallTree
+@using DotnetEventViewer.CallTree.Decorators
+@using EventPipe
+
+@if (_tree != null && Decorator != null)
+{
+    <FluentTreeView>
+        @RenderCallTreeNode(_tree)
+    </FluentTreeView>
+}
+
+@code
+{
+    // Ids of the rendered nodes. Only contain the leaves of the rendered tree.
+    private readonly HashSet<int> _treeRenderedLeafIds = [];
+    // Ids of the expanded nodes. Must be saved because the info is lost when the nodes get closed/destroyed.
+    private readonly HashSet<int> _expandedNodes = [];
+    private CallTreeNode? _tree;
+
+    [Parameter]
+    public CallTreeNode? Tree { get; set; }
+
+    [Parameter]
+    public ICallTreeNodeDecorator? Decorator { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (Tree != _tree)
+        {
+            _tree = Tree;
+            _treeRenderedLeafIds.Clear();
+            _treeRenderedLeafIds.Add(_tree!.Id);
+            _expandedNodes.Clear();
+        }
+    }
+
+    private void OnNodeExpanded(CallTreeNode node, bool expanded)
+    {
+        Console.WriteLine($"Expanded {node.Id} {expanded}");
+        if (expanded)
+        {
+            Console.WriteLine($"Remove {node.Id}");
+            _treeRenderedLeafIds.Remove(node.Id);
+            _expandedNodes.Add(node.Id);
+            if (node.Children is { Count: > 1 })
+            {
+                foreach (var child in node.Children!)
+                {
+                    Console.WriteLine($"Add {child.Value.Id}");
+                    _treeRenderedLeafIds.Add(child.Value.Id);
+                }
+            }
+            else if (node.Children is { Count: 1 })
+            {
+                var n = node;
+                while (n.Children is { Count: 1 } || (n.Children is { Count: > 1} && _expandedNodes.Contains(n.Id)))
+                {
+                    n = n.Children.First().Value;
+                    Console.WriteLine($"Expanding {n.Id}");
+                    _expandedNodes.Add(n.Id);
+                }
+
+                Console.WriteLine($"Add {n.Id}");
+                _treeRenderedLeafIds.Add(n.Id);
+            }
+        }
+        else
+        {
+            Console.WriteLine($"Add {node.Id}");
+            _expandedNodes.Remove(node.Id);
+            _treeRenderedLeafIds.Add(node.Id);
+        }
+
+        Console.WriteLine($"Nodes: {string.Join(", ", _treeRenderedLeafIds)}");
+    }
+
+    private RenderFragment RenderCallTreeNode(CallTreeNode node, CallTreeNode? parent = null, bool renderChildren = true)
+    {
+        return builder =>
+        {
+            // Render at least a single child so the expand button is available.
+            bool renderFirstChildOnly = _treeRenderedLeafIds.Contains(node.Id);
+            bool expandNode = _expandedNodes.Contains(node.Id) && !renderFirstChildOnly;
+            Console.WriteLine($"Render {node.Id}" + (expandNode ? " expanded" : "") + (renderChildren ? (renderFirstChildOnly ? " render first child" : "") : " no render children"));
+            builder.OpenComponent<FluentTreeItem>(0);
+            builder.AddAttribute(1, nameof(FluentTreeItem.Text), GenerateNodeText(_tree!, node));
+            // builder.AddAttribute(1, nameof(FluentTreeItem.Text), node.Id.ToString());
+            EventCallback<bool> expandedChanged = new EventCallback<bool>(this, (bool e) => OnNodeExpanded(node, e));
+            builder.AddAttribute(2, nameof(FluentTreeItem.ExpandedChanged), expandedChanged);
+            builder.AddAttribute(3, nameof(FluentTreeItem.Expanded), expandNode);
+
+            if (node.Children != null)
+            {
+                builder.AddAttribute(4, nameof(FluentTreeItem.ChildContent), (RenderFragment)(b =>
+                {
+                    if (!renderChildren)
+                    {
+                        return;
+                    }
+
+                    if (renderFirstChildOnly)
+                    {
+                        var firstChild = node.Children.Values.OrderByDescending(n => n.Count).First();
+                        RenderCallTreeNode(firstChild, node, renderChildren: false)(b);
+                        return;
+                    }
+
+                    foreach (var child in node.Children.Values.OrderByDescending(n => n.Count))
+                    {
+                        RenderCallTreeNode(child, node)(b);
+                    }
+                }));
+            }
+
+            builder.CloseComponent();
+        };
+    }
+
+    private string GenerateNodeText(CallTreeNode root, CallTreeNode node)
+    {
+        float ratio = node.Count / (float)root.Count;
+        return $"({100 * ratio:0.00}% - {Decorator!.Format(node.Count)}) {node.MethodDescription}";
+    }
+}

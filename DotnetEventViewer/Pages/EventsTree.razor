@@ -10,13 +10,7 @@
 <h1>Events Tree</h1>
 
 <QueryBuilder QueryType="QueryType.Tree" OnQuery="OnQuery" />
-
-@if (_callTree != null)
-{
-    <FluentTreeView>
-        @RenderCallTreeNode(_callTree, _callTreeDecorator!)
-    </FluentTreeView>
-}
+<CallTreeView Tree="_callTree" Decorator="_callTreeDecorator" />
 
 @code {
     private CallTreeNode? _callTree;
@@ -28,45 +22,4 @@
         _callTreeDecorator = queryResult.CallTreeDecorator;
     }
 
-    private static RenderFragment RenderCallTreeNode(CallTreeNode root, ICallTreeNodeDecorator decorator)
-    {
-        return RenderCallTreeNode(root, root, null, decorator);
-    }
-
-    private static RenderFragment RenderCallTreeNode(
-        CallTreeNode root,
-        CallTreeNode node,
-        CallTreeNode? parent,
-        ICallTreeNodeDecorator decorator)
-    {
-        return builder =>
-        {
-            builder.OpenComponent<FluentTreeItem>(0);
-            builder.AddAttribute(1, nameof(FluentTreeItem.Text), GenerateNodeText(root, node, decorator));
-
-            if (node.Children != null)
-            {
-                if (parent?.Children is { Count: 1 })
-                {
-                    builder.AddAttribute(2, nameof(FluentTreeItem.InitiallyExpanded), true);
-                }
-
-                builder.AddAttribute(3, nameof(FluentTreeItem.ChildContent), (RenderFragment)(b =>
-                {
-                    foreach (var child in node.Children.Values.OrderByDescending(n => n.Count))
-                    {
-                        RenderCallTreeNode(root, child, node, decorator)(b);
-                    }
-                }));
-            }
-
-            builder.CloseComponent();
-        };
-    }
-
-    private static string GenerateNodeText(CallTreeNode root, CallTreeNode node, ICallTreeNodeDecorator decorator)
-    {
-        float ratio = node.Count / (float)root.Count;
-        return $"({100 * ratio:0.00}% - {decorator.Format(node.Count)}) {node.MethodDescription}";
-    }
 }
