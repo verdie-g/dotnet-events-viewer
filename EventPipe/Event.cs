@@ -10,7 +10,7 @@ public class Event
     public int SequenceNumber { get; }
     public long CaptureThreadId { get; }
     public long ThreadId { get; }
-    internal int StackIndex { get; }
+    internal int StackIndex { get; set; }
     public long TimeStamp { get; }
     public Guid ActivityId { get; }
     public Guid RelatedActivityId { get; }

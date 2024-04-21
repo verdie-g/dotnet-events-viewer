@@ -171,20 +171,12 @@ public class EventPipeReader(Stream stream)
         // Sort the events because correlation algorithms expect a Stop event to appear after a Start.
         _events.Sort((x, y) => x.TimeStamp.CompareTo(y.TimeStamp));
 
-        var stackTraces = _stackResolver.ResolveAllStackTraces();
-        foreach (var evt in _events)
-        {
-            if (stackTraces.TryGetValue(evt.StackIndex, out var stackTrace))
-            {
-                evt.StackTrace = stackTrace;
-            }
-        }
+        _stackResolver.ResolveEventStackTraces(_events);
 
         return new Trace(
             _traceMetadata!,
             _eventMetadata.Values.ToArray(),
-            _events,
-            stackTraces.Values.ToArray());
+            _events);
     }
 
     private SequencePosition HandleBuffer(in ReadOnlySequence<byte> buffer)

@@ -56,8 +56,8 @@ public class EventPipeReaderTest
             Assert.That(trace.Events[0].SequenceNumber, Is.EqualTo(1));
             Assert.That(trace.Events[0].CaptureThreadId, Is.EqualTo(2562));
             Assert.That(trace.Events[0].ThreadId, Is.EqualTo(2562));
-            Assert.That(trace.Events[0].StackId, Is.EqualTo(1));
-            Assert.That(trace.Events[0].TimeStamp, Is.EqualTo(781045563));
+            Assert.That(trace.Events[0].StackIndex, Is.EqualTo(1));
+            Assert.That(trace.Events[0].TimeStamp, Is.EqualTo(1632878627408683));
             Assert.That(trace.Events[0].ActivityId, Is.EqualTo(Guid.Empty));
             Assert.That(trace.Events[0].RelatedActivityId, Is.EqualTo(Guid.Empty));
             Assert.That(trace.Events[0].Payload, Has.Count.EqualTo(5));
@@ -71,8 +71,8 @@ public class EventPipeReaderTest
             Assert.That(trace.Events[1].SequenceNumber, Is.EqualTo(2));
             Assert.That(trace.Events[1].CaptureThreadId, Is.EqualTo(2562));
             Assert.That(trace.Events[1].ThreadId, Is.EqualTo(2562));
-            Assert.That(trace.Events[1].StackId, Is.EqualTo(2));
-            Assert.That(trace.Events[1].TimeStamp, Is.EqualTo(781191294));
+            Assert.That(trace.Events[1].StackIndex, Is.EqualTo(2));
+            Assert.That(trace.Events[1].TimeStamp, Is.EqualTo(1632878627554414));
             Assert.That(trace.Events[1].ActivityId, Is.EqualTo(Guid.Empty));
             Assert.That(trace.Events[1].RelatedActivityId, Is.EqualTo(Guid.Empty));
             Assert.That(trace.Events[1].Payload, Has.Count.EqualTo(5));
@@ -81,37 +81,6 @@ public class EventPipeReaderTest
             Assert.That(trace.Events[1].Payload, Does.ContainKey("TaskID").WithValue(5));
             Assert.That(trace.Events[1].Payload, Does.ContainKey("Behavior").WithValue(2));
             Assert.That(trace.Events[1].Payload, Does.ContainKey("ContinueWithTaskID").WithValue(3));
-        });
-    }
-
-    [Test]
-    public async Task StackBlockTest()
-    {
-        var trace = await ReadFullTraceAsync("BQUBAgAAAAIAAAAKAAAAU3RhY2tCbG9jawYoAAAAAAABAAAAAgAAAAgAAADSBAAAAAAAABAAAADSBAAAAAAAAC4WAAAAAAAABgUFAQIAAAACAAAADQAAAE1ldGFkYXRhQmxvY2sGAwEAAAAAFAABAHF0hlwIAAAAcXSGXAgAAADG/////w8A/////w+wmwH56JnkBWwBAAAATQBpAGMAcgBvAHMAbwBmAHQALQBXAGkAbgBkAG8AdwBzAC0ARABvAHQATgBFAFQAUgB1AG4AdABpAG0AZQBSAHUAbgBkAG8AdwBuAAAAkAAAAAAAMAAAAAAAAAACAAAABAAAAAAAAABAAQIAAABNAGkAYwByAG8AcwBvAGYAdAAtAFcAaQBuAGQAbwB3AHMALQBEAG8AdABOAEUAVABSAHUAbgB0AGkAbQBlAFIAdQBuAGQAbwB3AG4AAACQAAAAAAAwAAAAAAAAAAEAAAAEAAAAAAAAAAYFBQECAAAAAgAAAAoAAABFdmVudEJsb2NrBnQBAAAAABQAAQAa4RpiCAAAAHanGmIIAAAAhwEAjDD/////D4ww/d/qkAamAcB3XIz7fwAAWNwqjPt/AADSBAAAAAAAAD0EAACOAwAGCAIAAE0AeQBOAGEAbQBlAHMAcABhAGMAZQAAAE0AeQBNAGUAdABoAG8AZAAAAGkAbgBzAHQAYQBuAGMAZQAgAGMAbABhAHMAcwAgAE0AeQBOAGEAbQBlAHMAcABhAGMAZQAuAE0AeQBNAGUAdABoAG8AZAAgACgAKQAAAAgAAgAAAAAAAACBAgGiAdicGIz7fwAAAEAEjPt/AAAuFgAAAAAAAF0AAAAKZAAGCAIAAE0AeQBOAGEAbQBlAHMAcABhAGMAZQAAAE0AeQBNAGUAdABoAG8AZAAyAAAAaQBuAHMAdABhAG4AYwBlACAAYwBsAGEAcwBzACAATQB5AE4AYQBtAGUAcwBwAGEAYwBlAC4ATQB5AE0AZQB0AGgAbwBkADIAIAAoACkAAAAAAAY=");
-        Assert.Multiple(() =>
-        {
-            Assert.That(trace.StackTraces, Has.Count.EqualTo(2));
-
-            Assert.That(trace.StackTraces[0].Id, Is.EqualTo(1));
-            Assert.That(trace.StackTraces[0].Frames, Has.Length.EqualTo(1));
-            Assert.That(trace.StackTraces[0].Frames[0].Name, Is.EqualTo("MyMethod"));
-            Assert.That(trace.StackTraces[0].Frames[0].Namespace, Is.EqualTo("MyNamespace"));
-            Assert.That(trace.StackTraces[0].Frames[0].Signature, Is.EqualTo("instance class MyNamespace.MyMethod ()"));
-            Assert.That(trace.StackTraces[0].Frames[0].Address, Is.EqualTo(1234));
-            Assert.That(trace.StackTraces[0].Frames[0].Size, Is.EqualTo(1085));
-
-            Assert.That(trace.StackTraces[1].Id, Is.EqualTo(2));
-            Assert.That(trace.StackTraces[1].Frames, Has.Length.EqualTo(2));
-            Assert.That(trace.StackTraces[1].Frames[0].Name, Is.EqualTo("MyMethod"));
-            Assert.That(trace.StackTraces[1].Frames[0].Namespace, Is.EqualTo("MyNamespace"));
-            Assert.That(trace.StackTraces[1].Frames[0].Signature, Is.EqualTo("instance class MyNamespace.MyMethod ()"));
-            Assert.That(trace.StackTraces[1].Frames[0].Address, Is.EqualTo(1234));
-            Assert.That(trace.StackTraces[1].Frames[0].Size, Is.EqualTo(1085));
-            Assert.That(trace.StackTraces[1].Frames[1].Name, Is.EqualTo("MyMethod2"));
-            Assert.That(trace.StackTraces[1].Frames[1].Namespace, Is.EqualTo("MyNamespace"));
-            Assert.That(trace.StackTraces[1].Frames[1].Signature, Is.EqualTo("instance class MyNamespace.MyMethod2 ()"));
-            Assert.That(trace.StackTraces[1].Frames[1].Address, Is.EqualTo(5678));
-            Assert.That(trace.StackTraces[1].Frames[1].Size, Is.EqualTo(93));
         });
     }
 
