@@ -60,7 +60,7 @@ public class EventPipeReader(Stream stream)
                     new("ClrInstanceID", TypeCode.UInt16),
                     new("DurationNs", TypeCode.Double),
                 }),
-        [new MetadataKey(RuntimeProvider, 301, 1)] =
+        [new MetadataKey(RuntimeProvider, 301, 0)] =
             new(default, string.Empty, default, "WaitHandleWaitStart", default, default, default,
                 EventOpcode.Start, new EventFieldDefinition[]
                 {
@@ -68,7 +68,7 @@ public class EventPipeReader(Stream stream)
                     new("AssociatedObjectID", TypeCode.UInt64),
                     new("ClrInstanceID", TypeCode.UInt16),
                 }),
-        [new MetadataKey(RuntimeProvider, 302, 1)] =
+        [new MetadataKey(RuntimeProvider, 302, 0)] =
             new(default, string.Empty, default, "WaitHandleWaitStop", default, default, default,
                 EventOpcode.Stop, new EventFieldDefinition[]
                 {
