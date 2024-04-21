@@ -10,7 +10,7 @@ public class Event
     public int SequenceNumber { get; }
     public long CaptureThreadId { get; }
     public long ThreadId { get; }
-    internal int StackId { get; }
+    internal int StackIndex { get; }
     public long TimeStamp { get; }
     public Guid ActivityId { get; }
     public Guid RelatedActivityId { get; }
@@ -18,14 +18,14 @@ public class Event
     public EventMetadata Metadata { get; }
     public StackTrace StackTrace { get; internal set; }
 
-    internal Event(int index, int sequenceNumber, long captureThreadId, long threadId, int stackId, long timeStamp,
+    internal Event(int index, int sequenceNumber, long captureThreadId, long threadId, int stackIndex, long timeStamp,
         Guid activityId, Guid relatedActivityId, Dictionary<string, object> payload, EventMetadata metadata)
     {
         Index = index;
         SequenceNumber = sequenceNumber;
         CaptureThreadId = captureThreadId;
         ThreadId = threadId;
-        StackId = stackId;
+        StackIndex = stackIndex;
         TimeStamp = timeStamp;
         ActivityId = activityId;
         RelatedActivityId = relatedActivityId;

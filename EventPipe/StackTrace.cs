@@ -6,12 +6,13 @@ public class StackTrace
 {
     public static StackTrace Empty { get; } = new(-1, Array.Empty<MethodDescription>());
 
-    public int Id { get; }
+    /// <summary>Uniquely identifies the <see cref="StackTrace"/> in a <see cref="Trace"/>.</summary>
+    public int Index { get; }
     public MethodDescription[] Frames { get; }
 
-    internal StackTrace(int id, MethodDescription[] frames)
+    internal StackTrace(int index, MethodDescription[] frames)
     {
-        Id = id;
+        Index = index;
         Frames = frames;
     }
 

@@ -7,9 +7,9 @@ internal class StackResolver
     private readonly Dictionary<int, ulong[]> _stacksAddresses = [];
     private readonly List<MethodDescription> _methodDescriptions = [];
 
-    public void AddStackAddresses(int stackId, ulong[] addresses)
+    public void AddStackAddresses(int stackIndex, ulong[] addresses)
     {
-        _stacksAddresses[stackId] = addresses;
+        _stacksAddresses[stackIndex] = addresses;
     }
 
     public void AddMethodSymbolInfo(MethodDescription methodDescription)
@@ -40,7 +40,7 @@ internal class StackResolver
     }
 
     private static StackTrace ResolveStackTrace(
-        int stackId,
+        int stackIndex,
         ulong[] addresses,
         ulong[] methodAddresses,
         Dictionary<ulong, MethodDescription> methodDescriptions)
@@ -57,7 +57,7 @@ internal class StackResolver
 
         }
 
-        return new StackTrace(stackId, stackTrace);
+        return new StackTrace(stackIndex, stackTrace);
     }
 
     private static MethodDescription ResolveSymbol(
