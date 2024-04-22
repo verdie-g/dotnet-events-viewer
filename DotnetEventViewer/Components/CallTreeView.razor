@@ -36,42 +36,31 @@
 
     private void OnNodeExpanded(CallTreeNode node, bool expanded)
     {
-        Console.WriteLine($"Expanded {node.Id} {expanded}");
         if (expanded)
         {
-            Console.WriteLine($"Remove {node.Id}");
             _treeRenderedLeafIds.Remove(node.Id);
             _expandedNodes.Add(node.Id);
-            if (node.Children is { Count: > 1 })
+
+            var n = node;
+            while (n.Children is { Count: 1 })
             {
-                foreach (var child in node.Children!)
+                n = n.Children.First().Value;
+                _expandedNodes.Add(n.Id);
+            }
+
+            if (n.Children != null)
+            {
+                foreach (var child in n.Children!)
                 {
-                    Console.WriteLine($"Add {child.Value.Id}");
                     _treeRenderedLeafIds.Add(child.Value.Id);
                 }
-            }
-            else if (node.Children is { Count: 1 })
-            {
-                var n = node;
-                while (n.Children is { Count: 1 } || (n.Children is { Count: > 1} && _expandedNodes.Contains(n.Id)))
-                {
-                    n = n.Children.First().Value;
-                    Console.WriteLine($"Expanding {n.Id}");
-                    _expandedNodes.Add(n.Id);
-                }
-
-                Console.WriteLine($"Add {n.Id}");
-                _treeRenderedLeafIds.Add(n.Id);
             }
         }
         else
         {
-            Console.WriteLine($"Add {node.Id}");
             _expandedNodes.Remove(node.Id);
             _treeRenderedLeafIds.Add(node.Id);
         }
-
-        Console.WriteLine($"Nodes: {string.Join(", ", _treeRenderedLeafIds)}");
     }
 
     private RenderFragment RenderCallTreeNode(CallTreeNode node, CallTreeNode? parent = null, bool renderChildren = true)
@@ -81,10 +70,8 @@
             // Render at least a single child so the expand button is available.
             bool renderFirstChildOnly = _treeRenderedLeafIds.Contains(node.Id);
             bool expandNode = _expandedNodes.Contains(node.Id) && !renderFirstChildOnly;
-            Console.WriteLine($"Render {node.Id}" + (expandNode ? " expanded" : "") + (renderChildren ? (renderFirstChildOnly ? " render first child" : "") : " no render children"));
             builder.OpenComponent<FluentTreeItem>(0);
             builder.AddAttribute(1, nameof(FluentTreeItem.Text), GenerateNodeText(_tree!, node));
-            // builder.AddAttribute(1, nameof(FluentTreeItem.Text), node.Id.ToString());
             EventCallback<bool> expandedChanged = new EventCallback<bool>(this, (bool e) => OnNodeExpanded(node, e));
             builder.AddAttribute(2, nameof(FluentTreeItem.ExpandedChanged), expandedChanged);
             builder.AddAttribute(3, nameof(FluentTreeItem.Expanded), expandNode);
