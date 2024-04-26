@@ -502,7 +502,8 @@ public class EventPipeReader(Stream stream)
                 var payload = ReadEventPayload(ref reader, metadata);
 
                 int stackIndex = _stackIndexOffset + stackId;
-                Event evt = new(_events.Count, sequenceNumber, captureThreadId, threadId, stackIndex, timeStamp,
+                long timeStampRelativeNs = ConvertQpcToRelativeNs(timeStamp);
+                Event evt = new(_events.Count, sequenceNumber, captureThreadId, threadId, stackIndex, timeStampRelativeNs,
                     activityId, relatedActivityId, payload, metadata);
                 _events.Add(evt);
 
@@ -717,6 +718,17 @@ public class EventPipeReader(Stream stream)
                 }
             }
         }
+    }
+
+    private long ConvertQpcToRelativeNs(long timeStamp)
+    {
+        var traceMetadata = _traceMetadata;
+        if (traceMetadata == null)
+        {
+            return 0;
+        }
+
+        return 1_000_000_000 * (timeStamp - traceMetadata.QueryPerformanceCounterSyncTime) / traceMetadata.QueryPerformanceCounterFrequency;
     }
 
     private void ReadSequencePointBlock(ref FastSerializerSequenceReader reader)
