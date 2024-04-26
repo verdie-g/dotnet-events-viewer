@@ -77,9 +77,12 @@
             processInfoEvent = trace.Events.First(e => e.Metadata.EventId == processInfoEventId);
         }
 
+        // The events are sorted by timestamp so the duration is the timestamp of the last event.
+        var duration = TimeSpan.FromTicks(trace.Events[^1].TimeStamp / TimeSpan.NanosecondsPerTick);
+
         string commandLine = (string)processInfoEvent.Payload["CommandLine"];
         string osFamily = (string)processInfoEvent.Payload["OSInformation"];
-        return new TraceExtraMetadata(filename, commandLine, osFamily);
+        return new TraceExtraMetadata(filename, commandLine, osFamily, duration);
     }
 
     private Query CreateInitialQuery(Trace trace)
