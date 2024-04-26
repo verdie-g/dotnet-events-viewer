@@ -8,5 +8,5 @@ internal class NotEqualOperator : IOperator
 
     public string Text => "≠";
     public bool IsCompatible(TypeCode code) => code != TypeCodeExtensions.Array;
-    public bool Match(object evtFieldValue, object filterValue) => !evtFieldValue.Equals(filterValue);
+    public bool Match(object? evtFieldValue, object filterValue) => !Equals(evtFieldValue, filterValue);
 }

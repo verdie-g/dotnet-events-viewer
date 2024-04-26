@@ -7,5 +7,5 @@ internal interface IOperator
 
     public bool IsCompatible(TypeCode code);
 
-    public bool Match(object evtFieldValue, object filterValue);
+    public bool Match(object? evtFieldValue, object filterValue);
 }

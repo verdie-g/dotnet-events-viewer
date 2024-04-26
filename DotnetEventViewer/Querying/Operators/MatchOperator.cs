@@ -9,5 +9,9 @@ internal class MatchOperator : IOperator
 
     public string Text => "≃";
     public bool IsCompatible(TypeCode code) => code != TypeCodeExtensions.Array;
-    public bool Match(object evtFieldValue, object filterValue) => ((Regex)filterValue).IsMatch(evtFieldValue.ToString()!);
+    public bool Match(object? evtFieldValue, object filterValue)
+    {
+        string? evtFieldValueStr = evtFieldValue?.ToString();
+        return evtFieldValueStr != null && ((Regex)filterValue).IsMatch(evtFieldValueStr);
+    }
 }
