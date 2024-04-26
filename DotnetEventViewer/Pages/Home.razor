@@ -94,7 +94,10 @@
 
         return new Query
         {
-            Filters = [new Filter(Field.EventNameField, EqualOperator.Instance, metadata.EventName)],
+            Filters = [new Filter(Field.EventNameField, OneOfOperator.Instance, metadata.EventName)
+            {
+                ParsedValue = new[] { metadata.EventName },
+            }],
         };
     }
 }

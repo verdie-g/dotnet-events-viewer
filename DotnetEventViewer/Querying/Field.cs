@@ -11,7 +11,7 @@ public class Field(string name, TypeCode type, Func<Event, object?> selector)
     public static readonly Field RelatedActivityIdField = new(nameof(Event.RelatedActivityId), TypeCodeExtensions.Guid, e => e.RelatedActivityId);
     public static readonly Field EventNameField = new(nameof(EventMetadata.EventName), TypeCode.String, e => e.Metadata.EventName);
 
-    public static readonly Field[] StaticEventFieldSelectors =
+    public static readonly Field[] StaticEventField =
     [
         CaptureThreadIdField,
         ThreadIdField,
