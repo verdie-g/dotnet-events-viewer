@@ -2,7 +2,7 @@ using EventPipe;
 
 namespace DotnetEventViewer.Querying;
 
-public class Field(string name, TypeCode type, Func<Event, object?> selector)
+public class Field(string name, TypeCode type, Func<Event, object?> selector, EventMetadata? associatedEventMetadata = null)
 {
     public static readonly Field CaptureThreadIdField = new(nameof(Event.CaptureThreadId), TypeCode.Int64, e => e.CaptureThreadId);
     public static readonly Field ThreadIdField = new(nameof(Event.ThreadId), TypeCode.Int64, e => e.ThreadId);
@@ -21,15 +21,17 @@ public class Field(string name, TypeCode type, Func<Event, object?> selector)
         EventNameField,
     ];
 
-    public static Field FromPayloadFieldDefinition(EventFieldDefinition fieldDefinition)
+    public static Field FromPayloadFieldDefinition(EventFieldDefinition fieldDefinition, EventMetadata eventMetadata)
     {
         return new Field(
             fieldDefinition.Name,
             fieldDefinition.TypeCode,
-            e => e.Payload.GetValueOrDefault(fieldDefinition.Name));
+            e => e.Payload.GetValueOrDefault(fieldDefinition.Name),
+            eventMetadata);
     }
 
     public string Name { get; } = name;
     public TypeCode Type { get; } = type;
     public Func<Event, object?> Selector { get; } = selector;
+    public EventMetadata? AssociatedEventMetadata { get; } = associatedEventMetadata;
 }

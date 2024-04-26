@@ -19,7 +19,8 @@
                     <FluentCombobox TOption="Field"
                                     Width="200px"
                                     Placeholder="Select the field to filter on"
-                                    Items="@_allFields"
+                                    Items="GetFields(Query.Filters[idx])"
+                                    OptionDisabled="f => IsFieldDisabled(f, Query.Filters[idx])"
                                     Autocomplete="ComboboxAutocomplete.Both"
                                     OptionText="@(f => f.Name)"
                                     @bind-SelectedOption="Query.Filters[idx].Field"
@@ -119,7 +120,6 @@
     ];
 
     private Field[] _allFields = [];
-    private Filter? _lastRemovedFilter;
     private IEnumerable<Field>? _selectedColumnFields;
     private ICallTreeNodeDecorator? _selectedDecorator;
     private EditContext _editContext = default!;
@@ -151,19 +151,17 @@
     private IEnumerable<Field> EnumerateDynamicFieldSelectors(Trace trace)
     {
         return trace.EventMetadata
-            .SelectMany(m => m.FieldDefinitions.Select(Field.FromPayloadFieldDefinition))
+            .SelectMany(m => m.FieldDefinitions.Select(d => Field.FromPayloadFieldDefinition(d, m)))
             .DistinctBy(s => s.Name);
     }
 
     private void OnAddFilter()
     {
-        var lastFilter = _lastRemovedFilter ?? Query.Filters[^1];
-        Query.Filters.Add(new Filter(lastFilter.Field, lastFilter.Operator, lastFilter.Value));
+        Query.Filters.Add(new Filter(Field.ThreadIdField, EqualOperator.Instance, ""));
     }
 
     private void OnRemoveFilter(int idx)
     {
-        _lastRemovedFilter = Query.Filters[idx];
         Query.Filters.RemoveAt(idx);
     }
 
@@ -175,9 +173,57 @@
             .Where(n => n.Length != 0 && n.Contains(e.Text, StringComparison.OrdinalIgnoreCase));
     }
 
+    private IEnumerable<Field> GetFields(Filter forFilter)
+    {
+        if (forFilter.Field == Field.EventNameField)
+        {
+            return _allFields;
+        }
+
+        var eventNames = GetFilteredEventNames();
+        if (eventNames == null || eventNames.Length == 0)
+        {
+            return _allFields;
+        }
+
+        return _allFields.Where(f => f.AssociatedEventMetadata == null
+            || eventNames.Contains(f.AssociatedEventMetadata.EventName)).ToArray();
+    }
+
+    private bool IsFieldDisabled(Field field, Filter forFilter)
+    {
+        if (forFilter.Field == Field.EventNameField)
+        {
+            return false;
+        }
+
+        if (field == Field.EventNameField)
+        {
+            return GetFilteredEventNames() != null;
+        }
+
+        return false;
+    }
+
+    private string[]? GetFilteredEventNames()
+    {
+        var filter = Query.Filters.FirstOrDefault(f => f.Field == Field.EventNameField);
+        return (string[]?)filter?.ParsedValue;
+    }
+
     private void OnColumnFieldSearch(OptionsSearchEventArgs<Field> e)
     {
-        e.Items = _allFields.Where(s => s.Name.Contains(e.Text, StringComparison.OrdinalIgnoreCase));
+        var eventNames = GetFilteredEventNames();
+        if (eventNames == null || eventNames.Length == 0)
+        {
+            e.Items = _allFields.Where(f => f.Name.Contains(e.Text, StringComparison.OrdinalIgnoreCase));
+        }
+        else
+        {
+            e.Items = _allFields.Where(f =>
+                (f.AssociatedEventMetadata == null || eventNames.Contains(f.AssociatedEventMetadata.EventName))
+                && f.Name.Contains(e.Text, StringComparison.OrdinalIgnoreCase));
+        }
     }
 
     private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
