@@ -59,22 +59,24 @@
 
     private TraceExtraMetadata CreateTraceExtraMetadata(string filename, Trace trace)
     {
+        const string processInfoProviderName = "Microsoft-DotNETCore-EventPipe";
         const int processInfoEventId = 1;
 
         // Find ProcessInfo event by first looking at the first and last event which are the most common cases. Otherwise,
         // iterate over all the events to find it.
         Event processInfoEvent;
-        if (trace.Events[0].Metadata.EventId == processInfoEventId)
+        if (trace.Events[0].Metadata is { EventId: processInfoEventId, ProviderName: processInfoProviderName })
         {
             processInfoEvent = trace.Events[0];
         }
-        else if (trace.Events[^1].Metadata.EventId == processInfoEventId)
+        else if (trace.Events[^1].Metadata is { EventId: processInfoEventId, ProviderName: processInfoProviderName })
         {
             processInfoEvent = trace.Events[^1];
         }
         else
         {
-            processInfoEvent = trace.Events.First(e => e.Metadata.EventId == processInfoEventId);
+            processInfoEvent = trace.Events.First(e =>
+                e.Metadata is { EventId: processInfoEventId, ProviderName: processInfoProviderName });
         }
 
         // The events are sorted by timestamp so the duration is the timestamp of the last event.
