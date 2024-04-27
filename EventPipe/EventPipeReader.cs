@@ -492,23 +492,25 @@ public class EventPipeReader(Stream stream)
             var metadata = _eventMetadata[metadataId];
 
             // Some events (e.g. from Microsoft-Windows-DotNETRuntimeRundown) don't define any fields but still have
-            // a payload. Skip them.
+            // a payload.
+            Dictionary<string, object> payload;
             if (metadata.FieldDefinitions.Count == 0)
             {
                 reader.Advance(payloadEndPosition - reader.AbsolutePosition);
+                payload = new Dictionary<string, object>();
             }
             else
             {
-                var payload = ReadEventPayload(ref reader, metadata);
-
-                int stackIndex = _stackIndexOffset + stackId;
-                long timeStampRelativeNs = ConvertQpcToRelativeNs(timeStamp);
-                Event evt = new(_events.Count, sequenceNumber, captureThreadId, threadId, stackIndex, timeStampRelativeNs,
-                    activityId, relatedActivityId, payload, metadata);
-                _events.Add(evt);
-
-                HandleSpecialEvent(evt);
+                payload = ReadEventPayload(ref reader, metadata);
             }
+
+            int stackIndex = _stackIndexOffset + stackId;
+            long timeStampRelativeNs = ConvertQpcToRelativeNs(timeStamp);
+            Event evt = new(_events.Count, sequenceNumber, captureThreadId, threadId, stackIndex, timeStampRelativeNs,
+                activityId, relatedActivityId, payload, metadata);
+            _events.Add(evt);
+
+            HandleSpecialEvent(evt);
         }
 
         Debug.Assert(reader.AbsolutePosition == payloadEndPosition,
@@ -573,6 +575,12 @@ public class EventPipeReader(Stream stream)
             eventName = knownMetadata.EventName;
             opCode = knownMetadata.OpCode;
             fieldDefinitions = knownMetadata.FieldDefinitions;
+        }
+
+        // If the metadata is neither complete nor hardcoded.
+        if (eventName.Length == 0)
+        {
+            eventName = $"Event {eventId}";
         }
 
         return new EventMetadata(metadataId, providerName, eventId, eventName, (EventKeywords)keywords,
