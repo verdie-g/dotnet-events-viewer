@@ -1,0 +1,36 @@
+name: Deploy to GitHub Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install WASM tools
+      run: dotnet workload install wasm-tools
+  
+    - name: Publish
+      run: dotnet publish DotnetEventViewer --configuration Release -o publish
+
+    - name: Change base href
+      run: sed -i 's/<base href="\/" \/>/<base href="\/dotnet-event-viewer\/" \/>/g' publish/wwwroot/index.html
+ 
+    - name: Setup GitHub Pages
+      uses: actions/configure-pages@v5
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: publish/wwwroot
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
