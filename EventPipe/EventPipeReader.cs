@@ -736,7 +736,9 @@ public class EventPipeReader(Stream stream)
             return 0;
         }
 
-        return 1_000_000_000 * (timeStamp - traceMetadata.QueryPerformanceCounterSyncTime) / traceMetadata.QueryPerformanceCounterFrequency;
+        return (long)((timeStamp - traceMetadata.QueryPerformanceCounterSyncTime)
+            / (double)traceMetadata.QueryPerformanceCounterFrequency
+            * 1_000_000_000);
     }
 
     private void ReadSequencePointBlock(ref FastSerializerSequenceReader reader)
