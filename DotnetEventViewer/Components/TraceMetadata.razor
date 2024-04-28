@@ -15,7 +15,7 @@
     <Header>@(State.TraceExtraMetadata.Filename)</Header>
     <Body>
         <ul>
-            <li>Date: @(State.Trace.Metadata.Date)</li>
+            <li>Date: @(State.Trace.Metadata.Date.ToString("yyyy/MM/dd hh:mm"))</li>
             <li>Duration: @Duration</li>
             <li>CPUs: @(State.Trace.Metadata.NumberOfProcessors)</li>
             <li>OS: @(State.TraceExtraMetadata.OsFamily) @(State.Trace.Metadata.PointerSize == 8 ? "x64" : "x32")</li>
