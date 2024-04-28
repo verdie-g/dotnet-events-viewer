@@ -12,6 +12,19 @@
 
 <PageTitle>Home</PageTitle>
 
+<h1>.NET Event Viewer</h1>
+
+<p>
+    This project is a modern <a href="https://github.com/microsoft/perfview" target="_blank">PerfView</a> alternative to
+    analysis nettrace files collected from the .NET runtime's <a href="https://learn.microsoft.com/en-us/dotnet/core/diagnostics/eventpipe" target="_blank">EventPipe</a>
+    or through the tool <a href="https://learn.microsoft.com/en-us/dotnet/core/diagnostics/dotnet-trace" target="_blank">dotnet-trace</a>.
+</p>
+
+<p>
+    This analysis tool is compiled to WebAssembly, ensuring that everything runs within your browser, and trace files
+    remain confined to it. You can check out the code on <a href="https://github.com/verdie-g/dotnet-event-viewer" target="_blank">GitHub</a>.
+</p>
+
 <FluentInputFile Id="input-nettrace-file"
                  Mode="InputFileMode.Stream"
                  MaximumFileCount="1"
