@@ -12,7 +12,7 @@ public class CorruptedBlockException : Exception
         }
     }
 
-    private CorruptedBlockException(string message, long position)
+    internal CorruptedBlockException(string message, long position)
         : base(message + " at position " + position)
     {
         Position = position;

@@ -220,7 +220,7 @@ public class EventPipeReader(Stream stream)
 
         if (!magicBytes.SequenceEqual(MagicBytes))
         {
-            throw new Exception("Stream is not in the event pipe format");
+            throw new InvalidNetTraceFileException("Stream is not in the event pipe format");
         }
 
         if (!reader.TryReadString(out var serializerSignatureSeq))
@@ -233,7 +233,7 @@ public class EventPipeReader(Stream stream)
 
         if (!serializerSignature.SequenceEqual(SerializerSignature))
         {
-            throw new Exception("Unexpected serializer signature");
+            throw new InvalidNetTraceFileException("Unexpected serializer signature");
         }
 
         return true;
@@ -350,8 +350,10 @@ public class EventPipeReader(Stream stream)
                 break;
         }
 
-        Debug.Assert(reader.AbsolutePosition == blockEndPosition,
-            $"{serializationType.Name} end was not reached (expected: {blockEndPosition}, actual: {reader.AbsolutePosition})");
+        if (reader.AbsolutePosition != blockEndPosition)
+        {
+            throw new CorruptedBlockException($"{serializationType.Name} end was not reached", reader.AbsolutePosition);
+        }
 
         return true;
     }
@@ -408,19 +410,7 @@ public class EventPipeReader(Stream stream)
 
     private void ReadUncompressedEventBlob(ref FastSerializerSequenceReader reader)
     {
-        Debug.Assert(false, "uncompressed");
-        int eventSize = reader.ReadInt32();
-        int metadataId = reader.ReadInt32();
-        int sequenceNumber = reader.ReadInt32();
-        long threadId = reader.ReadInt64();
-        long captureThreadId = reader.ReadInt64();
-        int processorNumber = reader.ReadInt32();
-        int stackId = reader.ReadInt32();
-        long timeStamp = reader.ReadInt64();
-        Guid activityId = reader.ReadGuid();
-        int payloadSize = reader.ReadInt32();
-        var payloadSeq = reader.ReadBytes(payloadSize);
-        ReadPadding(ref reader);
+        throw new NotImplementedException();
     }
 
     private void ReadCompressedEventBlob(ref FastSerializerSequenceReader reader,
@@ -513,8 +503,10 @@ public class EventPipeReader(Stream stream)
             HandleSpecialEvent(evt);
         }
 
-        Debug.Assert(reader.AbsolutePosition == payloadEndPosition,
-            $"Event blob payload end was not reached (expected: {payloadEndPosition}, actual: {reader.AbsolutePosition})");
+        if (reader.AbsolutePosition != payloadEndPosition)
+        {
+            throw new CorruptedBlockException("Event blob payload end was not reached", reader.AbsolutePosition);
+        }
 
         state.PreviousMetadataId = metadataId;
         state.PreviousSequenceNumber = sequenceNumber;
@@ -558,14 +550,22 @@ public class EventPipeReader(Stream stream)
             }
             else if (tag == EventMetadataTag.ParameterPayload)
             {
-                Debug.Assert(fieldDefinitions.Count == 0,
-                    "No V2 field definitions are expected after V1 field definitions");
+                if (fieldDefinitions.Count == 0)
+                {
+                    throw new CorruptedBlockException(
+                        "No V2 field definitions are expected after V1 field definitions",
+                        reader.AbsolutePosition);
+                }
 
                 fieldDefinitions = ReadFieldDefinitions(ref reader, EventFieldDefinitionVersion.V2);
             }
 
-            Debug.Assert(reader.AbsolutePosition == tagPayloadEndPosition,
-                $"Event metadata tag end was not reached (expected: {tagPayloadEndPosition}, actual: {reader.AbsolutePosition})");
+            if (reader.AbsolutePosition != tagPayloadEndPosition)
+            {
+                throw new CorruptedBlockException(
+                    "Event metadata tag end was not reached",
+                    reader.AbsolutePosition);
+            }
         }
 
         // Some Microsoft-Windows-DotNETRuntimeRundown events are needed to resolve stack symbols but for some reason
