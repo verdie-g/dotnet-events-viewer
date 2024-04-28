@@ -4,8 +4,11 @@
 @using DotnetEventViewer.CallTree.Decorators
 @using DotnetEventViewer.Components
 @using DotnetEventViewer.Querying
+@using DotnetEventViewer.State
 
-<PageTitle>Events Tree</PageTitle>
+@inject StateContainer State
+
+<PageTitle>@State.TraceExtraMetadata!.Filename | Events Tree</PageTitle>
 
 <h1>Events Tree</h1>
 

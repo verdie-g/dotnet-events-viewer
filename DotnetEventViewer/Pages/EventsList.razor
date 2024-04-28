@@ -3,8 +3,11 @@
 @using EventPipe
 @using DotnetEventViewer.Components
 @using DotnetEventViewer.Querying
+@using DotnetEventViewer.State
 
-<PageTitle>Events List</PageTitle>
+@inject StateContainer State
+
+<PageTitle>@State.TraceExtraMetadata!.Filename | Events List</PageTitle>
 
 <h1>Events List</h1>
 
