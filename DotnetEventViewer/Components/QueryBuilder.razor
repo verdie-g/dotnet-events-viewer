@@ -71,6 +71,15 @@
                               Items="AllDecorators"
                               OptionText="@(d => d.Name)"
                               @bind-SelectedOption="Query.SelectedDecorator"/>
+                <FluentCheckbox
+                    Id="tp-stacks-only"
+                    Label="Thread Pool Stacks Only"
+                    Style="margin-top: 6px"
+                    @bind-Value="Query.ThreadPoolStacksOnly" />
+                <FluentTooltip Anchor="tp-stacks-only">
+                    Tries to filter out events that occured on a non-threadpool thread. Useful to investigate thread
+                    pool starvation. This option is not 100% accurate.
+                </FluentTooltip>
             }
             <FluentButton Type="ButtonType.Submit"
                           Appearance="Appearance.Accent"
@@ -284,7 +293,8 @@
 
     private bool FilterEvent(Event evt, Query query)
     {
-        if (query.EventNames.Length != 0 && Array.IndexOf(query.EventNames, evt.Metadata.EventName) == -1)
+        if (query.EventNames.Length != 0
+            && Array.IndexOf(query.EventNames, evt.Metadata.EventName) == -1)
         {
             return false;
         }
@@ -293,6 +303,16 @@
         {
             var operand = filter.Field.Selector(evt);
             if (!filter.Operator.Match(operand, filter.ParsedValue))
+            {
+                return false;
+            }
+        }
+
+        if (Query.ThreadPoolStacksOnly)
+        {
+            var frames = evt.StackTrace.Frames;
+            if (frames.Length == 0
+                || (frames[^1].Namespace == "System.Threading.Thread" && frames[^1].Name == "StartCallback"))
             {
                 return false;
             }

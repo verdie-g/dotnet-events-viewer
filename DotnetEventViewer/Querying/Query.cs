@@ -8,4 +8,5 @@ internal class Query
     public Filter[] Filters { get; set; } = [];
     public IEnumerable<Field>? SelectedColumnFields { get; set; }
     public ICallTreeNodeDecorator? SelectedDecorator { get; set; }
+    public bool ThreadPoolStacksOnly { get; set; }
 }
