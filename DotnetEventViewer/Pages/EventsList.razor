@@ -6,6 +6,7 @@
 @using DotnetEventViewer.State
 
 @inject StateContainer State
+@inject IDialogService DialogService;
 
 <PageTitle>@State.TraceExtraMetadata!.Filename | Events List</PageTitle>
 
@@ -16,10 +17,12 @@
 @if (_events != null)
 {
     <FluentDataGrid
+        TGridItem="Event"
         Items="@_events"
         ItemKey="@(e => e.Index)"
         Virtualize="true"
         ResizableColumns="true"
+        OnRowFocus="OnRowFocus"
         ItemSize="32">
         <ChildContent>
             @foreach (var f in _columnFields!)
@@ -42,4 +45,19 @@
         _events = queryResult.FilteredEvents.AsQueryable();
         _columnFields = queryResult.ColumnFields;
     }
+
+    private async Task OnRowFocus(FluentDataGridRow<Event> eventRow)
+    {
+        var evt = eventRow.Item!;
+        await DialogService.ShowPanelAsync<EventDialogContent>(evt, new DialogParameters<Event>
+        {
+            Content = evt,
+            Alignment = HorizontalAlignment.Right,
+            Width = "600px",
+            Title = $"{evt.Metadata.EventName} {evt.Index}",
+            PrimaryAction = null,
+            SecondaryAction = null,
+        });
+    }
+
 }

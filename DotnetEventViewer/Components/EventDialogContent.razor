@@ -1,0 +1,47 @@
+@using EventPipe
+
+@implements IDialogContentComponent<Event>
+
+<FluentDialogBody>
+    <p>
+        Capture Thread: @Content.CaptureThreadId<br />
+        Thread: @Content.ThreadId<br />
+        TimeStamp: @Content.TimeStamp<br />
+        Activity: @Content.ActivityId<br />
+        Related Activity: @Content.RelatedActivityId<br />
+        Payload:
+    </p>
+    <ul>
+        @foreach (var field in Content.Payload)
+        {
+            <li>@field.Key: @field.Value</li>
+        }
+    </ul>
+    <p>Stack Trace:</p>
+    <pre>
+        <code>
+        @foreach (var frame in Content.StackTrace.Frames)
+        {
+            @:0x@(frame.Address.ToString("X")) @(frame.ToString())@(Environment.NewLine)
+        }
+        </code>
+    </pre>
+</FluentDialogBody>
+
+@code
+{
+    [Parameter]
+    public Event Content { get; set; } = null!;
+    /*
+     *
+    public long CaptureThreadId { get; }
+    public long ThreadId { get; }
+    internal int StackIndex { get; set; }
+    public long TimeStamp { get; }
+    public Guid ActivityId { get; }
+    public Guid RelatedActivityId { get; }
+    public Dictionary<string, object> Payload { get; }
+    public EventMetadata Metadata { get; }
+    public StackTrace StackTrace { get; internal set; }
+     */
+}
