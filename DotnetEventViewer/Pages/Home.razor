@@ -65,7 +65,7 @@
         }));
         StateContainer.Trace = await reader.ReadFullTraceAsync();
         StateContainer.TraceExtraMetadata = CreateTraceExtraMetadata(inputFile.Name, StateContainer.Trace);
-        StateContainer.Query = CreateInitialQuery(StateContainer.Trace);
+        StateContainer.Query = new Query();
 
         NavigationManager.NavigateTo("list");
     }
@@ -101,24 +101,5 @@
         var duration = TimeSpan.FromTicks(trace.Events[^1].TimeStamp / TimeSpan.NanosecondsPerTick);
 
         return new TraceExtraMetadata(filename, commandLine, osFamily, runtimeVersion, duration);
-    }
-
-    private Query CreateInitialQuery(Trace trace)
-    {
-        var metadata = trace.EventMetadata.FirstOrDefault(m =>
-            m.ProviderName != "Microsoft-Windows-DotNETRuntimeRundown"
-            && m.EventName.Length != 0);
-        if (metadata == null)
-        {
-            return new Query { Filters = [] };
-        }
-
-        return new Query
-        {
-            Filters = [new Filter(Field.EventNameField, OneOfOperator.Instance, metadata.EventName)
-            {
-                ParsedValue = new[] { metadata.EventName },
-            }],
-        };
     }
 }

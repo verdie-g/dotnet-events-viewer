@@ -11,7 +11,16 @@
 <EditForm EditContext="_editContext" OnValidSubmit="@HandleValidSubmit" FormName="query-builder" novalidate>
     <FluentStack Orientation="Orientation.Vertical">
 
-        @for (int i = 0; i < Query.Filters.Count; i += 1)
+        <FluentAutocomplete TOption="string"
+                            AutoComplete="off"
+                            Placeholder="Select event names"
+                            OnOptionsSearch="@OnEventNameSearch"
+                            MaximumSelectedOptions="3"
+                            @bind-SelectedOptions:get="Query.EventNames"
+                            @bind-SelectedOptions:set="(IEnumerable<string>? v) => Query.EventNames = v!.ToArray()"
+                            Width="521px" />
+
+        @for (int i = 0; i < Query.Filters.Length; i += 1)
         {
             int idx = i;
             <div>
@@ -20,42 +29,23 @@
                                     Width="200px"
                                     Placeholder="Select the field to filter on"
                                     Items="GetFields(Query.Filters[idx])"
-                                    OptionDisabled="f => IsFieldDisabled(f, Query.Filters[idx])"
                                     Autocomplete="ComboboxAutocomplete.Both"
                                     OptionText="@(f => f.Name)"
                                     @bind-SelectedOption="Query.Filters[idx].Field"
-                                    Required />
-                    @if (Query.Filters[idx].Field == Field.EventNameField)
-                    {
-                        <FluentSelect TOption="IOperator"
-                                      Width="100px"
-                                      Items="@([OneOfOperator.Instance])"
-                                      OptionText="@(o => o.Text)"
-                                      @bind-SelectedOption="Query.Filters[idx].Operator"/>
-                        <FluentAutocomplete TOption="string"
-                                            AutoComplete="off"
-                                            Placeholder="Select event names"
-                                            OnOptionsSearch="@OnEventNameSearch"
-                                            MaximumSelectedOptions="3"
-                                            @bind-SelectedOptions:get="@((string[])Query.Filters[idx].ParsedValue)"
-                                            @bind-SelectedOptions:set="(IEnumerable<string>? v) => Query.Filters[idx].ParsedValue = v?.ToArray() ?? []" />
-                    }
-                    else
-                    {
-                        <FluentSelect TOption="IOperator"
-                                      Width="100px"
-                                      Items="AllOperators"
-                                      OptionText="@(o => o.Text)"
-                                      @bind-SelectedOption="Query.Filters[idx].Operator"/>
-                        <FluentTextField @bind-Value="Query.Filters[idx].Value"
-                                         Minlength="1"
-                                         Required />
-                    }
+                                    Required/>
+                    <FluentSelect TOption="IOperator"
+                                  Width="80px"
+                                  Items="AllOperators"
+                                  OptionText="@(o => o.Text)"
+                                  @bind-SelectedOption="Query.Filters[idx].Operator"/>
+                    <FluentTextField @bind-Value="Query.Filters[idx].Value"
+                                     Minlength="1"
+                                     Required/>
                     <FluentButton Title="Remove filter"
                                   IconStart="@(new Icons.Regular.Size24.Dismiss())"
-                                  OnClick="_ => OnRemoveFilter(idx)" />
+                                  OnClick="_ => OnRemoveFilter(idx)"/>
                 </FluentStack>
-                <FluentValidationMessage For="() => Query.Filters[idx]" />
+                <FluentValidationMessage For="() => Query.Filters[idx]"/>
             </div>
         }
 
@@ -73,14 +63,14 @@
                                     OnOptionsSearch="@OnColumnFieldSearch"
                                     MaximumSelectedOptions="6"
                                     OptionText="@(f => f.Name)"
-                                    @bind-SelectedOptions="_selectedColumnFields" />
+                                    @bind-SelectedOptions="Query.SelectedColumnFields"/>
             }
             else if (QueryType == QueryType.Tree)
             {
                 <FluentSelect TOption="ICallTreeNodeDecorator"
                               Items="AllDecorators"
                               OptionText="@(d => d.Name)"
-                              @bind-SelectedOption="_selectedDecorator" />
+                              @bind-SelectedOption="Query.SelectedDecorator"/>
             }
             <FluentButton Type="ButtonType.Submit"
                           Appearance="Appearance.Accent"
@@ -103,7 +93,6 @@
         GreaterOrEqualOperator.Instance,
         MatchOperator.Instance,
         NotMatchOperator.Instance,
-        OneOfOperator.Instance,
     ];
 
     private static readonly Field[] DefaultColumnFields =
@@ -120,8 +109,6 @@
     ];
 
     private Field[] _allFields = [];
-    private IEnumerable<Field>? _selectedColumnFields;
-    private ICallTreeNodeDecorator? _selectedDecorator;
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
 
@@ -140,9 +127,9 @@
             .Concat(EnumerateDynamicFieldSelectors(State.Trace!))
             .OrderBy(s => s.Name)
             .ToArray();
-        _selectedColumnFields = DefaultColumnFields;
-        _selectedDecorator = EventsCountDecorator.Instance;
         Query = State.Query!;
+        Query.SelectedColumnFields ??= DefaultColumnFields;
+        Query.SelectedDecorator ??= EventsCountDecorator.Instance;
         _editContext = new EditContext(Query);
         _editContext.OnValidationRequested += OnValidationRequested;
         _messageStore = new ValidationMessageStore(_editContext);
@@ -157,12 +144,17 @@
 
     private void OnAddFilter()
     {
-        Query.Filters.Add(new Filter(Field.ThreadIdField, EqualOperator.Instance, ""));
+        var newFilters = new Filter[Query.Filters.Length + 1];
+        Array.Copy(Query.Filters, newFilters, Query.Filters.Length);
+        newFilters[^1] = new Filter(Field.ThreadIdField, EqualOperator.Instance, "");
+        Query.Filters = newFilters;
     }
 
     private void OnRemoveFilter(int idx)
     {
-        Query.Filters.RemoveAt(idx);
+        var newFilters = new Filter[Query.Filters.Length - 1];
+        Array.Copy(Query.Filters, newFilters, newFilters.Length);
+        Query.Filters = newFilters;
     }
 
     private void OnEventNameSearch(OptionsSearchEventArgs<string> e)
@@ -175,53 +167,25 @@
 
     private IEnumerable<Field> GetFields(Filter forFilter)
     {
-        if (forFilter.Field == Field.EventNameField)
-        {
-            return _allFields;
-        }
-
-        var eventNames = GetFilteredEventNames();
-        if (eventNames == null || eventNames.Length == 0)
+        if (Query.EventNames.Length == 0)
         {
             return _allFields;
         }
 
         return _allFields.Where(f => f.AssociatedEventMetadata == null
-            || eventNames.Contains(f.AssociatedEventMetadata.EventName)).ToArray();
-    }
-
-    private bool IsFieldDisabled(Field field, Filter forFilter)
-    {
-        if (forFilter.Field == Field.EventNameField)
-        {
-            return false;
-        }
-
-        if (field == Field.EventNameField)
-        {
-            return GetFilteredEventNames() != null;
-        }
-
-        return false;
-    }
-
-    private string[]? GetFilteredEventNames()
-    {
-        var filter = Query.Filters.FirstOrDefault(f => f.Field == Field.EventNameField);
-        return (string[]?)filter?.ParsedValue;
+            || Query.EventNames.Contains(f.AssociatedEventMetadata.EventName)).ToArray();
     }
 
     private void OnColumnFieldSearch(OptionsSearchEventArgs<Field> e)
     {
-        var eventNames = GetFilteredEventNames();
-        if (eventNames == null || eventNames.Length == 0)
+        if (Query.EventNames.Length == 0)
         {
             e.Items = _allFields.Where(f => f.Name.Contains(e.Text, StringComparison.OrdinalIgnoreCase));
         }
         else
         {
             e.Items = _allFields.Where(f =>
-                (f.AssociatedEventMetadata == null || eventNames.Contains(f.AssociatedEventMetadata.EventName))
+                (f.AssociatedEventMetadata == null || Query.EventNames.Contains(f.AssociatedEventMetadata.EventName))
                 && f.Name.Contains(e.Text, StringComparison.OrdinalIgnoreCase));
         }
     }
@@ -230,7 +194,7 @@
     {
         _messageStore.Clear();
 
-        for (int i = 0; i < Query.Filters.Count; i += 1)
+        for (int i = 0; i < Query.Filters.Length; i += 1)
         {
             int idx = i;
             var filter = Query.Filters[idx];
@@ -304,7 +268,7 @@
     private void HandleValidSubmit()
     {
         IReadOnlyList<Event> filteredEvents;
-        if (Query.Filters.Count == 0)
+        if (Query.EventNames.Length == 0 && Query.Filters.Length == 0)
         {
             filteredEvents = State.Trace!.Events;
         }
@@ -315,12 +279,17 @@
                 .ToArray();
         }
 
-        _ = OnQuery.InvokeAsync(new QueryResult(filteredEvents, _selectedColumnFields, _selectedDecorator));
+        _ = OnQuery.InvokeAsync(new QueryResult(filteredEvents, Query.SelectedColumnFields, Query.SelectedDecorator));
     }
 
     private bool FilterEvent(Event evt, Query query)
     {
-        foreach (var filter in CollectionsMarshal.AsSpan(query.Filters))
+        if (query.EventNames.Length != 0 && Array.IndexOf(query.EventNames, evt.Metadata.EventName) == -1)
+        {
+            return false;
+        }
+
+        foreach (var filter in query.Filters)
         {
             var operand = filter.Field.Selector(evt);
             if (!filter.Operator.Match(operand, filter.ParsedValue))
