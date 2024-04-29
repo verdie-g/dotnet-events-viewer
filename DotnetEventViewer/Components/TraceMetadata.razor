@@ -20,6 +20,7 @@
             <li>CPUs: @(State.Trace.Metadata.NumberOfProcessors)</li>
             <li>OS: @(State.TraceExtraMetadata.OsFamily) @(State.Trace.Metadata.PointerSize == 8 ? "x64" : "x32")</li>
             <li>Command Line: @(State.TraceExtraMetadata.CommandLine)</li>
+            <li>.NET Version: @(State.TraceExtraMetadata.RuntimeVersion)</li>
         </ul>
     </Body>
 </FluentPopover>
