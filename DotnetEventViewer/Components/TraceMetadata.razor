@@ -7,8 +7,11 @@
     return;
 }
 
-<FluentButton Id="trace-metadata" @onclick="() => _visible = !_visible">
-    <FluentIcon Value="@(new Icons.Regular.Size24.Info())" Title="Trace Metadata" />
+<FluentButton
+    Id="trace-metadata"
+    @onclick="() => _visible = !_visible"
+    IconEnd="@(new Icons.Regular.Size24.Info())"
+    Title="Trace Metadata">
 </FluentButton>
 
 <FluentPopover Style="width: 300px;background-color: var(--accent-fill-rest)" AnchorId="trace-metadata" @bind-Open="_visible">
