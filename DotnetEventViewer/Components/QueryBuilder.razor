@@ -1,6 +1,6 @@
 @using System.Runtime.InteropServices
 @using System.Text.RegularExpressions
-@using DotnetEventViewer.CallTree.Decorators
+@using DotnetEventViewer.CallTree.CountAggregators
 @using DotnetEventViewer.Querying
 @using DotnetEventViewer.Querying.Operators
 @using DotnetEventViewer.State
@@ -67,10 +67,10 @@
             }
             else if (QueryType == QueryType.Tree)
             {
-                <FluentSelect TOption="ICallTreeNodeDecorator"
-                              Items="AllDecorators"
+                <FluentSelect TOption="ICallTreeCountAggregator"
+                              Items="AllAggregators"
                               OptionText="@(d => d.Name)"
-                              @bind-SelectedOption="Query.SelectedDecorator"/>
+                              @bind-SelectedOption="Query.SelectedAggregator"/>
                 <FluentCheckbox
                     Id="tp-stacks-only"
                     Label="Thread Pool Stacks Only"
@@ -111,10 +111,11 @@
         Field.EventNameField,
     ];
 
-    private static readonly ICallTreeNodeDecorator[] AllDecorators =
+    private static readonly ICallTreeCountAggregator[] AllAggregators =
     [
-        EventsCountDecorator.Instance,
-        AllocationSizeDecorator.Instance,
+        EventsCountAggregator.Instance,
+        AllocationSizeAggregator.Instance,
+        WaitHandeWaitDurationAggregator.Instance,
     ];
 
     private Field[] _allFields = [];
@@ -138,7 +139,7 @@
             .ToArray();
         Query = State.Query!;
         Query.SelectedColumnFields ??= DefaultColumnFields;
-        Query.SelectedDecorator ??= EventsCountDecorator.Instance;
+        Query.SelectedAggregator ??= EventsCountAggregator.Instance;
         _editContext = new EditContext(Query);
         _editContext.OnValidationRequested += OnValidationRequested;
         _messageStore = new ValidationMessageStore(_editContext);
@@ -288,7 +289,7 @@
                 .ToArray();
         }
 
-        _ = OnQuery.InvokeAsync(new QueryResult(filteredEvents, Query.SelectedColumnFields, Query.SelectedDecorator));
+        _ = OnQuery.InvokeAsync(new QueryResult(filteredEvents, Query.SelectedColumnFields, Query.SelectedAggregator));
     }
 
     private bool FilterEvent(Event evt, Query query)

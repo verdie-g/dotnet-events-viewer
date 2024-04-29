@@ -1,7 +1,7 @@
 ﻿@page "/tree"
 
 @using DotnetEventViewer.CallTree
-@using DotnetEventViewer.CallTree.Decorators
+@using DotnetEventViewer.CallTree.CountAggregators
 @using DotnetEventViewer.Components
 @using DotnetEventViewer.Querying
 @using DotnetEventViewer.State
@@ -13,16 +13,17 @@
 <h1>Events Tree</h1>
 
 <QueryBuilder QueryType="QueryType.Tree" OnQuery="OnQuery" />
-<CallTreeView Tree="_callTree" Decorator="_callTreeDecorator" />
+<CallTreeView Tree="_callTree" Aggregator="_callTreeAggregator" />
 
 @code {
     private CallTreeNode? _callTree;
-    private ICallTreeNodeDecorator? _callTreeDecorator;
+    private ICallTreeCountAggregator? _callTreeAggregator;
 
     private void OnQuery(QueryResult queryResult)
     {
-        _callTree = CallTreeNode.Create(queryResult.FilteredEvents, queryResult.CallTreeDecorator!);
-        _callTreeDecorator = queryResult.CallTreeDecorator;
+        var processor = queryResult.CallTreeAggregator!.CreateProcessor();
+        _callTree = CallTreeNode.Create(queryResult.FilteredEvents, processor);
+        _callTreeAggregator = queryResult.CallTreeAggregator;
     }
 
 }

@@ -1,9 +1,9 @@
-using DotnetEventViewer.CallTree.Decorators;
+using DotnetEventViewer.CallTree.CountAggregators;
 using EventPipe;
 
 namespace DotnetEventViewer.Querying;
 
-public class QueryResult(IReadOnlyList<Event> filteredEvents, IEnumerable<Field>? columnFields, ICallTreeNodeDecorator? callTreeDecorator)
+public class QueryResult(IReadOnlyList<Event> filteredEvents, IEnumerable<Field>? columnFields, ICallTreeCountAggregator? callTreeAggregator)
 {
     public IReadOnlyList<Event> FilteredEvents { get; } = filteredEvents;
 
@@ -11,5 +11,5 @@ public class QueryResult(IReadOnlyList<Event> filteredEvents, IEnumerable<Field>
     public IEnumerable<Field>? ColumnFields { get; } = columnFields;
 
     /// <summary>Non-null for <see cref="QueryType.Tree"/>.</summary>
-    public ICallTreeNodeDecorator? CallTreeDecorator { get; } = callTreeDecorator;
+    public ICallTreeCountAggregator? CallTreeAggregator { get; } = callTreeAggregator;
 }

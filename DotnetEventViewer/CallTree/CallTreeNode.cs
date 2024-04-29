@@ -1,4 +1,4 @@
-using DotnetEventViewer.CallTree.Decorators;
+using DotnetEventViewer.CallTree.CountAggregators;
 using EventPipe;
 
 namespace DotnetEventViewer.CallTree;
@@ -7,14 +7,15 @@ public class CallTreeNode
 {
     public static CallTreeNode Create(
         IEnumerable<Event> events,
-        ICallTreeNodeDecorator decorator)
+        ICallTreeCountAggregatorProcessor processor)
     {
         CallTreeNode root = new(0, new MethodDescription("root", ""));
 
         int id = 1;
-        foreach (var evt in events)
+        // Process in reverse order so that ProcessEvent observes a stop event before its associated start event.
+        foreach (var evt in events.Reverse())
         {
-            decorator.ProcessEvent(evt);
+            processor.ProcessEvent(evt);
 
             var currentNode = root;
 
@@ -33,7 +34,7 @@ public class CallTreeNode
 
                 if (i == evt.StackTrace.Frames.Length - 1)
                 {
-                    decorator.UpdateLeafNode(ref currentNode._count, evt);
+                    processor.UpdateLeafNode(ref currentNode._count, evt);
                 }
             }
         }

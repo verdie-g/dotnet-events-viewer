@@ -1,8 +1,8 @@
 @using DotnetEventViewer.CallTree
-@using DotnetEventViewer.CallTree.Decorators
+@using DotnetEventViewer.CallTree.CountAggregators
 @using EventPipe
 
-@if (_tree != null && Decorator != null)
+@if (_tree != null && Aggregator != null)
 {
     <FluentTreeView>
         @RenderCallTreeNode(_tree)
@@ -21,7 +21,7 @@
     public CallTreeNode? Tree { get; set; }
 
     [Parameter]
-    public ICallTreeNodeDecorator? Decorator { get; set; }
+    public ICallTreeCountAggregator? Aggregator { get; set; }
 
     protected override void OnParametersSet()
     {
@@ -106,6 +106,6 @@
     private string GenerateNodeText(CallTreeNode root, CallTreeNode node)
     {
         float ratio = node.Count / (float)root.Count;
-        return $"({100 * ratio:0.00}% - {Decorator!.Format(node.Count)}) {node.MethodDescription}";
+        return $"({100 * ratio:0.00}% - {Aggregator!.Format(node.Count)}) {node.MethodDescription}";
     }
 }

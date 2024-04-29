@@ -1,0 +1,34 @@
+using EventPipe;
+
+namespace DotnetEventViewer.CallTree.CountAggregators;
+
+internal class EventsCountAggregator : ICallTreeCountAggregator
+{
+    public static EventsCountAggregator Instance { get; } = new();
+
+    public string Name => "Events Count";
+
+    public ISet<string>? CompatibleEventNames => null;
+
+    public string Format(long count)
+    {
+        return count + " events";
+    }
+
+    public ICallTreeCountAggregatorProcessor CreateProcessor()
+    {
+        return new Processor();
+    }
+
+    private class Processor : ICallTreeCountAggregatorProcessor
+    {
+        public void ProcessEvent(Event evt)
+        {
+        }
+
+        public void UpdateLeafNode(ref long count, Event evt)
+        {
+            count += 1;
+        }
+    }
+}
