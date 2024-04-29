@@ -1,5 +1,4 @@
 ﻿using System.Buffers;
-using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
@@ -16,96 +15,6 @@ namespace EventPipe;
 public class EventPipeReader(Stream stream)
 {
     private const int ReaderVersion = 4;
-    private const string RuntimeProvider = "Microsoft-Windows-DotNETRuntime";
-    private const string RundownProvider = "Microsoft-Windows-DotNETRuntimeRundown";
-
-    private static readonly FrozenDictionary<MetadataKey, EventMetadata> KnownEventMetadata = new Dictionary<MetadataKey, EventMetadata>
-    {
-        [new MetadataKey(RuntimeProvider, 10, 4)] =
-            new(default, string.Empty, default, "GCAllocationTick", default, default, default,
-                null, new EventFieldDefinition[]
-                {
-                    new("AllocationAmount", TypeCode.UInt32),
-                    new("AllocationKind", TypeCode.UInt32),
-                    new("ClrInstanceID", TypeCode.UInt16),
-                    new("AllocationAmount64", TypeCode.UInt64),
-                    new("TypeID", TypeCode.UInt64),
-                    new("TypeName", TypeCode.String),
-                    new("HeapIndex", TypeCode.UInt32),
-                    new("Address", TypeCode.UInt64),
-                    new("ObjectSize", TypeCode.UInt64),
-                }),
-        [new MetadataKey(RuntimeProvider, 81, 1)] =
-            new(default, string.Empty, default, "ContentionStart", default, default, default,
-                EventOpcode.Start, new EventFieldDefinition[]
-                {
-                    new("ContentionFlags", TypeCode.Byte),
-                    new("ClrInstanceID", TypeCode.UInt16),
-                }),
-        [new MetadataKey(RuntimeProvider, 81, 2)] =
-            new(default, string.Empty, default, "ContentionStart", default, default, default,
-                EventOpcode.Start, new EventFieldDefinition[]
-                {
-                    new("ContentionFlags", TypeCode.Byte),
-                    new("ClrInstanceID", TypeCode.UInt16),
-                    new("LockID", TypeCode.UInt64),
-                    new("AssociatedObjectID", TypeCode.UInt64),
-                    new("LockOwnerThreadID", TypeCode.UInt64),
-                }),
-        [new MetadataKey(RuntimeProvider, 91, 1)] =
-            new(default, string.Empty, default, "ContentionStop", default, default, default,
-                EventOpcode.Stop, new EventFieldDefinition[]
-                {
-                    new("ContentionFlags", TypeCode.Byte),
-                    new("ClrInstanceID", TypeCode.UInt16),
-                    new("DurationNs", TypeCode.Double),
-                }),
-        [new MetadataKey(RuntimeProvider, 301, 0)] =
-            new(default, string.Empty, default, "WaitHandleWaitStart", default, default, default,
-                EventOpcode.Start, new EventFieldDefinition[]
-                {
-                    new("WaitSource", TypeCode.Byte),
-                    new("AssociatedObjectID", TypeCode.UInt64),
-                    new("ClrInstanceID", TypeCode.UInt16),
-                }),
-        [new MetadataKey(RuntimeProvider, 302, 0)] =
-            new(default, string.Empty, default, "WaitHandleWaitStop", default, default, default,
-                EventOpcode.Stop, new EventFieldDefinition[]
-                {
-                    new("ClrInstanceID", TypeCode.UInt16),
-                }),
-        [new MetadataKey(RundownProvider, 144, 1)] =
-            new(default, string.Empty, default, "MethodLoadUnloadVerbose", default, default, default,
-                null, new EventFieldDefinition[]
-                {
-                    new("MethodID", TypeCode.UInt64),
-                    new("ModuleID", TypeCode.UInt64),
-                    new("MethodStartAddress", TypeCode.UInt64),
-                    new("MethodSize", TypeCode.UInt32),
-                    new("MethodToken", TypeCode.UInt32),
-                    new("MethodFlags", TypeCode.UInt32),
-                    new("MethodNamespace", TypeCode.String),
-                    new("MethodName", TypeCode.String),
-                    new("MethodSignature", TypeCode.String),
-                    new("ClrInstanceID", TypeCode.UInt16),
-                }),
-        [new MetadataKey(RundownProvider, 144, 2)] =
-            new(default, string.Empty, default, "MethodLoadUnloadVerbose", default, default, default,
-                null, new EventFieldDefinition[]
-                {
-                    new("MethodID", TypeCode.UInt64),
-                    new("ModuleID", TypeCode.UInt64),
-                    new("MethodStartAddress", TypeCode.UInt64),
-                    new("MethodSize", TypeCode.UInt32),
-                    new("MethodToken", TypeCode.UInt32),
-                    new("MethodFlags", TypeCode.UInt32),
-                    new("MethodNamespace", TypeCode.String),
-                    new("MethodName", TypeCode.String),
-                    new("MethodSignature", TypeCode.String),
-                    new("ReJITID", TypeCode.UInt64),
-                    new("ClrInstanceID", TypeCode.UInt16),
-                }),
-    }.ToFrozenDictionary();
 
     private static ReadOnlySpan<byte> MagicBytes => "Nettrace"u8;
     private static ReadOnlySpan<byte> SerializerSignature => "!FastSerialization.1"u8;
@@ -568,9 +477,7 @@ public class EventPipeReader(Stream stream)
             }
         }
 
-        // Some Microsoft-Windows-DotNETRuntimeRundown events are needed to resolve stack symbols but for some reason
-        // their metadata are incomplete in the trace (https://github.com/dotnet/runtime/issues/96365) so they are hardcoded.
-        if (KnownEventMetadata.TryGetValue(new MetadataKey(providerName, eventId, version), out var knownMetadata))
+        if (KnownEvents.All.TryGetValue(new KnownEvents.Key(providerName, eventId, version), out var knownMetadata))
         {
             eventName = knownMetadata.EventName;
             opCode = knownMetadata.OpCode;
@@ -710,7 +617,8 @@ public class EventPipeReader(Stream stream)
 
     private void HandleSpecialEvent(Event evt)
     {
-        if (evt.Metadata.ProviderName == RundownProvider)
+        const string rundownProvider = "Microsoft-Windows-DotNETRuntimeRundown";
+        if (evt.Metadata.ProviderName == rundownProvider)
         {
             switch (evt.Metadata.EventId)
             {
@@ -971,6 +879,4 @@ public class EventPipeReader(Stream stream)
         OpCode = 1,
         ParameterPayload = 2,
     }
-
-    private record struct MetadataKey(string ProviderName, int EventId, int Version);
 }
