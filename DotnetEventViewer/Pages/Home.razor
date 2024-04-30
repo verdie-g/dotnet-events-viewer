@@ -27,7 +27,7 @@
 <FluentInputFile Id="input-nettrace-file"
                  Mode="InputFileMode.Stream"
                  MaximumFileCount="1"
-                 MaximumFileSize="@(2L*1024*1024*1024)"
+                 MaximumFileSize="@(5L*1024*1024*1024)"
                  Accept=".nettrace"
                  @bind-ProgressPercent="@_progressPercent"
                  OnFileUploaded="@OnFileUploadedAsync"
