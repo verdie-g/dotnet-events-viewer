@@ -2,13 +2,11 @@ using EventPipe;
 
 namespace DotnetEventViewer.CallTree.CountAggregators;
 
-internal class WaitHandeWaitDurationAggregator : ICallTreeCountAggregator
+internal abstract class SynchronousDurationAggregator(int startEventId, int stopEventId) : ICallTreeCountAggregator
 {
-    public static WaitHandeWaitDurationAggregator Instance { get; } = new();
+    public abstract string Name { get; }
 
-    public string Name => "Wait Duration";
-
-    public ISet<string>? CompatibleEventNames { get; } = new HashSet<string> { "WaitHandleWaitStart" };
+    public abstract ISet<string>? CompatibleEventNames { get; }
 
     public string Format(long count)
     {
@@ -23,24 +21,21 @@ internal class WaitHandeWaitDurationAggregator : ICallTreeCountAggregator
 
     public ICallTreeCountAggregatorProcessor CreateProcessor()
     {
-        return new Processor();
+        return new Processor(startEventId, stopEventId);
     }
 
-    private class Processor : ICallTreeCountAggregatorProcessor
+    private class Processor(int startEventId, int stopEventId) : ICallTreeCountAggregatorProcessor
     {
-        private const int WaitHandleWaitStartId = 301;
-        private const int WaitHandleWaitStopId = 302;
-
         private readonly Dictionary<long, Event> _threadToStopEvent = new();
         private readonly Dictionary<int, long> _countByEventIndex = new();
 
         public void ProcessEvent(Event evt)
         {
-            if (evt.Metadata.EventId == WaitHandleWaitStopId)
+            if (evt.Metadata.EventId == stopEventId)
             {
                 _threadToStopEvent[evt.ThreadId] = evt;
             }
-            else if (evt.Metadata.EventId == WaitHandleWaitStartId)
+            else if (evt.Metadata.EventId == startEventId)
             {
                 if (_threadToStopEvent.Remove(evt.ThreadId, out var stopEvt))
                 {
