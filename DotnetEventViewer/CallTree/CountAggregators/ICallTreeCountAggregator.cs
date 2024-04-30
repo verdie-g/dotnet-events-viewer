@@ -1,3 +1,5 @@
+using DotnetEventViewer.Models;
+
 namespace DotnetEventViewer.CallTree.CountAggregators;
 
 /// <summary>
@@ -7,10 +9,8 @@ public interface ICallTreeCountAggregator
 {
     string Name { get; }
 
-    /// <summary>
-    /// The events this aggregator is compatible with. Use null to indicates it is compatible with all events.
-    /// </summary>
-    ISet<string>? CompatibleEventNames { get; }
+    EventKey? StartEventKey { get; }
+    EventKey? StopEventKey { get; }
 
     string Format(long count);
 

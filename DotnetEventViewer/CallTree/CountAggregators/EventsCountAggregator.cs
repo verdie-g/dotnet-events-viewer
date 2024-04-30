@@ -1,3 +1,4 @@
+using DotnetEventViewer.Models;
 using EventPipe;
 
 namespace DotnetEventViewer.CallTree.CountAggregators;
@@ -8,7 +9,9 @@ internal class EventsCountAggregator : ICallTreeCountAggregator
 
     public string Name => "Events Count";
 
-    public ISet<string>? CompatibleEventNames => null;
+    public EventKey? StartEventKey => null;
+
+    public EventKey? StopEventKey => null;
 
     public string Format(long count)
     {

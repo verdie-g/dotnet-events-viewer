@@ -1,6 +1,6 @@
-@using System.Runtime.InteropServices
 @using System.Text.RegularExpressions
 @using DotnetEventViewer.CallTree.CountAggregators
+@using DotnetEventViewer.Models
 @using DotnetEventViewer.Querying
 @using DotnetEventViewer.Querying.Operators
 @using DotnetEventViewer.State
@@ -11,13 +11,14 @@
 <EditForm EditContext="_editContext" OnValidSubmit="@HandleValidSubmit" FormName="query-builder" novalidate>
     <FluentStack Orientation="Orientation.Vertical">
 
-        <FluentAutocomplete TOption="string"
+        <FluentAutocomplete TOption="EventKey"
                             AutoComplete="off"
                             Placeholder="Select event names"
-                            OnOptionsSearch="@OnEventNameSearch"
+                            OnOptionsSearch="@OnEventKeySearch"
                             MaximumSelectedOptions="3"
-                            @bind-SelectedOptions:get="Query.EventNames"
-                            @bind-SelectedOptions:set="(IEnumerable<string>? v) => Query.EventNames = v!.ToArray()"
+                            OptionText="k => k.EventName"
+                            @bind-SelectedOptions:get="Query.EventKeys"
+                            @bind-SelectedOptions:set="(IEnumerable<EventKey>? k) => Query.EventKeys = k!.ToArray()"
                             Width="521px" />
 
         @for (int i = 0; i < Query.Filters.Length; i += 1)
@@ -70,6 +71,7 @@
                 <FluentSelect TOption="ICallTreeCountAggregator"
                               Items="AllAggregators"
                               OptionText="@(d => d.Name)"
+                              OptionDisabled="IsAggregatorDisabled"
                               @bind-SelectedOption="Query.SelectedAggregator"/>
                 <FluentCheckbox
                     Id="tp-stacks-only"
@@ -168,37 +170,57 @@
         Query.Filters = newFilters;
     }
 
-    private void OnEventNameSearch(OptionsSearchEventArgs<string> e)
+    private void OnEventKeySearch(OptionsSearchEventArgs<EventKey> e)
     {
         e.Items = State.Trace!.EventMetadata
-            .Select(m => m.EventName)
-            .Distinct()
-            .Where(n => n.Length != 0 && n.Contains(e.Text, StringComparison.OrdinalIgnoreCase));
+            .Select(EventKey.From)
+            .Distinct() // Group events with different versions together.
+            .Where(m => m.EventName.Contains(e.Text, StringComparison.OrdinalIgnoreCase));
     }
 
     private IEnumerable<Field> GetFields(Filter forFilter)
     {
-        if (Query.EventNames.Length == 0)
+        if (Query.EventKeys.Length == 0)
         {
             return _allFields;
         }
 
         return _allFields.Where(f => f.AssociatedEventMetadata == null
-            || Query.EventNames.Contains(f.AssociatedEventMetadata.EventName)).ToArray();
+            || Query.EventKeys.Any(k => k.Matches(f.AssociatedEventMetadata))).ToArray();
     }
 
     private void OnColumnFieldSearch(OptionsSearchEventArgs<Field> e)
     {
-        if (Query.EventNames.Length == 0)
+        if (Query.EventKeys.Length == 0)
         {
             e.Items = _allFields.Where(f => f.Name.Contains(e.Text, StringComparison.OrdinalIgnoreCase));
         }
         else
         {
             e.Items = _allFields.Where(f =>
-                (f.AssociatedEventMetadata == null || Query.EventNames.Contains(f.AssociatedEventMetadata.EventName))
+                (f.AssociatedEventMetadata == null || Query.EventKeys.Any(k => k.Matches(f.AssociatedEventMetadata)))
                 && f.Name.Contains(e.Text, StringComparison.OrdinalIgnoreCase));
         }
+    }
+
+    private bool IsAggregatorDisabled(ICallTreeCountAggregator aggregator)
+    {
+        if (aggregator.StartEventKey == null)
+        {
+            return false;
+        }
+
+        if (Query.EventKeys.Length == 0)
+        {
+            return true;
+        }
+
+        if (Query.EventKeys.Contains(aggregator.StartEventKey))
+        {
+            return false;
+        }
+
+        return aggregator.StopEventKey == null || !Query.EventKeys.Contains(aggregator.StopEventKey);
     }
 
     private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
@@ -215,11 +237,7 @@
                 _messageStore.Add(() => Query.Filters[idx], $"Operator {filter.Operator.Text} is not compatible with this field.");
             }
 
-            if (filter.Field == Field.EventNameField)
-            {
-                // filter.ParsedValue should already be set. Do nothing.
-            }
-            else if (filter.Operator is MatchOperator or NotMatchOperator)
+            if (filter.Operator is MatchOperator or NotMatchOperator)
             {
                 try
                 {
@@ -276,27 +294,46 @@
 
     }
 
+    // Automatically append aggregator start/stop events, so it has all the needed data for its computation.
+    private EventKey[] BuildEventKeysFilter(Query query)
+    {
+        IEnumerable<EventKey> eventKeys = query.EventKeys;
+
+        if (Query.SelectedAggregator?.StartEventKey != null)
+        {
+            eventKeys = eventKeys.Append(Query.SelectedAggregator.StartEventKey);
+        }
+
+        if (Query.SelectedAggregator?.StopEventKey != null)
+        {
+            eventKeys = eventKeys.Append(Query.SelectedAggregator.StopEventKey);
+        }
+
+        return eventKeys.ToArray();
+    }
+
     private void HandleValidSubmit()
     {
+        var eventKeys = BuildEventKeysFilter(Query);
+
         IReadOnlyList<Event> filteredEvents;
-        if (Query.EventNames.Length == 0 && Query.Filters.Length == 0)
+        if (Query.EventKeys.Length == 0 && Query.Filters.Length == 0)
         {
             filteredEvents = State.Trace!.Events;
         }
         else
         {
             filteredEvents = State.Trace!.Events
-                .Where(evt => FilterEvent(evt, Query))
+                .Where(evt => FilterEvent(evt, Query, eventKeys))
                 .ToArray();
         }
 
         _ = OnQuery.InvokeAsync(new QueryResult(filteredEvents, Query.SelectedColumnFields, Query.SelectedAggregator));
     }
 
-    private bool FilterEvent(Event evt, Query query)
+    private bool FilterEvent(Event evt, Query query, EventKey[] eventKeys)
     {
-        if (query.EventNames.Length != 0
-            && Array.IndexOf(query.EventNames, evt.Metadata.EventName) == -1)
+        if (eventKeys.Length != 0 && eventKeys.All(k => !k.Matches(evt)))
         {
             return false;
         }
@@ -322,5 +359,4 @@
 
         return true;
     }
-
 }

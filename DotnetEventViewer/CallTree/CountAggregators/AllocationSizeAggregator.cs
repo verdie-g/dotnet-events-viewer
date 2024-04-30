@@ -1,3 +1,4 @@
+using DotnetEventViewer.Models;
 using EventPipe;
 
 namespace DotnetEventViewer.CallTree.CountAggregators;
@@ -8,7 +9,9 @@ internal class AllocationSizeAggregator : ICallTreeCountAggregator
 
     public string Name => "Allocation Size";
 
-    public ISet<string>? CompatibleEventNames { get; } = new HashSet<string> { "GCAllocationTick" };
+    public EventKey? StartEventKey { get; } = new(KnownProviders.Runtime, "GCAllocationTick", 10);
+
+    public EventKey? StopEventKey => null;
 
     public string Format(long count)
     {

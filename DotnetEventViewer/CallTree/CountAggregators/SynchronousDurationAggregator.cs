@@ -1,12 +1,15 @@
+using DotnetEventViewer.Models;
 using EventPipe;
 
 namespace DotnetEventViewer.CallTree.CountAggregators;
 
-internal abstract class SynchronousDurationAggregator(int startEventId, int stopEventId) : ICallTreeCountAggregator
+internal abstract class SynchronousDurationAggregator : ICallTreeCountAggregator
 {
     public abstract string Name { get; }
 
-    public abstract ISet<string>? CompatibleEventNames { get; }
+    public abstract EventKey StartEventKey { get; }
+
+    public abstract EventKey StopEventKey { get; }
 
     public string Format(long count)
     {
@@ -21,21 +24,21 @@ internal abstract class SynchronousDurationAggregator(int startEventId, int stop
 
     public ICallTreeCountAggregatorProcessor CreateProcessor()
     {
-        return new Processor(startEventId, stopEventId);
+        return new Processor(StartEventKey, StopEventKey);
     }
 
-    private class Processor(int startEventId, int stopEventId) : ICallTreeCountAggregatorProcessor
+    private class Processor(EventKey startEventKey, EventKey stopEventKey) : ICallTreeCountAggregatorProcessor
     {
         private readonly Dictionary<long, Event> _threadToStopEvent = new();
         private readonly Dictionary<int, long> _countByEventIndex = new();
 
         public void ProcessEvent(Event evt)
         {
-            if (evt.Metadata.EventId == stopEventId)
+            if (stopEventKey.Matches(evt))
             {
                 _threadToStopEvent[evt.ThreadId] = evt;
             }
-            else if (evt.Metadata.EventId == startEventId)
+            else if (startEventKey.Matches(evt))
             {
                 if (_threadToStopEvent.Remove(evt.ThreadId, out var stopEvt))
                 {

@@ -1,15 +1,14 @@
+using DotnetEventViewer.Models;
+
 namespace DotnetEventViewer.CallTree.CountAggregators;
 
 internal class WaitHandleWaitDurationAggregator : SynchronousDurationAggregator
 {
     public static WaitHandleWaitDurationAggregator Instance { get; } = new();
 
-    private WaitHandleWaitDurationAggregator()
-        : base(301, 302)
-    {
-    }
-
     public override string Name => "Wait Duration";
 
-    public override ISet<string>? CompatibleEventNames { get; } = new HashSet<string> { "WaitHandleWaitStart" };
+    public override EventKey StartEventKey { get; } = new(KnownProviders.Runtime, "WaitHandleWaitStart", 301);
+
+    public override EventKey StopEventKey { get; } = new(KnownProviders.Runtime, "WaitHandleWaitStop", 302);
 }

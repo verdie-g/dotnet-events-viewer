@@ -3,7 +3,6 @@
 @using EventPipe
 @using DotnetEventViewer.Models
 @using DotnetEventViewer.Querying
-@using DotnetEventViewer.Querying.Operators
 
 @layout HomeLayout
 
@@ -72,7 +71,7 @@
 
     private TraceExtraMetadata CreateTraceExtraMetadata(string filename, Trace trace)
     {
-        const string processInfoProviderName = "Microsoft-DotNETCore-EventPipe";
+        const string processInfoProviderName = KnownProviders.EventPipe;
         const int processInfoEventId = 1;
         var processInfoEvent = trace.Events.FirstOrDefault(e =>
             e.Metadata is { EventId: processInfoEventId, ProviderName: processInfoProviderName });
@@ -84,7 +83,7 @@
             osFamily = (string)processInfoEvent.Payload["OSInformation"];
         }
 
-        const string runtimeInfoProviderName = "Microsoft-Windows-DotNETRuntimeRundown";
+        const string runtimeInfoProviderName = KnownProviders.Rundown;
         const int runtimeInfoEventId = 187;
         var runtimeInfoEvent = trace.Events.FirstOrDefault(e =>
             e.Metadata is { EventId: runtimeInfoEventId, ProviderName: runtimeInfoProviderName });

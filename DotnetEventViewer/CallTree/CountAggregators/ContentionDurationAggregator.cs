@@ -1,15 +1,14 @@
+using DotnetEventViewer.Models;
+
 namespace DotnetEventViewer.CallTree.CountAggregators;
 
 internal class ContentionDurationAggregator : SynchronousDurationAggregator
 {
     public static ContentionDurationAggregator Instance { get; } = new();
 
-    private ContentionDurationAggregator()
-        : base(81, 91)
-    {
-    }
-
     public override string Name => "Contention Duration";
 
-    public override ISet<string>? CompatibleEventNames { get; } = new HashSet<string> { "ContentionStart" };
+    public override EventKey StartEventKey { get; } = new(KnownProviders.Runtime, "ContentionStart", 81);
+
+    public override EventKey StopEventKey { get; } = new(KnownProviders.Runtime, "ContentionStop", 91);
 }
