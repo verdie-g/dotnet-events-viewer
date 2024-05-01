@@ -85,7 +85,7 @@
         catch (Exception e)
         {
             Console.Error.WriteLine(e);
-            ShowFileError(e is JSException
+            ShowFileError(e is JSException or OutOfMemoryException
                 ? "File is too large to fit in memory"
                 : "Invalid nettrace file");
             return;
