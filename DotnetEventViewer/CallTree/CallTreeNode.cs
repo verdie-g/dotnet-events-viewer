@@ -7,7 +7,8 @@ public class CallTreeNode
 {
     public static CallTreeNode Create(
         IEnumerable<Event> events,
-        ICallTreeCountAggregatorProcessor processor)
+        ICallTreeCountAggregatorProcessor processor,
+        bool bottomUp)
     {
         CallTreeNode root = new(0, new MethodDescription("root", ""));
 
@@ -19,29 +20,40 @@ public class CallTreeNode
 
             var currentNode = root;
 
-            for (int i = 0; i < evt.StackTrace.Frames.Length; i += 1)
+            if (bottomUp)
             {
-                var frame = evt.StackTrace.Frames[i];
-                currentNode.Children ??= new Dictionary<ulong, CallTreeNode>();
-                if (!currentNode.Children.TryGetValue(frame.Address, out var childNode))
+                for (int i = 0; i < evt.StackTrace.Frames.Length; i += 1)
                 {
-                    childNode = new CallTreeNode(id, frame);
-                    currentNode.Children[frame.Address] = childNode;
-                    id += 1;
-                }
-
-                currentNode = childNode;
-
-                if (i == evt.StackTrace.Frames.Length - 1)
-                {
-                    processor.UpdateLeafNode(ref currentNode._count, evt);
+                    AddCallToNode(evt.StackTrace.Frames[i], ref currentNode, ref id);
                 }
             }
+            else
+            {
+                for (int i = evt.StackTrace.Frames.Length - 1; i >= 0; i -= 1)
+                {
+                    AddCallToNode(evt.StackTrace.Frames[i], ref currentNode, ref id);
+                }
+            }
+
+            processor.UpdateLeafNode(ref currentNode._count, evt);
         }
 
         root.PropagateCount();
 
         return root;
+
+        static void AddCallToNode(MethodDescription frame, ref CallTreeNode node, ref int id)
+        {
+            node.Children ??= new Dictionary<ulong, CallTreeNode>();
+            if (!node.Children.TryGetValue(frame.Address, out var childNode))
+            {
+                childNode = new CallTreeNode(id, frame);
+                node.Children[frame.Address] = childNode;
+                id += 1;
+            }
+
+            node = childNode;
+        }
     }
 
     private long _count;

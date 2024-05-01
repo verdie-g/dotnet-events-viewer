@@ -3,7 +3,11 @@ using EventPipe;
 
 namespace DotnetEventViewer.Querying;
 
-public class QueryResult(IReadOnlyList<Event> filteredEvents, IEnumerable<Field>? columnFields, ICallTreeCountAggregator? callTreeAggregator)
+public class QueryResult(
+    IReadOnlyList<Event> filteredEvents,
+    IEnumerable<Field>? columnFields,
+    ICallTreeCountAggregator? callTreeAggregator,
+    bool bottomUpTree)
 {
     public IReadOnlyList<Event> FilteredEvents { get; } = filteredEvents;
 
@@ -12,4 +16,6 @@ public class QueryResult(IReadOnlyList<Event> filteredEvents, IEnumerable<Field>
 
     /// <summary>Non-null for <see cref="QueryType.Tree"/>.</summary>
     public ICallTreeCountAggregator? CallTreeAggregator { get; } = callTreeAggregator;
+
+    public bool BottomUpTree { get; } = bottomUpTree;
 }

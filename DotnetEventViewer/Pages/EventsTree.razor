@@ -22,7 +22,7 @@
     private void OnQuery(QueryResult queryResult)
     {
         var processor = queryResult.CallTreeAggregator!.CreateProcessor();
-        _callTree = CallTreeNode.Create(queryResult.FilteredEvents, processor);
+        _callTree = CallTreeNode.Create(queryResult.FilteredEvents, processor, queryResult.BottomUpTree);
         _callTreeAggregator = queryResult.CallTreeAggregator;
     }
 

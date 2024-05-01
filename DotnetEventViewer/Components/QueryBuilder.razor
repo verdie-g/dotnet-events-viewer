@@ -73,15 +73,26 @@
                               OptionText="@(d => d.Name)"
                               OptionDisabled="IsAggregatorDisabled"
                               @bind-SelectedOption="Query.SelectedAggregator"/>
-                <FluentCheckbox
-                    Id="tp-stacks-only"
-                    Label="Thread Pool Stacks Only"
-                    Style="margin-top: 6px"
-                    @bind-Value="Query.ThreadPoolStacksOnly" />
-                <FluentTooltip Anchor="tp-stacks-only">
-                    Tries to filter out events that occured on a non-threadpool thread. Useful to investigate thread
-                    pool starvation. This option is not 100% accurate.
-                </FluentTooltip>
+                <FluentButton
+                    id="extra-options"
+                    Appearance="Appearance.Neutral"
+                    @onclick="() => _extraOptionsOpen = !_extraOptionsOpen"
+                    IconStart="@(new Icons.Filled.Size20.Settings())">
+                </FluentButton>
+                <FluentMenu Anchor="extra-options" @bind-Open="_extraOptionsOpen">
+                    <FluentMenuItem
+                        Role="MenuItemRole.MenuItemCheckbox"
+                        Checked="@Query.BottomUpTree"
+                        OnClick="() => Query.BottomUpTree = !Query.BottomUpTree">
+                        Bottom-up Tree
+                    </FluentMenuItem>
+                    <FluentMenuItem
+                        Role="MenuItemRole.MenuItemCheckbox"
+                        Checked="@Query.ThreadPoolStacksOnly"
+                        OnClick="() => Query.ThreadPoolStacksOnly = !Query.ThreadPoolStacksOnly">
+                        Thread Pool Stacks Only
+                    </FluentMenuItem>
+                </FluentMenu>
             }
             <FluentButton Type="ButtonType.Submit"
                           Appearance="Appearance.Accent"
@@ -124,6 +135,7 @@
     private Field[] _allFields = [];
     private EditContext _editContext = default!;
     private ValidationMessageStore _messageStore = default!;
+    private bool _extraOptionsOpen;
 
     [Parameter, EditorRequired]
     public QueryType QueryType { get; set; }
@@ -328,7 +340,7 @@
                 .ToArray();
         }
 
-        _ = OnQuery.InvokeAsync(new QueryResult(filteredEvents, Query.SelectedColumnFields, Query.SelectedAggregator));
+        _ = OnQuery.InvokeAsync(new QueryResult(filteredEvents, Query.SelectedColumnFields, Query.SelectedAggregator, Query.BottomUpTree));
     }
 
     private bool FilterEvent(Event evt, Query query, EventKey[] eventKeys)
