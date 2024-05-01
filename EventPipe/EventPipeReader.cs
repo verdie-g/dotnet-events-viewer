@@ -790,7 +790,7 @@ public class EventPipeReader(Stream stream)
 
     private async Task FillPipeWithStreamAsync(PipeWriter writer, CancellationToken cancellationToken)
     {
-        const int minimumBufferSize = 128 * 1024;
+        const int minimumBufferSize = 64 * 1024;
 
         while (true)
         {
