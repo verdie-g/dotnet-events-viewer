@@ -8,6 +8,7 @@
 
 @inject StateContainer StateContainer
 @inject NavigationManager NavigationManager
+@inject IMessageService MessageService
 
 <PageTitle>.NET Event Viewer</PageTitle>
 
@@ -24,12 +25,15 @@
     remain confined to it. You can check out the code on <a href="https://github.com/verdie-g/dotnet-event-viewer" target="_blank">GitHub</a>.
 </p>
 
+<FluentMessageBarProvider Section="FileUploadError" />
+
 <FluentInputFile Id="input-nettrace-file"
                  Mode="InputFileMode.Stream"
                  MaximumFileCount="1"
                  MaximumFileSize="@(5L*1024*1024*1024)"
                  Accept=".nettrace"
                  @bind-ProgressPercent="@_progressPercent"
+                 OnCompleted="OnCompletedAsync"
                  OnFileUploaded="@OnFileUploadedAsync"
                  Style="height: 300px; border: 1px dashed var(--accent-fill-rest);">
     <ChildContent>
@@ -48,6 +52,17 @@
 @code {
     private int _progressPercent;
 
+    private Task OnCompletedAsync(IEnumerable<FluentInputFileEventArgs> inputFiles)
+    {
+        string? errorMessage = inputFiles.FirstOrDefault()?.ErrorMessage;
+        if (errorMessage != null)
+        {
+            ShowFileError(errorMessage);
+        }
+
+        return Task.CompletedTask;
+    }
+
     private async Task OnFileUploadedAsync(FluentInputFileEventArgs inputFile)
     {
         EventPipeReader reader = new(inputFile.Stream!);
@@ -62,11 +77,34 @@
             _progressPercent = progressPercent;
             StateHasChanged();
         }));
-        StateContainer.Trace = await reader.ReadFullTraceAsync();
+
+        try
+        {
+            StateContainer.Trace = await reader.ReadFullTraceAsync();
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine(e);
+            ShowFileError(e is JSException
+                ? "File is too large to fit in memory"
+                : "Invalid nettrace file");
+            return;
+        }
+
         StateContainer.TraceExtraMetadata = CreateTraceExtraMetadata(inputFile.Name, StateContainer.Trace);
         StateContainer.Query = new Query();
 
         NavigationManager.NavigateTo("list");
+    }
+
+    private void ShowFileError(string errorMessage)
+    {
+        MessageService.ShowMessageBar(options =>
+        {
+            options.Title = errorMessage;
+            options.Section = "FileUploadError";
+            options.Intent = MessageIntent.Error;
+        });
     }
 
     private TraceExtraMetadata CreateTraceExtraMetadata(string filename, Trace trace)
