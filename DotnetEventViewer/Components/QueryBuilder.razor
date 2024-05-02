@@ -87,12 +87,6 @@
                             OnClick="() => Query.BottomUpTree = !Query.BottomUpTree">
                             Bottom-up Tree
                         </FluentMenuItem>
-                        <FluentMenuItem
-                            Role="MenuItemRole.MenuItemCheckbox"
-                            Checked="@Query.ThreadPoolStacksOnly"
-                            OnClick="() => Query.ThreadPoolStacksOnly = !Query.ThreadPoolStacksOnly">
-                            Thread Pool Stacks Only
-                        </FluentMenuItem>
                     </Body>
                 </FluentPopover>
             }
@@ -356,16 +350,6 @@
         {
             var operand = filter.Field.Selector(evt);
             if (!filter.Operator.Match(operand, filter.ParsedValue))
-            {
-                return false;
-            }
-        }
-
-        if (Query.ThreadPoolStacksOnly)
-        {
-            var frames = evt.StackTrace.Frames;
-            if (frames.Length == 0
-                || (frames[^1].Namespace == "System.Threading.Thread" && frames[^1].Name == "StartCallback"))
             {
                 return false;
             }

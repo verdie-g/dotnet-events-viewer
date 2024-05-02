@@ -10,5 +10,4 @@ internal class Query
     public IEnumerable<Field>? SelectedColumnFields { get; set; }
     public ICallTreeCountAggregator? SelectedAggregator { get; set; }
     public bool BottomUpTree { get; set; } = true;
-    public bool ThreadPoolStacksOnly { get; set; }
 }
