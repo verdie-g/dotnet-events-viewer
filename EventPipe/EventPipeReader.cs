@@ -400,7 +400,7 @@ public class EventPipeReader(Stream stream)
             }
             else
             {
-                payload = ReadEventPayload(ref reader, metadata);
+                payload = ReadEventPayload(ref reader, metadata.FieldDefinitions);
             }
 
             int stackIndex = _stackIndexOffset + stackId;
@@ -534,13 +534,13 @@ public class EventPipeReader(Stream stream)
 
     private Dictionary<string, object> ReadEventPayload(
         ref FastSerializerSequenceReader reader,
-        EventMetadata metadata)
+        IReadOnlyList<EventFieldDefinition> fieldDefinitions)
     {
         // Cast to array to avoid the IEnumerator allocation.
-        var fieldDefinitions = (EventFieldDefinition[])metadata.FieldDefinitions;
+        var fieldDefinitionsArr = (EventFieldDefinition[])fieldDefinitions;
 
-        Dictionary<string, object> payload = new(capacity: fieldDefinitions.Length);
-        foreach (var fieldDefinition in fieldDefinitions)
+        Dictionary<string, object> payload = new(capacity: fieldDefinitionsArr.Length);
+        foreach (var fieldDefinition in fieldDefinitionsArr)
         {
             object value = ReadFieldValue(ref reader, fieldDefinition);
             payload[fieldDefinition.Name] = value;
@@ -560,6 +560,7 @@ public class EventPipeReader(Stream stream)
 
         return fieldDefinition.TypeCode switch
         {
+            TypeCode.Object => ReadEventPayload(ref reader, fieldDefinition.SubFieldDefinitions!),
             TypeCode.Boolean => InternBoolean(reader.ReadInt32() != 0),
             TypeCode.SByte => Intern((sbyte)reader.ReadInt32(), _internedSByte),
             TypeCode.Byte => Intern(reader.ReadByte(), _internedByte),
