@@ -9,6 +9,7 @@ public class Field(string name, TypeCode type, Func<Event, object?> selector, Ev
     public static readonly Field TimeStampField = new(nameof(Event.TimeStamp), TypeCode.Single, e => e.TimeStamp / 1_000_000f);
     public static readonly Field ActivityIdField = new(nameof(Event.ActivityId), TypeCodeExtensions.Guid, e => e.ActivityId);
     public static readonly Field RelatedActivityIdField = new(nameof(Event.RelatedActivityId), TypeCodeExtensions.Guid, e => e.RelatedActivityId);
+    public static readonly Field ProviderNameField = new(nameof(EventMetadata.ProviderName), TypeCode.String, e => e.Metadata.ProviderName);
     public static readonly Field EventNameField = new(nameof(EventMetadata.EventName), TypeCode.String, e => e.Metadata.EventName);
 
     public static readonly Field[] StaticEventField =
@@ -18,6 +19,7 @@ public class Field(string name, TypeCode type, Func<Event, object?> selector, Ev
         TimeStampField,
         ActivityIdField,
         RelatedActivityIdField,
+        ProviderNameField,
         EventNameField,
     ];
 
