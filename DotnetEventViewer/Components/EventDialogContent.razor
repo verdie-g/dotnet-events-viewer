@@ -9,14 +9,20 @@
         TimeStamp: @Content.TimeStamp<br />
         Activity: @Content.ActivityId<br />
         Related Activity: @Content.RelatedActivityId<br />
-        Payload:
-    </p>
-    <ul>
-        @foreach (var field in Content.Payload)
+        @if (Content.Payload.Count != 0)
         {
-            <li>@field.Key: @field.Value</li>
+            @:Payload:
         }
-    </ul>
+    </p>
+    @if (Content.Payload.Count != 0)
+    {
+        <ul>
+            @foreach (var field in Content.Payload)
+            {
+                <li>@field.Key: @field.Value</li>
+            }
+        </ul>
+    }
     @if (Content.StackTrace.Frames.Length != 0)
     {
         <p>Stack Trace:</p>
