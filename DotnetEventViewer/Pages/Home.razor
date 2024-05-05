@@ -65,6 +65,9 @@
 
     private async Task OnFileUploadedAsync(FluentInputFileEventArgs inputFile)
     {
+        // Remove reference to previously loaded trace.
+        StateContainer.Trace = null;
+
         EventPipeReader reader = new(inputFile.Stream!);
         reader.AddProgress(new Progress<EventPipeReader.Progression>(p =>
         {
