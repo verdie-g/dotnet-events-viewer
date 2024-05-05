@@ -38,7 +38,7 @@ public class EventPipeReaderTest
             Assert.That(trace.Events[0].Metadata.Keywords, Is.EqualTo((EventKeywords)263882790666243));
             Assert.That(trace.Events[0].Metadata.Version, Is.EqualTo(3));
             Assert.That(trace.Events[0].Metadata.Level, Is.EqualTo(EventLevel.Informational));
-            Assert.That(trace.Events[0].Metadata.OpCode, Is.EqualTo(EventOpcode.Send));
+            Assert.That(trace.Events[0].Metadata.Opcode, Is.EqualTo(EventOpcode.Send));
             Assert.That(trace.Events[0].Metadata.FieldDefinitions, Has.Count.EqualTo(5));
             Assert.That(trace.Events[0].Metadata.FieldDefinitions[0].Name, Is.EqualTo("OriginatingTaskSchedulerID"));
             Assert.That(trace.Events[0].Metadata.FieldDefinitions[0].TypeCode, Is.EqualTo(TypeCode.Int32));

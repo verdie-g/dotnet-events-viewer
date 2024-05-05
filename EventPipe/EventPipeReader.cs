@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using EventPipe.FastSerializer;
 
@@ -392,7 +391,7 @@ public class EventPipeReader(Stream stream)
 
             // Some events (e.g. from Microsoft-Windows-DotNETRuntimeRundown) don't define any fields but still have
             // a payload.
-            Dictionary<string, object> payload;
+            IReadOnlyDictionary<string, object> payload;
             if (metadata.FieldDefinitions.Count == 0)
             {
                 reader.Advance(payloadEndPosition - reader.AbsolutePosition);
@@ -400,7 +399,7 @@ public class EventPipeReader(Stream stream)
             }
             else
             {
-                payload = ReadEventPayload(ref reader, metadata.FieldDefinitions);
+                payload = ReadEventPayload(ref reader, metadata);
             }
 
             int stackIndex = _stackIndexOffset + stackId;
@@ -434,9 +433,9 @@ public class EventPipeReader(Stream stream)
         long metadataEndPosition)
     {
         int metadataId = reader.ReadInt32();
-        string providerName = ReadNullTerminatedUtf16String(ref reader);
+        string providerName = reader.ReadNullTerminatedString();
         int eventId = reader.ReadInt32();
-        string eventName = ReadNullTerminatedUtf16String(ref reader);
+        string eventName = reader.ReadNullTerminatedString();
         long keywords = reader.ReadInt64();
         int version = reader.ReadInt32();
         var level = ReadInt32AsEnum<EventLevel>(ref reader);
@@ -477,10 +476,10 @@ public class EventPipeReader(Stream stream)
             }
         }
 
-        if (KnownEvents.All.TryGetValue(new KnownEvents.Key(providerName, eventId, version), out var knownMetadata))
+        if (KnownEvent.All.TryGetValue(new KnownEvent.Key(providerName, eventId, version), out var knownMetadata))
         {
             eventName = knownMetadata.EventName;
-            opCode = knownMetadata.OpCode;
+            opCode = knownMetadata.Opcode;
             fieldDefinitions = knownMetadata.FieldDefinitions;
         }
 
@@ -522,7 +521,7 @@ public class EventPipeReader(Stream stream)
                 subFieldDefinitions = ReadFieldDefinitions(ref reader, version);
             }
 
-            string fieldName = ReadNullTerminatedUtf16String(ref reader);
+            string fieldName = reader.ReadNullTerminatedString();
             fieldName = InternString(fieldName);
 
             TypeCode? nullableArrayTypeCode = arrayTypeCode == default ? null : arrayTypeCode;
@@ -532,7 +531,21 @@ public class EventPipeReader(Stream stream)
         return fieldDefinitions;
     }
 
-    private Dictionary<string, object> ReadEventPayload(
+    private IReadOnlyDictionary<string, object> ReadEventPayload(
+        ref FastSerializerSequenceReader reader,
+        EventMetadata eventMetadata)
+    {
+        if (KnownEvent.All.TryGetValue(
+                new KnownEvent.Key(eventMetadata.ProviderName, eventMetadata.EventId, eventMetadata.Version),
+                out var knownEvent))
+        {
+            return knownEvent.Parse(ref reader);
+        }
+
+        return ReadEventPayload(ref reader, eventMetadata.FieldDefinitions);
+    }
+
+    private IReadOnlyDictionary<string, object> ReadEventPayload(
         ref FastSerializerSequenceReader reader,
         IReadOnlyList<EventFieldDefinition> fieldDefinitions)
     {
@@ -565,61 +578,21 @@ public class EventPipeReader(Stream stream)
             TypeCode.SByte => Intern((sbyte)reader.ReadInt32(), _internedSByte),
             TypeCode.Byte => Intern(reader.ReadByte(), _internedByte),
             TypeCode.Int16 => Intern(reader.ReadInt16(), _internedInt16),
-            TypeCode.UInt16 => Intern((ushort)reader.ReadInt16(), _internedUInt16),
+            TypeCode.UInt16 => Intern(reader.ReadUInt16(), _internedUInt16),
             TypeCode.Int32 => reader.ReadInt32(),
-            TypeCode.UInt32 => (uint)reader.ReadInt32(),
+            TypeCode.UInt32 => reader.ReadUInt32(),
             TypeCode.Int64 => reader.ReadInt64(),
-            TypeCode.UInt64 => (ulong)reader.ReadInt64(),
+            TypeCode.UInt64 => reader.ReadUInt64(),
             TypeCode.Single => reader.ReadSingle(),
             TypeCode.Double => reader.ReadDouble(),
-            TypeCode.String => ReadNullTerminatedUtf16String(ref reader),
+            TypeCode.String => reader.ReadNullTerminatedString(),
             _ => throw new NotSupportedException($"Type {fieldDefinition.TypeCode} is not supported")
         };
     }
 
-    private static string ReadNullTerminatedUtf16String(ref FastSerializerSequenceReader reader)
-    {
-        var unreadCharSpan = MemoryMarshal.Cast<byte, char>(reader.UnreadSpan);
-        int nullIdx = unreadCharSpan.IndexOf((char)0);
-        if (nullIdx == 0)
-        {
-            reader.Advance(sizeof(char));
-            return "";
-        }
-
-        if (nullIdx != -1)
-        {
-            string str = new(unreadCharSpan[..nullIdx]);
-            reader.Advance((nullIdx + 1) * sizeof(char));
-            return str;
-        }
-
-        // Ain't nobody got time for that.
-        return ReadNullTerminatedUtf16StringSlow(ref reader);
-    }
-
-    private static string ReadNullTerminatedUtf16StringSlow(ref FastSerializerSequenceReader reader)
-    {
-        StringBuilder sb = new();
-
-        while (true)
-        {
-            short c = reader.ReadInt16();
-            if (c == 0)
-            {
-                break;
-            }
-
-            sb.Append(Convert.ToChar(c));
-        }
-
-        return sb.ToString();
-    }
-
     private void HandleSpecialEvent(Event evt)
     {
-        const string rundownProvider = "Microsoft-Windows-DotNETRuntimeRundown";
-        if (evt.Metadata.ProviderName == rundownProvider)
+        if (evt.Metadata.ProviderName == KnownEvent.RundownProvider)
         {
             switch (evt.Metadata.EventId)
             {

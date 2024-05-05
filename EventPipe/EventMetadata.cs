@@ -10,5 +10,5 @@ public record EventMetadata(
     EventKeywords Keywords,
     int Version,
     EventLevel Level,
-    EventOpcode? OpCode,
+    EventOpcode? Opcode,
     IReadOnlyList<EventFieldDefinition> FieldDefinitions);

@@ -14,12 +14,12 @@ public class Event
     public long TimeStamp { get; }
     public Guid ActivityId { get; }
     public Guid RelatedActivityId { get; }
-    public Dictionary<string, object> Payload { get; }
+    public IReadOnlyDictionary<string, object> Payload { get; }
     public EventMetadata Metadata { get; }
     public StackTrace StackTrace { get; internal set; }
 
     internal Event(int index, int sequenceNumber, long captureThreadId, long threadId, int stackIndex, long timeStamp,
-        Guid activityId, Guid relatedActivityId, Dictionary<string, object> payload, EventMetadata metadata)
+        Guid activityId, Guid relatedActivityId, IReadOnlyDictionary<string, object> payload, EventMetadata metadata)
     {
         Index = index;
         SequenceNumber = sequenceNumber;

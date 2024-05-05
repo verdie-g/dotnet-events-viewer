@@ -1,6 +1,8 @@
 ﻿using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace EventPipe.FastSerializer;
 
@@ -56,6 +58,11 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
         return _reader.TryReadLittleEndian(out value);
     }
 
+    public ushort ReadUInt16()
+    {
+        return (ushort)ReadInt16();
+    }
+
     public int ReadInt32()
     {
         ThrowIfFalse(TryReadInt32(out int value));
@@ -67,6 +74,11 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
         return _reader.TryReadLittleEndian(out value);
     }
 
+    public uint ReadUInt32()
+    {
+        return (uint)ReadInt32();
+    }
+
     public long ReadInt64()
     {
         ThrowIfFalse(TryReadInt64(out long value));
@@ -76,6 +88,11 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
     public bool TryReadInt64(out long value)
     {
         return _reader.TryReadLittleEndian(out value);
+    }
+
+    public ulong ReadUInt64()
+    {
+        return (ulong)ReadInt64();
     }
 
     public float ReadSingle()
@@ -127,6 +144,45 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
         }
 
         return TryReadBytes(length, out value);
+    }
+
+    public string ReadNullTerminatedString()
+    {
+        var unreadCharSpan = MemoryMarshal.Cast<byte, char>(UnreadSpan);
+        int nullIdx = unreadCharSpan.IndexOf((char)0);
+        if (nullIdx == 0)
+        {
+            Advance(sizeof(char));
+            return "";
+        }
+
+        if (nullIdx != -1)
+        {
+            string str = new(unreadCharSpan[..nullIdx]);
+            Advance((nullIdx + 1) * sizeof(char));
+            return str;
+        }
+
+        // Ain't nobody got time for that.
+        return ReadNullTerminatedUtf16StringSlow(ref this);
+
+        static string ReadNullTerminatedUtf16StringSlow(ref FastSerializerSequenceReader reader)
+        {
+            StringBuilder sb = new();
+
+            while (true)
+            {
+                short c = reader.ReadInt16();
+                if (c == 0)
+                {
+                    break;
+                }
+
+                sb.Append(Convert.ToChar(c));
+            }
+
+            return sb.ToString();
+        }
     }
 
     public Guid ReadGuid()

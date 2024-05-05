@@ -10,13 +10,12 @@ to PerfView:
   yet-another-tool to download and keep up-to-date. Note that the analysed trace files never exit your browser.
 - **Cross-Platform**: since it runs in the browser, this tool works on Windows, Mac, and Linux.
 
-## Limitations
-
-When loading a nettrace file with this tool, the file will be fully decompressed to memory which can do a 5x on its size.
-Meaning that a 200 MB nettrace file could fill 1 GB of memory. That could be an issue if you have a very large file or
-a small amount of memory.
-
 ## FAQ
+
+### I'm getting a `File is too large to fit in memory` error when loading a nettrace
+
+Unfortunately, WebAssembly currently only allows 32-bit addressing, so it means the decompressed file used more than
+4 GiB.
 
 ### The feature X from PerfView is not available with this tool
 
