@@ -22,7 +22,8 @@
         ItemKey="@(e => e.Index)"
         Virtualize="true"
         ResizableColumns="true"
-        OnRowFocus="OnRowFocus"
+        OnRowClick="OnRowClick"
+        ShowHover="true"
         ItemSize="32">
         <ChildContent>
             @foreach (var f in _columnFields!)
@@ -46,7 +47,7 @@
         _columnFields = queryResult.ColumnFields;
     }
 
-    private async Task OnRowFocus(FluentDataGridRow<Event> eventRow)
+    private async Task OnRowClick(FluentDataGridRow<Event> eventRow)
     {
         var evt = eventRow.Item!;
         await DialogService.ShowPanelAsync<EventDialogContent>(evt, new DialogParameters<Event>
