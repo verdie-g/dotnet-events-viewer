@@ -49,7 +49,12 @@
 
     private async Task OnRowClick(FluentDataGridRow<Event> eventRow)
     {
-        var evt = eventRow.Item!;
+        var evt = eventRow.Item;
+        if (evt == null) // Header row.
+        {
+            return;
+        }
+
         await DialogService.ShowPanelAsync<EventDialogContent>(evt, new DialogParameters<Event>
         {
             Content = evt,
