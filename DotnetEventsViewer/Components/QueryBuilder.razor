@@ -225,12 +225,7 @@
             return true;
         }
 
-        if (Query.EventKeys.Contains(aggregator.StartEventKey))
-        {
-            return false;
-        }
-
-        return aggregator.StopEventKey == null || !Query.EventKeys.Contains(aggregator.StopEventKey);
+        return !Query.EventKeys.Contains(aggregator.StartEventKey);
     }
 
     private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
@@ -304,28 +299,8 @@
 
     }
 
-    // Automatically append aggregator start/stop events, so it has all the needed data for its computation.
-    private EventKey[] BuildEventKeysFilter(Query query)
-    {
-        IEnumerable<EventKey> eventKeys = query.EventKeys;
-
-        if (Query.SelectedAggregator?.StartEventKey != null)
-        {
-            eventKeys = eventKeys.Append(Query.SelectedAggregator.StartEventKey);
-        }
-
-        if (Query.SelectedAggregator?.StopEventKey != null)
-        {
-            eventKeys = eventKeys.Append(Query.SelectedAggregator.StopEventKey);
-        }
-
-        return eventKeys.ToArray();
-    }
-
     private void HandleValidSubmit()
     {
-        var eventKeys = BuildEventKeysFilter(Query);
-
         IReadOnlyList<Event> filteredEvents;
         if (Query.EventKeys.Length == 0 && Query.Filters.Length == 0)
         {
@@ -334,16 +309,22 @@
         else
         {
             filteredEvents = State.Trace!.Events
-                .Where(evt => FilterEvent(evt, Query, eventKeys))
+                .Where(evt => FilterEvent(evt, Query))
                 .ToArray();
         }
 
         _ = OnQuery.InvokeAsync(new QueryResult(filteredEvents, Query.SelectedColumnFields, Query.SelectedAggregator, Query.BottomUpTree));
     }
 
-    private bool FilterEvent(Event evt, Query query, EventKey[] eventKeys)
+    private bool FilterEvent(Event evt, Query query)
     {
-        if (eventKeys.Length != 0 && eventKeys.All(k => !k.Matches(evt)))
+        // Always include stop events for the aggregator to do its job.
+        if (query.SelectedAggregator?.StopEventKey != null && query.SelectedAggregator.StopEventKey.Matches(evt))
+        {
+            return true;
+        }
+
+        if (query.EventKeys.Length != 0 && query.EventKeys.All(k => !k.Matches(evt)))
         {
             return false;
         }
