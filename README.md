@@ -1,4 +1,4 @@
-# .NET Event Viewer
+# .NET Events Viewer
 
 This tool is a modern alternative to [PerfView](https://github.com/microsoft/perfview) to analyze nettrace files collected
 from the .NET runtime's [EventPipe](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/eventpipe) or through the tool

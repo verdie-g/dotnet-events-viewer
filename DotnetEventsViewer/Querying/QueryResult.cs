@@ -1,7 +1,7 @@
-using DotnetEventViewer.CallTree.CountAggregators;
+using DotnetEventsViewer.CallTree.CountAggregators;
 using EventPipe;
 
-namespace DotnetEventViewer.Querying;
+namespace DotnetEventsViewer.Querying;
 
 public class QueryResult(
     IReadOnlyList<Event> filteredEvents,

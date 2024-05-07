@@ -1,8 +1,8 @@
-﻿using DotnetEventViewer.Models;
-using DotnetEventViewer.Querying;
+﻿using DotnetEventsViewer.Models;
+using DotnetEventsViewer.Querying;
 using EventPipe;
 
-namespace DotnetEventViewer.State;
+namespace DotnetEventsViewer.State;
 
 internal class StateContainer
 {

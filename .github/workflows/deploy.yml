@@ -16,13 +16,13 @@ jobs:
 
     - name: Install WASM tools
       run: dotnet workload install wasm-tools
-  
+
     - name: Publish
-      run: dotnet publish DotnetEventViewer --configuration Release -o publish
+      run: dotnet publish DotnetEventsViewer --configuration Release -o publish
 
     - name: Change base href
-      run: sed -i 's/<base href="\/" \/>/<base href="\/dotnet-event-viewer\/" \/>/g' publish/wwwroot/index.html
- 
+      run: sed -i 's/<base href="\/" \/>/<base href="\/dotnet-events-viewer\/" \/>/g' publish/wwwroot/index.html
+
     - name: Setup GitHub Pages
       uses: actions/configure-pages@v5
 

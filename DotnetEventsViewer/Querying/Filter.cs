@@ -1,6 +1,6 @@
-using DotnetEventViewer.Querying.Operators;
+using DotnetEventsViewer.Querying.Operators;
 
-namespace DotnetEventViewer.Querying;
+namespace DotnetEventsViewer.Querying;
 
 internal class Filter(Field field, IOperator @operator, string value)
 {

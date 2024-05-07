@@ -1,6 +1,6 @@
-using DotnetEventViewer.Models;
+using DotnetEventsViewer.Models;
 
-namespace DotnetEventViewer.CallTree.CountAggregators;
+namespace DotnetEventsViewer.CallTree.CountAggregators;
 
 internal class TaskWaitDurationAggregator : FieldCorrelationDurationAggregator
 {

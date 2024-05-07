@@ -1,7 +1,7 @@
-using DotnetEventViewer.Models;
+using DotnetEventsViewer.Models;
 using EventPipe;
 
-namespace DotnetEventViewer.CallTree.CountAggregators;
+namespace DotnetEventsViewer.CallTree.CountAggregators;
 
 internal class AllocationSizeAggregator : ICallTreeCountAggregator
 {

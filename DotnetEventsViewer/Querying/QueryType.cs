@@ -1,4 +1,4 @@
-namespace DotnetEventViewer.Querying;
+namespace DotnetEventsViewer.Querying;
 
 /// <summary>
 /// An enum to give to the QueryBuilder to enable page-specific inputs.

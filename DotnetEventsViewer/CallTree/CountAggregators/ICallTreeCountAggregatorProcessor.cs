@@ -1,6 +1,6 @@
 using EventPipe;
 
-namespace DotnetEventViewer.CallTree.CountAggregators;
+namespace DotnetEventsViewer.CallTree.CountAggregators;
 
 public interface ICallTreeCountAggregatorProcessor
 {

@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using EventPipe;
 
-namespace DotnetEventViewer.Querying.Operators;
+namespace DotnetEventsViewer.Querying.Operators;
 
 internal class NotMatchOperator : IOperator
 {

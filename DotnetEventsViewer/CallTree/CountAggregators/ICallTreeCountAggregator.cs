@@ -1,6 +1,6 @@
-using DotnetEventViewer.Models;
+using DotnetEventsViewer.Models;
 
-namespace DotnetEventViewer.CallTree.CountAggregators;
+namespace DotnetEventsViewer.CallTree.CountAggregators;
 
 /// <summary>
 /// Adds metadata (e.g. events count) to a <see cref="CallTreeNode"/>.

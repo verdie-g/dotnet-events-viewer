@@ -1,6 +1,6 @@
 using Microsoft.FluentUI.AspNetCore.Components;
 
-namespace DotnetEventViewer;
+namespace DotnetEventsViewer;
 
 internal static class CustomIcons
 {

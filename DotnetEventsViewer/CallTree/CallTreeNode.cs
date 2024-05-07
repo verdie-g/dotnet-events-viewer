@@ -1,7 +1,7 @@
-using DotnetEventViewer.CallTree.CountAggregators;
+using DotnetEventsViewer.CallTree.CountAggregators;
 using EventPipe;
 
-namespace DotnetEventViewer.CallTree;
+namespace DotnetEventsViewer.CallTree;
 
 public class CallTreeNode
 {

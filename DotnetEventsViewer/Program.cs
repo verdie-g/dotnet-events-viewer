@@ -1,5 +1,5 @@
-using DotnetEventViewer;
-using DotnetEventViewer.State;
+using DotnetEventsViewer;
+using DotnetEventsViewer.State;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.FluentUI.AspNetCore.Components;

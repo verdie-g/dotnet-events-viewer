@@ -1,6 +1,6 @@
 using EventPipe;
 
-namespace DotnetEventViewer.Querying;
+namespace DotnetEventsViewer.Querying;
 
 public class Field(string name, TypeCode type, Func<Event, object?> selector, EventMetadata? associatedEventMetadata = null)
 {

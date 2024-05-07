@@ -1,4 +1,4 @@
-namespace DotnetEventViewer.Models;
+namespace DotnetEventsViewer.Models;
 
 internal static class KnownProviders
 {

@@ -1,7 +1,7 @@
-using DotnetEventViewer.CallTree.CountAggregators;
-using DotnetEventViewer.Models;
+using DotnetEventsViewer.CallTree.CountAggregators;
+using DotnetEventsViewer.Models;
 
-namespace DotnetEventViewer.Querying;
+namespace DotnetEventsViewer.Querying;
 
 internal class Query
 {

@@ -1,6 +1,6 @@
 using EventPipe;
 
-namespace DotnetEventViewer.Models;
+namespace DotnetEventsViewer.Models;
 
 public record EventKey(string ProviderName, string EventName, int EventId)
 {

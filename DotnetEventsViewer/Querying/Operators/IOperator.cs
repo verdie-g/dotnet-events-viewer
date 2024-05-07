@@ -1,4 +1,4 @@
-namespace DotnetEventViewer.Querying.Operators;
+namespace DotnetEventsViewer.Querying.Operators;
 
 internal interface IOperator
 {

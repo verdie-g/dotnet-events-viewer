@@ -1,4 +1,4 @@
-﻿namespace DotnetEventViewer.Models;
+﻿namespace DotnetEventsViewer.Models;
 
 public record TraceExtraMetadata(
     string Filename,
