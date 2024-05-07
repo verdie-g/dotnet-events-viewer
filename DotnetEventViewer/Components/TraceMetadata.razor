@@ -14,7 +14,11 @@
     Title="Trace Metadata">
 </FluentButton>
 
-<FluentPopover Style="width: 300px;background-color: var(--accent-fill-rest)" AnchorId="trace-metadata" @bind-Open="_visible">
+<FluentPopover
+    Class="body"
+    Style="width: 300px; background-color: var(--accent-fill-rest); color: var(--neutral-fill-rest)"
+    AnchorId="trace-metadata"
+    @bind-Open="_visible">
     <Header>@(State.TraceExtraMetadata.Filename)</Header>
     <Body>
         <ul>
