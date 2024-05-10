@@ -14,8 +14,8 @@ to PerfView:
 
 ### I'm getting a `File is too large to fit in memory` error when loading a nettrace
 
-Unfortunately, WebAssembly currently only allows 32-bit addressing, so it means the decompressed file used more than
-4 GiB.
+Unfortunately, WebAssembly currently only allows 32-bit addressing, so it means the decompressed file is limited to
+4 GiB. Also, there is currently another issue, only 1 of the 4 GiB can be used https://github.com/dotnet/runtime/issues/101926.
 
 ### The feature X from PerfView is not available with this tool
 
