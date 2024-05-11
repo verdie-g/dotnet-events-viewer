@@ -4,12 +4,13 @@ internal class StackResolver
 {
     private static readonly MethodDescription UnresolvedMethodDescription = new("??", "", "", 0, 0);
 
-    private readonly Dictionary<ulong[], StackTraceGroup> _stackTraceToStackGroup = new(new UInt64ArrayEqualityComparer());
+    private readonly Dictionary<StackTraceGroupKey, StackTraceGroup> _stackTraceToStackGroup = new();
     private readonly List<MethodDescription> _methodDescriptions = [];
 
     public void AddStackAddresses(int stackIndex, ulong[] addresses)
     {
-        if (_stackTraceToStackGroup.TryGetValue(addresses, out var group))
+        StackTraceGroupKey groupKey = new(addresses);
+        if (_stackTraceToStackGroup.TryGetValue(groupKey, out var group))
         {
             group.StackIndexes.Add(stackIndex);
         }
@@ -21,7 +22,7 @@ internal class StackResolver
                 Addresses = addresses,
                 StackTrace = null,
             };
-            _stackTraceToStackGroup[addresses] = group;
+            _stackTraceToStackGroup[groupKey] = group;
         }
     }
 
@@ -122,32 +123,23 @@ internal class StackResolver
         public StackTrace? StackTrace { get; set; }
     }
 
-    private class UInt64ArrayEqualityComparer : IEqualityComparer<ulong[]>
+    private readonly struct StackTraceGroupKey(ulong[] addresses) : IEquatable<StackTraceGroupKey>
     {
-        public bool Equals(ulong[]? x, ulong[]? y)
-        {
-            if (x!.Length != y!.Length)
-            {
-                return false;
-            }
+        private readonly ulong[] _addresses = addresses;
+        private readonly int _hashCode = GetHashCode(addresses);
 
-            for (int i = 0; i < x.Length; i += 1)
-            {
-                if (x[i] != y[i])
-                {
-                    return false;
-                }
-            }
+        public bool Equals(StackTraceGroupKey other) => _addresses.SequenceEqual(other._addresses);
 
-            return true;
-        }
+        public override bool Equals(object? obj) => obj is StackTraceGroupKey other && Equals(other);
 
-        public int GetHashCode(ulong[] array)
+        public override int GetHashCode() => _hashCode;
+
+        private static int GetHashCode(ulong[] addresses)
         {
             HashCode h = new();
-            foreach (var item in array)
+            foreach (ulong addr in addresses)
             {
-                h.Add(item);
+                h.Add(addr);
             }
 
             return h.ToHashCode();
