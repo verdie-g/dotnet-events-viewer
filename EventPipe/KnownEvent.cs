@@ -15,6 +15,7 @@ internal class KnownEvent
 {
     public const string RuntimeProvider = "Microsoft-Windows-DotNETRuntime";
     public const string RundownProvider = "Microsoft-Windows-DotNETRuntimeRundown";
+    public const string SampleProfilerProvider = "Microsoft-DotNETCore-SampleProfiler";
     public const string TplProvider = "System.Threading.Tasks.TplEventSource";
 
     public static readonly FrozenDictionary<Key, KnownEvent> All = new Dictionary<Key, KnownEvent>
@@ -68,6 +69,7 @@ internal class KnownEvent
         [new Key(RundownProvider, 156, 1)] = new("AssemblyDCEnd", null, AssemblyLoadUnloadRundownV1Payload.FieldDefinitions, AssemblyLoadUnloadRundownV1Payload.Parse),
         [new Key(RundownProvider, 158, 1)] = new("AppDomainDCEnd", null, AppDomainLoadUnloadRundownV1Payload.FieldDefinitions, AppDomainLoadUnloadRundownV1Payload.Parse),
         [new Key(RundownProvider, 187, 0)] = new("RuntimeInformationDCStart", null, RuntimeInformationRundownPayload.FieldDefinitions, RuntimeInformationRundownPayload.Parse),
+        [new Key(SampleProfilerProvider, 0, 0)] = new("ThreadSample", null, ThreadSamplePayload.FieldDefinitions, ThreadSamplePayload.Parse),
         [new Key(TplProvider, 7, 1)] = new("TaskScheduled", EventOpcode.Send, TaskScheduledPayload.FieldDefinitions, TaskScheduledPayload.Parse),
         [new Key(TplProvider, 8, 0)] = new("TaskStarted", null, TaskStartedPayload.FieldDefinitions, TaskStartedPayload.Parse),
         [new Key(TplProvider, 9, 1)] = new("TaskCompleted", null, TaskCompletedPayload.FieldDefinitions, TaskCompletedPayload.Parse),
@@ -4737,6 +4739,70 @@ internal class KnownEvent
             yield return new KeyValuePair<string, object>("CommandLine", _commandLine);
             yield return new KeyValuePair<string, object>("ComObjectGuid", _comObjectGuid);
             yield return new KeyValuePair<string, object>("RuntimeDllPath", _runtimeDllPath);
+        }
+    }
+
+    private class ThreadSamplePayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("Type", TypeCode.Int32),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new ThreadSamplePayload(
+                reader.ReadInt32());
+        }
+
+        private readonly int _type;
+
+        private ThreadSamplePayload(int type)
+        {
+            _type = type;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "Type":
+                    value = _type;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("Type", _type);
         }
     }
 
