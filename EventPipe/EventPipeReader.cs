@@ -19,6 +19,7 @@ public class EventPipeReader(Stream stream)
     private static ReadOnlySpan<byte> SerializerSignature => "!FastSerialization.1"u8;
     private static readonly object TrueBoolean = true;
     private static readonly object FalseBoolean = false;
+    private static IReadOnlyDictionary<string, object> EmptyDictionary = new Dictionary<string, object>();
 
     private readonly HashSet<string> _internedStrings = [];
     private readonly Dictionary<byte, object> _internedByte = [];
@@ -395,7 +396,7 @@ public class EventPipeReader(Stream stream)
             if (metadata.FieldDefinitions.Count == 0)
             {
                 reader.Advance(payloadEndPosition - reader.AbsolutePosition);
-                payload = new Dictionary<string, object>();
+                payload = EmptyDictionary;
             }
             else
             {
