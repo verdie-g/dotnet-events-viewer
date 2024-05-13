@@ -13,13 +13,22 @@ namespace EventPipe;
 /// </summary>
 internal class KnownEvent
 {
+    public const string EventPipeProvider = "Microsoft-DotNETCore-EventPipe";
     public const string RuntimeProvider = "Microsoft-Windows-DotNETRuntime";
     public const string RundownProvider = "Microsoft-Windows-DotNETRuntimeRundown";
     public const string SampleProfilerProvider = "Microsoft-DotNETCore-SampleProfiler";
     public const string TplProvider = "System.Threading.Tasks.TplEventSource";
+    public const string ArrayPoolProvider = "System.Buffers.ArrayPoolEventSource";
+    public const string HttpClientProvider = "System.Net.Http";
+    public const string SocketsProvider = "System.Net.Sockets";
+    public const string DnsProvider = "System.Net.NameResolution";
+    public const string DependencyInjectionProvider = "Microsoft-Extensions-DependencyInjection";
+
+    private static readonly IReadOnlyDictionary<string, object> EmptyDictionary = new Dictionary<string, object>();
 
     public static readonly FrozenDictionary<Key, KnownEvent> All = new Dictionary<Key, KnownEvent>
     {
+        [new Key(EventPipeProvider, 1, 1)] = new("ProcessInfo", 0, ProcessInfoPayload.FieldDefinitions, ProcessInfoPayload.Parse),
         [new Key(RuntimeProvider, 1, 2)] = new("GCStart", null, GcStartV2Payload.FieldDefinitions, GcStartV2Payload.Parse),
         [new Key(RuntimeProvider, 2, 1)] = new("GCEnd", null, GcEndV1Payload.FieldDefinitions, GcEndV1Payload.Parse),
         [new Key(RuntimeProvider, 3, 1)] = new("GCRestartEEEnd", null, GcNoUserDataPayload.FieldDefinitions, GcNoUserDataPayload.Parse),
@@ -78,7 +87,47 @@ internal class KnownEvent
         [new Key(TplProvider, 12, 0)] = new("AwaitTaskContinuationScheduled", EventOpcode.Send, AwaitTaskContinuationScheduledPayload.FieldDefinitions, AwaitTaskContinuationScheduledPayload.Parse),
         [new Key(TplProvider, 13, 0)] = new("TaskWaitContinuationComplete", null, TaskWaitContinuationPayload.FieldDefinitions, TaskWaitContinuationPayload.Parse),
         [new Key(TplProvider, 19, 0)] = new("TaskWaitContinuationStarted", null, TaskWaitContinuationPayload.FieldDefinitions, TaskWaitContinuationPayload.Parse),
+        [new Key(ArrayPoolProvider, 1, 0)] = new("BufferRented", null, BufferRentedPayload.FieldDefinitions, BufferRentedPayload.Parse),
+        [new Key(ArrayPoolProvider, 2, 0)] = new("BufferAllocated", null, BufferAllocatedPayload.FieldDefinitions, BufferAllocatedPayload.Parse),
+        [new Key(ArrayPoolProvider, 3, 0)] = new("BufferReturned", null, BufferReturnedPayload.FieldDefinitions, BufferReturnedPayload.Parse),
+        [new Key(ArrayPoolProvider, 4, 0)] = new("BufferTrimmed", null, BufferTrimmedPayload.FieldDefinitions, BufferTrimmedPayload.Parse),
+        [new Key(ArrayPoolProvider, 5, 0)] = new("BufferTrimPoll", null, BufferTrimPollPayload.FieldDefinitions, BufferTrimPollPayload.Parse),
+        [new Key(ArrayPoolProvider, 6, 0)] = new("BufferDropped", null, BufferDroppedPayload.FieldDefinitions, BufferDroppedPayload.Parse),
+        [new Key(HttpClientProvider, 1, 0)] = new("RequestStart", EventOpcode.Start, RequestStartPayload.FieldDefinitions, RequestStartPayload.Parse),
+        [new Key(HttpClientProvider, 2, 1)] = new("RequestStop", EventOpcode.Stop, RequestStopPayload.FieldDefinitions, RequestStopPayload.Parse),
+        [new Key(HttpClientProvider, 3, 1)] = new("RequestFailed", null, RequestFailedPayload.FieldDefinitions, RequestFailedPayload.Parse),
+        [new Key(HttpClientProvider, 4, 0)] = new("ConnectionEstablished", null, ConnectionEstablishedPayload.FieldDefinitions, ConnectionEstablishedPayload.Parse),
+        [new Key(HttpClientProvider, 5, 0)] = new("ConnectionClosed", null, ConnectionClosedPayload.FieldDefinitions, ConnectionClosedPayload.Parse),
+        [new Key(HttpClientProvider, 6, 0)] = new("RequestLeftQueue", null, RequestLeftQueuePayload.FieldDefinitions, RequestLeftQueuePayload.Parse),
+        [new Key(HttpClientProvider, 7, 1)] = new("RequestHeaderStart", EventOpcode.Start, RequestHeaderStartPayload.FieldDefinitions, RequestHeaderStartPayload.Parse),
+        [new Key(HttpClientProvider, 8, 0)] = new("RequestHeaderStop", EventOpcode.Stop, [], GetEmptyDictionary),
+        [new Key(HttpClientProvider, 9, 0)] = new("RequestContentStart", EventOpcode.Start, [], GetEmptyDictionary),
+        [new Key(HttpClientProvider, 10, 0)] = new("RequestContentStop", EventOpcode.Stop, RequestContentStopPayload.FieldDefinitions, RequestContentStopPayload.Parse),
+        [new Key(HttpClientProvider, 11, 0)] = new("ResponseHeadersStart", EventOpcode.Start, [], GetEmptyDictionary),
+        [new Key(HttpClientProvider, 12, 1)] = new("ResponseHeadersStop", EventOpcode.Stop, ResponseHeadersStopPayload.FieldDefinitions, ResponseHeadersStopPayload.Parse),
+        [new Key(HttpClientProvider, 13, 0)] = new("ResponseContentStart", EventOpcode.Start, [], GetEmptyDictionary),
+        [new Key(HttpClientProvider, 14, 0)] = new("ResponseContentStop", EventOpcode.Stop, [], GetEmptyDictionary),
+        [new Key(HttpClientProvider, 15, 0)] = new("RequestFailedDetailed", null, RequestFailedDetailedPayload.FieldDefinitions, RequestFailedDetailedPayload.Parse),
+        [new Key(HttpClientProvider, 16, 0)] = new("Redirect", null, RedirectPayload.FieldDefinitions, RedirectPayload.Parse),
+        [new Key(SocketsProvider, 1, 0)] = new("ConnectStart", EventOpcode.Start, ConnectStartPayload.FieldDefinitions, ConnectStartPayload.Parse),
+        [new Key(SocketsProvider, 2, 0)] = new("ConnectStop", EventOpcode.Stop, [], GetEmptyDictionary),
+        [new Key(SocketsProvider, 3, 0)] = new("ConnectFailed", null, SocketErrorPayload.FieldDefinitions, SocketErrorPayload.Parse),
+        [new Key(SocketsProvider, 4, 0)] = new("AcceptStart", EventOpcode.Start, AcceptStartPayload.FieldDefinitions, AcceptStartPayload.Parse),
+        [new Key(SocketsProvider, 5, 0)] = new("AcceptStop", EventOpcode.Stop, [], GetEmptyDictionary),
+        [new Key(SocketsProvider, 6, 0)] = new("AcceptFailed", null, SocketErrorPayload.FieldDefinitions, SocketErrorPayload.Parse),
+        [new Key(DnsProvider, 1, 0)] = new("ResolutionStart", EventOpcode.Start, ResolutionStartPayload.FieldDefinitions, ResolutionStartPayload.Parse),
+        [new Key(DnsProvider, 2, 0)] = new("ResolutionStop", EventOpcode.Stop, [], GetEmptyDictionary),
+        [new Key(DnsProvider, 3, 0)] = new("ResolutionFailed", null, [], GetEmptyDictionary),
+        [new Key(DependencyInjectionProvider, 156, 0)] = new("ServiceProviderBuilt", null, ServiceProviderBuiltPayload.FieldDefinitions, ServiceProviderBuiltPayload.Parse),
+        [new Key(DependencyInjectionProvider, 157, 0)] = new("ServiceProviderDescriptors", null, ServiceProviderDescriptorsPayload.FieldDefinitions, ServiceProviderDescriptorsPayload.Parse),
+        [new Key(DependencyInjectionProvider, 158, 0)] = new("ServiceResolved", null, ServiceResolvedPayload.FieldDefinitions, ServiceResolvedPayload.Parse),
+        [new Key(DependencyInjectionProvider, 159, 0)] = new("ScopeDisposed", null, ScopeDisposedPayload.FieldDefinitions, ScopeDisposedPayload.Parse),
     }.ToFrozenDictionary();
+
+    private static IReadOnlyDictionary<string, object> GetEmptyDictionary(ref FastSerializerSequenceReader _)
+    {
+        return EmptyDictionary;
+    }
 
     public string EventName { get; }
     public EventOpcode? Opcode { get; }
@@ -127,6 +176,86 @@ internal class KnownEvent
     }
 
     public delegate IReadOnlyDictionary<string, object> EventParser(ref FastSerializerSequenceReader reader);
+
+    private class ProcessInfoPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("CommandLine", TypeCode.String),
+            new("OSInformation", TypeCode.String),
+            new("ArchInformation", TypeCode.String),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new ProcessInfoPayload(
+                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedString());
+        }
+
+        private readonly string _commandLine;
+        private readonly string _oSInformation;
+        private readonly string _archInformation;
+
+        private ProcessInfoPayload(string commandLine, string oSInformation, string archInformation)
+        {
+            _commandLine = commandLine;
+            _oSInformation = oSInformation;
+            _archInformation = archInformation;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "CommandLine":
+                    value = _commandLine;
+                    return true;
+                case "OSInformation":
+                    value = _oSInformation;
+                    return true;
+                case "ArchInformation":
+                    value = _archInformation;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("CommandLine", _commandLine);
+            yield return new KeyValuePair<string, object>("OSInformation", _oSInformation);
+            yield return new KeyValuePair<string, object>("ArchInformation", _archInformation);
+        }
+    }
 
     private class GcStartV2Payload : IReadOnlyDictionary<string, object>
     {
@@ -4836,7 +4965,7 @@ internal class KnownEvent
         private readonly int _taskCreationOptions;
         private readonly int _appDomain;
 
-        public TaskScheduledPayload(int originatingTaskSchedulerId, int originatingTaskId, int taskId,
+        private TaskScheduledPayload(int originatingTaskSchedulerId, int originatingTaskId, int taskId,
             int creatingTaskId, int taskCreationOptions, int appDomain)
         {
             _originatingTaskSchedulerId = originatingTaskSchedulerId;
@@ -4932,7 +5061,7 @@ internal class KnownEvent
         private readonly int _originatingTaskId;
         private readonly int _taskId;
 
-        public TaskStartedPayload(int originatingTaskSchedulerId, int originatingTaskId, int taskId)
+        private TaskStartedPayload(int originatingTaskSchedulerId, int originatingTaskId, int taskId)
         {
             _originatingTaskSchedulerId = originatingTaskSchedulerId;
             _originatingTaskId = originatingTaskId;
@@ -5015,7 +5144,7 @@ internal class KnownEvent
         private readonly int _taskId;
         private readonly bool _isExceptional;
 
-        public TaskCompletedPayload(int originatingTaskSchedulerId, int originatingTaskId, int taskId, bool isExceptional)
+        private TaskCompletedPayload(int originatingTaskSchedulerId, int originatingTaskId, int taskId, bool isExceptional)
         {
             _originatingTaskSchedulerId = originatingTaskSchedulerId;
             _originatingTaskId = originatingTaskId;
@@ -5106,7 +5235,7 @@ internal class KnownEvent
         private readonly int _behavior;
         private readonly int _continueWithTaskId;
 
-        public TaskWaitBeginPayload(int originatingTaskSchedulerId, int originatingTaskId, int taskId,
+        private TaskWaitBeginPayload(int originatingTaskSchedulerId, int originatingTaskId, int taskId,
             int behavior, int continueWithTaskId)
         {
             _originatingTaskSchedulerId = originatingTaskSchedulerId;
@@ -5197,7 +5326,7 @@ internal class KnownEvent
         private readonly int _originatingTaskId;
         private readonly int _taskId;
 
-        public TaskWaitEndPayload(int originatingTaskSchedulerId, int originatingTaskId, int taskId)
+        private TaskWaitEndPayload(int originatingTaskSchedulerId, int originatingTaskId, int taskId)
         {
             _originatingTaskSchedulerId = originatingTaskSchedulerId;
             _originatingTaskId = originatingTaskId;
@@ -5277,7 +5406,7 @@ internal class KnownEvent
         private readonly int _originatingTaskId;
         private readonly int _continueWithTaskId;
 
-        public AwaitTaskContinuationScheduledPayload(int originatingTaskSchedulerId, int originatingTaskId,
+        private AwaitTaskContinuationScheduledPayload(int originatingTaskSchedulerId, int originatingTaskId,
             int continueWithTaskId)
         {
             _originatingTaskSchedulerId = originatingTaskSchedulerId;
@@ -5351,7 +5480,7 @@ internal class KnownEvent
 
         private readonly int _taskId;
 
-        public TaskWaitContinuationPayload(int taskId)
+        private TaskWaitContinuationPayload(int taskId)
         {
             _taskId = taskId;
         }
@@ -5397,6 +5526,1910 @@ internal class KnownEvent
         private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
         {
             yield return new KeyValuePair<string, object>("TaskID", _taskId);
+        }
+    }
+
+    private class BufferRentedPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("bufferId", TypeCode.Int32),
+            new("bufferSize", TypeCode.Int32),
+            new("poolId", TypeCode.Int32),
+            new("bucketId", TypeCode.Int32),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new BufferRentedPayload(
+                reader.ReadInt32(),
+                reader.ReadInt32(),
+                reader.ReadInt32(),
+                reader.ReadInt32());
+        }
+
+        private readonly int _bufferId;
+        private readonly int _bufferSize;
+        private readonly int _poolId;
+        private readonly int _bucketId;
+
+        private BufferRentedPayload(int bufferId, int bufferSize, int poolId, int bucketId)
+        {
+            _bufferId = bufferId;
+            _bufferSize = bufferSize;
+            _poolId = poolId;
+            _bucketId = bucketId;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "bufferId":
+                    value = _bufferId;
+                    return true;
+                case "bufferSize":
+                    value = _bufferSize;
+                    return true;
+                case "poolId":
+                    value = _poolId;
+                    return true;
+                case "bucketId":
+                    value = _bucketId;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("bufferId", _bufferId);
+            yield return new KeyValuePair<string, object>("bufferSize", _bufferSize);
+            yield return new KeyValuePair<string, object>("poolId", _poolId);
+            yield return new KeyValuePair<string, object>("bucketId", _bucketId);
+        }
+    }
+
+    private class BufferAllocatedPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("bufferId", TypeCode.Int32),
+            new("bufferSize", TypeCode.Int32),
+            new("poolId", TypeCode.Int32),
+            new("bucketId", TypeCode.Int32),
+            new("reason", TypeCode.Int32),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new BufferAllocatedPayload(
+                reader.ReadInt32(),
+                reader.ReadInt32(),
+                reader.ReadInt32(),
+                reader.ReadInt32(),
+                reader.ReadInt32());
+        }
+
+        private readonly int _bufferId;
+        private readonly int _bufferSize;
+        private readonly int _poolId;
+        private readonly int _bucketId;
+        private readonly int _reason;
+
+        private BufferAllocatedPayload(int bufferId, int bufferSize, int poolId, int bucketId, int reason)
+        {
+            _bufferId = bufferId;
+            _bufferSize = bufferSize;
+            _poolId = poolId;
+            _bucketId = bucketId;
+            _reason = reason;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "bufferId":
+                    value = _bufferId;
+                    return true;
+                case "bufferSize":
+                    value = _bufferSize;
+                    return true;
+                case "poolId":
+                    value = _poolId;
+                    return true;
+                case "bucketId":
+                    value = _bucketId;
+                    return true;
+                case "reason":
+                    value = _reason;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("bufferId", _bufferId);
+            yield return new KeyValuePair<string, object>("bufferSize", _bufferSize);
+            yield return new KeyValuePair<string, object>("poolId", _poolId);
+            yield return new KeyValuePair<string, object>("bucketId", _bucketId);
+            yield return new KeyValuePair<string, object>("reason", _reason);
+        }
+    }
+
+    private class BufferReturnedPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("bufferId", TypeCode.Int32),
+            new("bufferSize", TypeCode.Int32),
+            new("poolId", TypeCode.Int32),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new BufferReturnedPayload(
+                reader.ReadInt32(),
+                reader.ReadInt32(),
+                reader.ReadInt32());
+        }
+
+        private readonly int _bufferId;
+        private readonly int _bufferSize;
+        private readonly int _poolId;
+
+        private BufferReturnedPayload(int bufferId, int bufferSize, int poolId)
+        {
+            _bufferId = bufferId;
+            _bufferSize = bufferSize;
+            _poolId = poolId;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "bufferId":
+                    value = _bufferId;
+                    return true;
+                case "bufferSize":
+                    value = _bufferSize;
+                    return true;
+                case "poolId":
+                    value = _poolId;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("bufferId", _bufferId);
+            yield return new KeyValuePair<string, object>("bufferSize", _bufferSize);
+            yield return new KeyValuePair<string, object>("poolId", _poolId);
+        }
+    }
+
+    private class BufferTrimmedPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("bufferId", TypeCode.Int32),
+            new("bufferSize", TypeCode.Int32),
+            new("poolId", TypeCode.Int32),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new BufferTrimmedPayload(
+                reader.ReadInt32(),
+                reader.ReadInt32(),
+                reader.ReadInt32());
+        }
+
+        private readonly int _bufferId;
+        private readonly int _bufferSize;
+        private readonly int _poolId;
+
+        private BufferTrimmedPayload(int bufferId, int bufferSize, int poolId)
+        {
+            _bufferId = bufferId;
+            _bufferSize = bufferSize;
+            _poolId = poolId;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "bufferId":
+                    value = _bufferId;
+                    return true;
+                case "bufferSize":
+                    value = _bufferSize;
+                    return true;
+                case "poolId":
+                    value = _poolId;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("bufferId", _bufferId);
+            yield return new KeyValuePair<string, object>("bufferSize", _bufferSize);
+            yield return new KeyValuePair<string, object>("poolId", _poolId);
+        }
+    }
+
+    private class BufferTrimPollPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("milliseconds", TypeCode.Int32),
+            new("pressure", TypeCode.Int32),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new BufferTrimPollPayload(
+                reader.ReadInt32(),
+                reader.ReadInt32());
+        }
+
+        private readonly int _milliseconds;
+        private readonly int _pressure;
+
+        private BufferTrimPollPayload(int milliseconds, int pressure)
+        {
+            _milliseconds = milliseconds;
+            _pressure = pressure;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "milliseconds":
+                    value = _milliseconds;
+                    return true;
+                case "pressure":
+                    value = _pressure;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("milliseconds", _milliseconds);
+            yield return new KeyValuePair<string, object>("pressure", _pressure);
+        }
+    }
+
+    private class BufferDroppedPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("bufferId", TypeCode.Int32),
+            new("bufferSize", TypeCode.Int32),
+            new("poolId", TypeCode.Int32),
+            new("bucketId", TypeCode.Int32),
+            new("reason", TypeCode.Int32),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new BufferDroppedPayload(
+                reader.ReadInt32(),
+                reader.ReadInt32(),
+                reader.ReadInt32(),
+                reader.ReadInt32(),
+                reader.ReadInt32());
+        }
+
+        private readonly int _bufferId;
+        private readonly int _bufferSize;
+        private readonly int _poolId;
+        private readonly int _bucketId;
+        private readonly int _reason;
+
+        private BufferDroppedPayload(int bufferId, int bufferSize, int poolId, int bucketId, int reason)
+        {
+            _bufferId = bufferId;
+            _bufferSize = bufferSize;
+            _poolId = poolId;
+            _bucketId = bucketId;
+            _reason = reason;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "bufferId":
+                    value = _bufferId;
+                    return true;
+                case "bufferSize":
+                    value = _bufferSize;
+                    return true;
+                case "poolId":
+                    value = _poolId;
+                    return true;
+                case "bucketId":
+                    value = _bucketId;
+                    return true;
+                case "reason":
+                    value = _reason;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("bufferId", _bufferId);
+            yield return new KeyValuePair<string, object>("bufferSize", _bufferSize);
+            yield return new KeyValuePair<string, object>("poolId", _poolId);
+            yield return new KeyValuePair<string, object>("bucketId", _bucketId);
+            yield return new KeyValuePair<string, object>("reason", _reason);
+        }
+    }
+
+    private class RequestStartPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("scheme", TypeCode.String),
+            new("host", TypeCode.String),
+            new("port", TypeCode.Int32),
+            new("pathAndQuery", TypeCode.String),
+            new("versionMajor", TypeCode.Byte),
+            new("versionMinor", TypeCode.Byte),
+            new("versionPolicy", TypeCode.Int32),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new RequestStartPayload(
+                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedString(),
+                reader.ReadInt32(),
+                reader.ReadNullTerminatedString(),
+                reader.ReadByte(),
+                reader.ReadByte(),
+                reader.ReadInt32());
+        }
+
+        private readonly string _scheme;
+        private readonly string _host;
+        private readonly int _port;
+        private readonly string _pathAndQuery;
+        private readonly byte _versionMajor;
+        private readonly byte _versionMinor;
+        private readonly int _versionPolicy;
+
+        private RequestStartPayload(string scheme, string host, int port, string pathAndQuery, byte versionMajor, byte versionMinor, int versionPolicy)
+        {
+            _scheme = scheme;
+            _host = host;
+            _port = port;
+            _pathAndQuery = pathAndQuery;
+            _versionMajor = versionMajor;
+            _versionMinor = versionMinor;
+            _versionPolicy = versionPolicy;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "scheme":
+                    value = _scheme;
+                    return true;
+                case "host":
+                    value = _host;
+                    return true;
+                case "port":
+                    value = _port;
+                    return true;
+                case "pathAndQuery":
+                    value = _pathAndQuery;
+                    return true;
+                case "versionMajor":
+                    value = _versionMajor;
+                    return true;
+                case "versionMinor":
+                    value = _versionMinor;
+                    return true;
+                case "versionPolicy":
+                    value = _versionPolicy;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("scheme", _scheme);
+            yield return new KeyValuePair<string, object>("host", _host);
+            yield return new KeyValuePair<string, object>("port", _port);
+            yield return new KeyValuePair<string, object>("pathAndQuery", _pathAndQuery);
+            yield return new KeyValuePair<string, object>("versionMajor", _versionMajor);
+            yield return new KeyValuePair<string, object>("versionMinor", _versionMinor);
+            yield return new KeyValuePair<string, object>("versionPolicy", _versionPolicy);
+        }
+    }
+
+    private class RequestStopPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("statusCode", TypeCode.Int32),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new RequestStopPayload(
+                reader.ReadInt32());
+        }
+
+        private readonly int _statusCode;
+
+        private RequestStopPayload(int statusCode)
+        {
+            _statusCode = statusCode;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "statusCode":
+                    value = _statusCode;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("statusCode", _statusCode);
+        }
+    }
+
+    private class RequestFailedPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("exceptionMessage", TypeCode.String),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new RequestFailedPayload(
+                reader.ReadNullTerminatedString());
+        }
+
+        private readonly string _exceptionMessage;
+
+        private RequestFailedPayload(string exceptionMessage)
+        {
+            _exceptionMessage = exceptionMessage;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "exceptionMessage":
+                    value = _exceptionMessage;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("exceptionMessage", _exceptionMessage);
+        }
+    }
+
+    private class ConnectionEstablishedPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("versionMajor", TypeCode.Byte),
+            new("versionMinor", TypeCode.Byte),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new ConnectionEstablishedPayload(
+                reader.ReadByte(),
+                reader.ReadByte());
+        }
+
+        private readonly byte _versionMajor;
+        private readonly byte _versionMinor;
+
+        private ConnectionEstablishedPayload(byte versionMajor, byte versionMinor)
+        {
+            _versionMajor = versionMajor;
+            _versionMinor = versionMinor;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "versionMajor":
+                    value = _versionMajor;
+                    return true;
+                case "versionMinor":
+                    value = _versionMinor;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("versionMajor", _versionMajor);
+            yield return new KeyValuePair<string, object>("versionMinor", _versionMinor);
+        }
+    }
+
+    private class ConnectionClosedPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("versionMajor", TypeCode.Byte),
+            new("versionMinor", TypeCode.Byte),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new ConnectionClosedPayload(
+                reader.ReadByte(),
+                reader.ReadByte());
+        }
+
+        private readonly byte _versionMajor;
+        private readonly byte _versionMinor;
+
+        private ConnectionClosedPayload(byte versionMajor, byte versionMinor)
+        {
+            _versionMajor = versionMajor;
+            _versionMinor = versionMinor;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "versionMajor":
+                    value = _versionMajor;
+                    return true;
+                case "versionMinor":
+                    value = _versionMinor;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("versionMajor", _versionMajor);
+            yield return new KeyValuePair<string, object>("versionMinor", _versionMinor);
+        }
+    }
+
+    private class RequestLeftQueuePayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("timeOnQueueMilliseconds", TypeCode.Double),
+            new("versionMajor", TypeCode.Byte),
+            new("versionMinor", TypeCode.Byte),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new RequestLeftQueuePayload(
+                reader.ReadDouble(),
+                reader.ReadByte(),
+                reader.ReadByte());
+        }
+
+        private readonly double _timeOnQueueMilliseconds;
+        private readonly byte _versionMajor;
+        private readonly byte _versionMinor;
+
+        private RequestLeftQueuePayload(double timeOnQueueMilliseconds, byte versionMajor, byte versionMinor)
+        {
+            _timeOnQueueMilliseconds = timeOnQueueMilliseconds;
+            _versionMajor = versionMajor;
+            _versionMinor = versionMinor;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "timeOnQueueMilliseconds":
+                    value = _timeOnQueueMilliseconds;
+                    return true;
+                case "versionMajor":
+                    value = _versionMajor;
+                    return true;
+                case "versionMinor":
+                    value = _versionMinor;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("timeOnQueueMilliseconds", _timeOnQueueMilliseconds);
+            yield return new KeyValuePair<string, object>("versionMajor", _versionMajor);
+            yield return new KeyValuePair<string, object>("versionMinor", _versionMinor);
+        }
+    }
+
+    private class RequestHeaderStartPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("connectionId", TypeCode.Int64),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new RequestHeaderStartPayload(
+                reader.ReadInt64());
+        }
+
+        private readonly long _connectionId;
+
+        private RequestHeaderStartPayload(long connectionId)
+        {
+            _connectionId = connectionId;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "connectionId":
+                    value = _connectionId;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("connectionId", _connectionId);
+        }
+    }
+
+    private class RequestContentStopPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("contentLength", TypeCode.Int64),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new RequestContentStopPayload(
+                reader.ReadInt64());
+        }
+
+        private readonly long _contentLength;
+
+        private RequestContentStopPayload(long contentLength)
+        {
+            _contentLength = contentLength;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "contentLength":
+                    value = _contentLength;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("contentLength", _contentLength);
+        }
+    }
+
+    private class ResponseHeadersStopPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("statusCode", TypeCode.Int32),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new ResponseHeadersStopPayload(
+                reader.ReadInt32());
+        }
+
+        private readonly int _statusCode;
+
+        private ResponseHeadersStopPayload(int statusCode)
+        {
+            _statusCode = statusCode;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "statusCode":
+                    value = _statusCode;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("statusCode", _statusCode);
+        }
+    }
+
+    private class RequestFailedDetailedPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("exception", TypeCode.String),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new RequestFailedDetailedPayload(
+                reader.ReadNullTerminatedString());
+        }
+
+        private readonly string _exception;
+
+        private RequestFailedDetailedPayload(string exception)
+        {
+            _exception = exception;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "exception":
+                    value = _exception;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("exception", _exception);
+        }
+    }
+
+    private class RedirectPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("redirectUri", TypeCode.String),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new RedirectPayload(
+                reader.ReadNullTerminatedString());
+        }
+
+        private readonly string _redirectUri;
+
+        private RedirectPayload(string redirectUri)
+        {
+            _redirectUri = redirectUri;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "redirectUri":
+                    value = _redirectUri;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("redirectUri", _redirectUri);
+        }
+    }
+
+    private class ConnectStartPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("address", TypeCode.String),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new ConnectStartPayload(
+                reader.ReadNullTerminatedString());
+        }
+
+        private readonly string _address;
+
+        private ConnectStartPayload(string address)
+        {
+            _address = address;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "address":
+                    value = _address;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("address", _address);
+        }
+    }
+
+    private class SocketErrorPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("error", TypeCode.Int32),
+            new("exceptionMessage", TypeCode.String),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new SocketErrorPayload(
+                reader.ReadInt32(),
+                reader.ReadNullTerminatedString());
+        }
+
+        private readonly int _error;
+        private readonly string _exceptionMessage;
+
+        private SocketErrorPayload(int error, string exceptionMessage)
+        {
+            _error = error;
+            _exceptionMessage = exceptionMessage;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "error":
+                    value = _error;
+                    return true;
+                case "exceptionMessage":
+                    value = _exceptionMessage;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("error", _error);
+            yield return new KeyValuePair<string, object>("exceptionMessage", _exceptionMessage);
+        }
+    }
+
+    private class AcceptStartPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("address", TypeCode.String),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new AcceptStartPayload(
+                reader.ReadNullTerminatedString());
+        }
+
+        private readonly string _address;
+
+        private AcceptStartPayload(string address)
+        {
+            _address = address;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "address":
+                    value = _address;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("address", _address);
+        }
+    }
+
+    private class ResolutionStartPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("hostNameOrAddress", TypeCode.String),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new ResolutionStartPayload(
+                reader.ReadNullTerminatedString());
+        }
+
+        private readonly string _hostNameOrAddress;
+
+        private ResolutionStartPayload(string hostNameOrAddress)
+        {
+            _hostNameOrAddress = hostNameOrAddress;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "hostNameOrAddress":
+                    value = _hostNameOrAddress;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("hostNameOrAddress", _hostNameOrAddress);
+        }
+    }
+
+    private class ServiceProviderBuiltPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("serviceProviderHashCode", TypeCode.Int32),
+            new("singletonServices", TypeCode.Int32),
+            new("scopedServices", TypeCode.Int32),
+            new("transientServices", TypeCode.Int32),
+            new("closedGenericsServices", TypeCode.Int32),
+            new("openGenericsServices", TypeCode.Int32),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new ServiceProviderBuiltPayload(
+                reader.ReadInt32(),
+                reader.ReadInt32(),
+                reader.ReadInt32(),
+                reader.ReadInt32(),
+                reader.ReadInt32(),
+                reader.ReadInt32());
+        }
+
+        private readonly int _serviceProviderHashCode;
+        private readonly int _singletonServices;
+        private readonly int _scopedServices;
+        private readonly int _transientServices;
+        private readonly int _closedGenericsServices;
+        private readonly int _openGenericsServices;
+
+        private ServiceProviderBuiltPayload(int serviceProviderHashCode, int singletonServices, int scopedServices, int transientServices, int closedGenericsServices, int openGenericsServices)
+        {
+            _serviceProviderHashCode = serviceProviderHashCode;
+            _singletonServices = singletonServices;
+            _scopedServices = scopedServices;
+            _transientServices = transientServices;
+            _closedGenericsServices = closedGenericsServices;
+            _openGenericsServices = openGenericsServices;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "serviceProviderHashCode":
+                    value = _serviceProviderHashCode;
+                    return true;
+                case "singletonServices":
+                    value = _singletonServices;
+                    return true;
+                case "scopedServices":
+                    value = _scopedServices;
+                    return true;
+                case "transientServices":
+                    value = _transientServices;
+                    return true;
+                case "closedGenericsServices":
+                    value = _closedGenericsServices;
+                    return true;
+                case "openGenericsServices":
+                    value = _openGenericsServices;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("serviceProviderHashCode", _serviceProviderHashCode);
+            yield return new KeyValuePair<string, object>("singletonServices", _singletonServices);
+            yield return new KeyValuePair<string, object>("scopedServices", _scopedServices);
+            yield return new KeyValuePair<string, object>("transientServices", _transientServices);
+            yield return new KeyValuePair<string, object>("closedGenericsServices", _closedGenericsServices);
+            yield return new KeyValuePair<string, object>("openGenericsServices", _openGenericsServices);
+        }
+    }
+
+    private class ServiceProviderDescriptorsPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("serviceProviderHashCode", TypeCode.Int32),
+            new("descriptors", TypeCode.String),
+            new("chunkIndex", TypeCode.Int32),
+            new("chunkCount", TypeCode.Int32),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new ServiceProviderDescriptorsPayload(
+                reader.ReadInt32(),
+                reader.ReadNullTerminatedString(),
+                reader.ReadInt32(),
+                reader.ReadInt32());
+        }
+
+        private readonly int _serviceProviderHashCode;
+        private readonly string _descriptors;
+        private readonly int _chunkIndex;
+        private readonly int _chunkCount;
+
+        private ServiceProviderDescriptorsPayload(int serviceProviderHashCode, string descriptors, int chunkIndex, int chunkCount)
+        {
+            _serviceProviderHashCode = serviceProviderHashCode;
+            _descriptors = descriptors;
+            _chunkIndex = chunkIndex;
+            _chunkCount = chunkCount;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "serviceProviderHashCode":
+                    value = _serviceProviderHashCode;
+                    return true;
+                case "descriptors":
+                    value = _descriptors;
+                    return true;
+                case "chunkIndex":
+                    value = _chunkIndex;
+                    return true;
+                case "chunkCount":
+                    value = _chunkCount;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("serviceProviderHashCode", _serviceProviderHashCode);
+            yield return new KeyValuePair<string, object>("descriptors", _descriptors);
+            yield return new KeyValuePair<string, object>("chunkIndex", _chunkIndex);
+            yield return new KeyValuePair<string, object>("chunkCount", _chunkCount);
+        }
+    }
+
+    private class ServiceResolvedPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("serviceType", TypeCode.String),
+            new("serviceProviderHashCode", TypeCode.Int32),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new ServiceResolvedPayload(
+                reader.ReadNullTerminatedString(),
+                reader.ReadInt32());
+        }
+
+        private readonly string _serviceType;
+        private readonly int _serviceProviderHashCode;
+
+        private ServiceResolvedPayload(string serviceType, int serviceProviderHashCode)
+        {
+            _serviceType = serviceType;
+            _serviceProviderHashCode = serviceProviderHashCode;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "serviceType":
+                    value = _serviceType;
+                    return true;
+                case "serviceProviderHashCode":
+                    value = _serviceProviderHashCode;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("serviceType", _serviceType);
+            yield return new KeyValuePair<string, object>("serviceProviderHashCode", _serviceProviderHashCode);
+        }
+    }
+
+    private class ScopeDisposedPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("serviceProviderHashCode", TypeCode.Int32),
+            new("scopedServicesResolved", TypeCode.Int32),
+            new("disposableServices", TypeCode.Int32),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new ScopeDisposedPayload(
+                reader.ReadInt32(),
+                reader.ReadInt32(),
+                reader.ReadInt32());
+        }
+
+        private readonly int _serviceProviderHashCode;
+        private readonly int _scopedServicesResolved;
+        private readonly int _disposableServices;
+
+        private ScopeDisposedPayload(int serviceProviderHashCode, int scopedServicesResolved, int disposableServices)
+        {
+            _serviceProviderHashCode = serviceProviderHashCode;
+            _scopedServicesResolved = scopedServicesResolved;
+            _disposableServices = disposableServices;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "serviceProviderHashCode":
+                    value = _serviceProviderHashCode;
+                    return true;
+                case "scopedServicesResolved":
+                    value = _scopedServicesResolved;
+                    return true;
+                case "disposableServices":
+                    value = _disposableServices;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("serviceProviderHashCode", _serviceProviderHashCode);
+            yield return new KeyValuePair<string, object>("scopedServicesResolved", _scopedServicesResolved);
+            yield return new KeyValuePair<string, object>("disposableServices", _disposableServices);
         }
     }
 }
