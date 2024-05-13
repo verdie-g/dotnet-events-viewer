@@ -195,7 +195,7 @@ internal class KnownEvent
 
     public delegate IReadOnlyDictionary<string, object> EventParser(ref FastSerializerSequenceReader reader);
 
-    private class ProcessInfoPayload : IReadOnlyDictionary<string, object>
+    private sealed class ProcessInfoPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -275,7 +275,7 @@ internal class KnownEvent
         }
     }
 
-    private class GcStartV2Payload : IReadOnlyDictionary<string, object>
+    private sealed class GcStartV2Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -380,7 +380,7 @@ internal class KnownEvent
         }
     }
 
-    private class GcEndV1Payload : IReadOnlyDictionary<string, object>
+    private sealed class GcEndV1Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -460,7 +460,7 @@ internal class KnownEvent
         }
     }
 
-    private class GcNoUserDataPayload : IReadOnlyDictionary<string, object>
+    private sealed class GcNoUserDataPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -524,7 +524,7 @@ internal class KnownEvent
         }
     }
 
-    private class GcHeapStatsV2Payload : IReadOnlyDictionary<string, object>
+    private sealed class GcHeapStatsV2Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -712,7 +712,7 @@ internal class KnownEvent
         }
     }
 
-    private class GcSuspendEeV1Payload : IReadOnlyDictionary<string, object>
+    private sealed class GcSuspendEeV1Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -792,7 +792,7 @@ internal class KnownEvent
         }
     }
 
-    private class GcAllocationTickV4Payload : IReadOnlyDictionary<string, object>
+    private sealed class GcAllocationTickV4Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -921,7 +921,7 @@ internal class KnownEvent
         }
     }
 
-    private class GcFinalizersEndV1Payload : IReadOnlyDictionary<string, object>
+    private sealed class GcFinalizersEndV1Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -993,7 +993,7 @@ internal class KnownEvent
         }
     }
 
-    private class GcGenerationRangePayload : IReadOnlyDictionary<string, object>
+    private sealed class GcGenerationRangePayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -1090,7 +1090,7 @@ internal class KnownEvent
         }
     }
 
-    private class FinalizeObjectPayload : IReadOnlyDictionary<string, object>
+    private sealed class FinalizeObjectPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -1170,7 +1170,7 @@ internal class KnownEvent
         }
     }
 
-    private class SetGcHandlePayload : IReadOnlyDictionary<string, object>
+    private sealed class SetGcHandlePayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -1275,7 +1275,7 @@ internal class KnownEvent
         }
     }
 
-    private class DestroyGcHandlePayload : IReadOnlyDictionary<string, object>
+    private sealed class DestroyGcHandlePayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -1347,7 +1347,7 @@ internal class KnownEvent
         }
     }
 
-    private class PinObjectAtGcTimePayload : IReadOnlyDictionary<string, object>
+    private sealed class PinObjectAtGcTimePayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -1444,7 +1444,7 @@ internal class KnownEvent
         }
     }
 
-    private class GcTriggeredPayload : IReadOnlyDictionary<string, object>
+    private sealed class GcTriggeredPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -1516,7 +1516,7 @@ internal class KnownEvent
         }
     }
 
-    private class ThreadPoolWorkerThreadAdjustmentSamplePayload : IReadOnlyDictionary<string, object>
+    private sealed class ThreadPoolWorkerThreadAdjustmentSamplePayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -1588,7 +1588,7 @@ internal class KnownEvent
         }
     }
 
-    private class ThreadPoolWorkerThreadAdjustmentAdjustmentPayload : IReadOnlyDictionary<string, object>
+    private sealed class ThreadPoolWorkerThreadAdjustmentAdjustmentPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -1677,7 +1677,7 @@ internal class KnownEvent
         }
     }
 
-    private class ThreadPoolWorkerThreadAdjustmentStatsPayload : IReadOnlyDictionary<string, object>
+    private sealed class ThreadPoolWorkerThreadAdjustmentStatsPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -1824,7 +1824,7 @@ internal class KnownEvent
         }
     }
 
-    private class ThreadPoolWorkerThreadPayload : IReadOnlyDictionary<string, object>
+    private sealed class ThreadPoolWorkerThreadPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -1904,7 +1904,7 @@ internal class KnownEvent
         }
     }
 
-    private class YieldProcessorMeasurementPayload : IReadOnlyDictionary<string, object>
+    private sealed class YieldProcessorMeasurementPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -1984,7 +1984,7 @@ internal class KnownEvent
         }
     }
 
-    private class ExceptionPayload : IReadOnlyDictionary<string, object>
+    private sealed class ExceptionPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -2089,7 +2089,7 @@ internal class KnownEvent
         }
     }
 
-    private class ContentionPayload : IReadOnlyDictionary<string, object>
+    private sealed class ContentionPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -2161,7 +2161,7 @@ internal class KnownEvent
         }
     }
 
-    private class ThreadCreatedPayload : IReadOnlyDictionary<string, object>
+    private sealed class ThreadCreatedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -2266,7 +2266,7 @@ internal class KnownEvent
         }
     }
 
-    private class IlStubGeneratedPayload : IReadOnlyDictionary<string, object>
+    private sealed class IlStubGeneratedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -2413,7 +2413,7 @@ internal class KnownEvent
         }
     }
 
-    private class ContentionStopV1Payload : IReadOnlyDictionary<string, object>
+    private sealed class ContentionStopV1Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -2493,7 +2493,7 @@ internal class KnownEvent
         }
     }
 
-    private class MethodLoadUnloadVerboseV1Payload : IReadOnlyDictionary<string, object>
+    private sealed class MethodLoadUnloadVerboseV1Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -2631,7 +2631,7 @@ internal class KnownEvent
         }
     }
 
-    private class MethodLoadUnloadVerboseV2Payload : IReadOnlyDictionary<string, object>
+    private sealed class MethodLoadUnloadVerboseV2Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -2777,7 +2777,7 @@ internal class KnownEvent
         }
     }
 
-    private class MethodJittingStartedV1Payload : IReadOnlyDictionary<string, object>
+    private sealed class MethodJittingStartedV1Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -2898,7 +2898,7 @@ internal class KnownEvent
         }
     }
 
-    private class MethodJitMemoryAllocatedForCodePayload : IReadOnlyDictionary<string, object>
+    private sealed class MethodJitMemoryAllocatedForCodePayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -3011,7 +3011,7 @@ internal class KnownEvent
         }
     }
 
-    private class MethodJitInliningSucceededPayload : IReadOnlyDictionary<string, object>
+    private sealed class MethodJitInliningSucceededPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -3150,7 +3150,7 @@ internal class KnownEvent
         }
     }
 
-    private class MethodJitTailCallSucceededPayload : IReadOnlyDictionary<string, object>
+    private sealed class MethodJitTailCallSucceededPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -3305,7 +3305,7 @@ internal class KnownEvent
         }
     }
 
-    private class MethodJitInliningFailedPayload : IReadOnlyDictionary<string, object>
+    private sealed class MethodJitInliningFailedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -3460,7 +3460,7 @@ internal class KnownEvent
         }
     }
 
-    private class GcMarkWithTypePayload : IReadOnlyDictionary<string, object>
+    private sealed class GcMarkWithTypePayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -3548,7 +3548,7 @@ internal class KnownEvent
         }
     }
 
-    private class GcJoinV2Payload : IReadOnlyDictionary<string, object>
+    private sealed class GcJoinV2Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -3644,7 +3644,7 @@ internal class KnownEvent
         }
     }
 
-    private class ExceptionHandlingPayload : IReadOnlyDictionary<string, object>
+    private sealed class ExceptionHandlingPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -3732,7 +3732,7 @@ internal class KnownEvent
         }
     }
 
-    private class WaitHandleWaitStartPayload : IReadOnlyDictionary<string, object>
+    private sealed class WaitHandleWaitStartPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -3812,7 +3812,7 @@ internal class KnownEvent
         }
     }
 
-    private class WaitHandleWaitStopPayload : IReadOnlyDictionary<string, object>
+    private sealed class WaitHandleWaitStopPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -3876,7 +3876,7 @@ internal class KnownEvent
         }
     }
 
-    private class MethodLoadUnloadRundownVerboseV1Payload : IReadOnlyDictionary<string, object>
+    private sealed class MethodLoadUnloadRundownVerboseV1Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -4014,7 +4014,7 @@ internal class KnownEvent
         }
     }
 
-    private class MethodLoadUnloadRundownVerboseV2Payload : IReadOnlyDictionary<string, object>
+    private sealed class MethodLoadUnloadRundownVerboseV2Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -4160,7 +4160,7 @@ internal class KnownEvent
         }
     }
 
-    private class DcStartEndPayload : IReadOnlyDictionary<string, object>
+    private sealed class DcStartEndPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -4224,7 +4224,7 @@ internal class KnownEvent
         }
     }
 
-    private class DomainModuleLoadUnloadRundownV1Payload : IReadOnlyDictionary<string, object>
+    private sealed class DomainModuleLoadUnloadRundownV1Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -4345,7 +4345,7 @@ internal class KnownEvent
         }
     }
 
-    private class ModuleLoadUnloadRundownV2Payload : IReadOnlyDictionary<string, object>
+    private sealed class ModuleLoadUnloadRundownV2Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -4508,7 +4508,7 @@ internal class KnownEvent
         }
     }
 
-    private class AssemblyLoadUnloadRundownV1Payload : IReadOnlyDictionary<string, object>
+    private sealed class AssemblyLoadUnloadRundownV1Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -4613,7 +4613,7 @@ internal class KnownEvent
         }
     }
 
-    private class AppDomainLoadUnloadRundownV1Payload : IReadOnlyDictionary<string, object>
+    private sealed class AppDomainLoadUnloadRundownV1Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -4710,7 +4710,7 @@ internal class KnownEvent
         }
     }
 
-    private class RuntimeInformationRundownPayload : IReadOnlyDictionary<string, object>
+    private sealed class RuntimeInformationRundownPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -4889,7 +4889,7 @@ internal class KnownEvent
         }
     }
 
-    private class ThreadSamplePayload : IReadOnlyDictionary<string, object>
+    private sealed class ThreadSamplePayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -4953,7 +4953,7 @@ internal class KnownEvent
         }
     }
 
-    private class TaskScheduledPayload : IReadOnlyDictionary<string, object>
+    private sealed class TaskScheduledPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -5058,7 +5058,7 @@ internal class KnownEvent
         }
     }
 
-    private class TaskStartedPayload : IReadOnlyDictionary<string, object>
+    private sealed class TaskStartedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -5138,7 +5138,7 @@ internal class KnownEvent
         }
     }
 
-    private class TaskCompletedPayload : IReadOnlyDictionary<string, object>
+    private sealed class TaskCompletedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -5226,7 +5226,7 @@ internal class KnownEvent
         }
     }
 
-    private class TaskWaitBeginPayload : IReadOnlyDictionary<string, object>
+    private sealed class TaskWaitBeginPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -5323,7 +5323,7 @@ internal class KnownEvent
         }
     }
 
-    private class TaskWaitEndPayload : IReadOnlyDictionary<string, object>
+    private sealed class TaskWaitEndPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -5403,7 +5403,7 @@ internal class KnownEvent
         }
     }
 
-    private class AwaitTaskContinuationScheduledPayload : IReadOnlyDictionary<string, object>
+    private sealed class AwaitTaskContinuationScheduledPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -5484,7 +5484,7 @@ internal class KnownEvent
         }
     }
 
-    private class TaskWaitContinuationPayload : IReadOnlyDictionary<string, object>
+    private sealed class TaskWaitContinuationPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -5547,7 +5547,7 @@ internal class KnownEvent
         }
     }
 
-    private class BufferRentedPayload : IReadOnlyDictionary<string, object>
+    private sealed class BufferRentedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -5635,7 +5635,7 @@ internal class KnownEvent
         }
     }
 
-    private class BufferAllocatedPayload : IReadOnlyDictionary<string, object>
+    private sealed class BufferAllocatedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -5731,7 +5731,7 @@ internal class KnownEvent
         }
     }
 
-    private class BufferReturnedPayload : IReadOnlyDictionary<string, object>
+    private sealed class BufferReturnedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -5811,7 +5811,7 @@ internal class KnownEvent
         }
     }
 
-    private class BufferTrimmedPayload : IReadOnlyDictionary<string, object>
+    private sealed class BufferTrimmedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -5891,7 +5891,7 @@ internal class KnownEvent
         }
     }
 
-    private class BufferTrimPollPayload : IReadOnlyDictionary<string, object>
+    private sealed class BufferTrimPollPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -5963,7 +5963,7 @@ internal class KnownEvent
         }
     }
 
-    private class BufferDroppedPayload : IReadOnlyDictionary<string, object>
+    private sealed class BufferDroppedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -6059,7 +6059,7 @@ internal class KnownEvent
         }
     }
 
-    private class RequestStartPayload : IReadOnlyDictionary<string, object>
+    private sealed class RequestStartPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -6171,7 +6171,7 @@ internal class KnownEvent
         }
     }
 
-    private class RequestStopPayload : IReadOnlyDictionary<string, object>
+    private sealed class RequestStopPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -6235,7 +6235,7 @@ internal class KnownEvent
         }
     }
 
-    private class RequestFailedPayload : IReadOnlyDictionary<string, object>
+    private sealed class RequestFailedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -6299,7 +6299,7 @@ internal class KnownEvent
         }
     }
 
-    private class ConnectionEstablishedPayload : IReadOnlyDictionary<string, object>
+    private sealed class ConnectionEstablishedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -6371,7 +6371,7 @@ internal class KnownEvent
         }
     }
 
-    private class ConnectionClosedPayload : IReadOnlyDictionary<string, object>
+    private sealed class ConnectionClosedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -6443,7 +6443,7 @@ internal class KnownEvent
         }
     }
 
-    private class RequestLeftQueuePayload : IReadOnlyDictionary<string, object>
+    private sealed class RequestLeftQueuePayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -6523,7 +6523,7 @@ internal class KnownEvent
         }
     }
 
-    private class RequestHeaderStartPayload : IReadOnlyDictionary<string, object>
+    private sealed class RequestHeaderStartPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -6587,7 +6587,7 @@ internal class KnownEvent
         }
     }
 
-    private class RequestContentStopPayload : IReadOnlyDictionary<string, object>
+    private sealed class RequestContentStopPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -6651,7 +6651,7 @@ internal class KnownEvent
         }
     }
 
-    private class ResponseHeadersStopPayload : IReadOnlyDictionary<string, object>
+    private sealed class ResponseHeadersStopPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -6715,7 +6715,7 @@ internal class KnownEvent
         }
     }
 
-    private class RequestFailedDetailedPayload : IReadOnlyDictionary<string, object>
+    private sealed class RequestFailedDetailedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -6779,7 +6779,7 @@ internal class KnownEvent
         }
     }
 
-    private class RedirectPayload : IReadOnlyDictionary<string, object>
+    private sealed class RedirectPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -6843,7 +6843,7 @@ internal class KnownEvent
         }
     }
 
-    private class ConnectStartPayload : IReadOnlyDictionary<string, object>
+    private sealed class ConnectStartPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -6907,7 +6907,7 @@ internal class KnownEvent
         }
     }
 
-    private class SocketErrorPayload : IReadOnlyDictionary<string, object>
+    private sealed class SocketErrorPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -6979,7 +6979,7 @@ internal class KnownEvent
         }
     }
 
-    private class AcceptStartPayload : IReadOnlyDictionary<string, object>
+    private sealed class AcceptStartPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -7043,7 +7043,7 @@ internal class KnownEvent
         }
     }
 
-    private class ResolutionStartPayload : IReadOnlyDictionary<string, object>
+    private sealed class ResolutionStartPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -7107,7 +7107,7 @@ internal class KnownEvent
         }
     }
 
-    private class ServiceProviderBuiltPayload : IReadOnlyDictionary<string, object>
+    private sealed class ServiceProviderBuiltPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -7211,7 +7211,7 @@ internal class KnownEvent
         }
     }
 
-    private class ServiceProviderDescriptorsPayload : IReadOnlyDictionary<string, object>
+    private sealed class ServiceProviderDescriptorsPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -7299,7 +7299,7 @@ internal class KnownEvent
         }
     }
 
-    private class ServiceResolvedPayload : IReadOnlyDictionary<string, object>
+    private sealed class ServiceResolvedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -7371,7 +7371,7 @@ internal class KnownEvent
         }
     }
 
-    private class ScopeDisposedPayload : IReadOnlyDictionary<string, object>
+    private sealed class ScopeDisposedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -7451,7 +7451,7 @@ internal class KnownEvent
         }
     }
 
-    private class MemoryStreamCreatedPayload : IReadOnlyDictionary<string, object>
+    private sealed class MemoryStreamCreatedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -7539,7 +7539,7 @@ internal class KnownEvent
         }
     }
 
-    private class MemoryStreamDisposedPayload : IReadOnlyDictionary<string, object>
+    private sealed class MemoryStreamDisposedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -7635,7 +7635,7 @@ internal class KnownEvent
         }
     }
 
-    private class MemoryStreamDoubleDisposePayload : IReadOnlyDictionary<string, object>
+    private sealed class MemoryStreamDoubleDisposePayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -7731,7 +7731,7 @@ internal class KnownEvent
         }
     }
 
-    private class MemoryStreamFinalizedPayload : IReadOnlyDictionary<string, object>
+    private sealed class MemoryStreamFinalizedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -7811,7 +7811,7 @@ internal class KnownEvent
         }
     }
 
-    private class MemoryStreamToArrayPayload : IReadOnlyDictionary<string, object>
+    private sealed class MemoryStreamToArrayPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -7899,7 +7899,7 @@ internal class KnownEvent
         }
     }
 
-    private class MemoryStreamManagerInitializedPayload : IReadOnlyDictionary<string, object>
+    private sealed class MemoryStreamManagerInitializedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -7979,7 +7979,7 @@ internal class KnownEvent
         }
     }
 
-    private class MemoryStreamNewBlockCreatedPayload : IReadOnlyDictionary<string, object>
+    private sealed class MemoryStreamNewBlockCreatedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -8043,7 +8043,7 @@ internal class KnownEvent
         }
     }
 
-    private class MemoryStreamNewLargeBufferCreatedPayload : IReadOnlyDictionary<string, object>
+    private sealed class MemoryStreamNewLargeBufferCreatedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -8115,7 +8115,7 @@ internal class KnownEvent
         }
     }
 
-    private class MemoryStreamNonPooledLargeBufferCreatedPayload : IReadOnlyDictionary<string, object>
+    private sealed class MemoryStreamNonPooledLargeBufferCreatedPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -8203,7 +8203,7 @@ internal class KnownEvent
         }
     }
 
-    private class MemoryStreamDiscardBufferPayload : IReadOnlyDictionary<string, object>
+    private sealed class MemoryStreamDiscardBufferPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -8339,7 +8339,7 @@ internal class KnownEvent
         }
     }
 
-    private class MemoryStreamOverCapacityPayload : IReadOnlyDictionary<string, object>
+    private sealed class MemoryStreamOverCapacityPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [

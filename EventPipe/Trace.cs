@@ -1,6 +1,6 @@
 ﻿namespace EventPipe;
 
-public class Trace
+public sealed class Trace
 {
     internal Trace(TraceMetadata metadata, IReadOnlyList<EventMetadata> eventMetadata,
         IReadOnlyList<Event> events)

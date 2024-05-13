@@ -3,7 +3,7 @@
 namespace EventPipe;
 
 [DebuggerDisplay("{(Metadata.EventName.Length == 0 ? Metadata.EventId.ToString() : Metadata.EventName)}")]
-public class Event
+public sealed class Event
 {
     /// <summary>Uniquely identifies the <see cref="Event"/> in a <see cref="Trace"/>.</summary>
     public int Index { get; }

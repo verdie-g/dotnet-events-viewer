@@ -11,7 +11,7 @@ using EventPipe.FastSerializer;
 
 namespace EventPipe;
 
-public class EventPipeReader(Stream stream)
+public sealed class EventPipeReader(Stream stream)
 {
     private const int ReaderVersion = 4;
 
@@ -796,7 +796,7 @@ public class EventPipeReader(Stream stream)
         await writer.CompleteAsync();
     }
 
-    public class Progression
+    public sealed class Progression
     {
         internal Progression(long bytesRead, int eventsRead)
         {

@@ -1,6 +1,6 @@
 ﻿namespace EventPipe;
 
-public class MethodDescription
+public sealed class MethodDescription
 {
     public string Name { get; }
     public string Namespace { get; }

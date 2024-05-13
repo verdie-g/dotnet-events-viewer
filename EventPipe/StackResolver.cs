@@ -116,7 +116,7 @@ internal class StackResolver
         return methodDescription;
     }
 
-    private class StackTraceGroup
+    private sealed class StackTraceGroup
     {
         public required List<int> StackIndexes { get; init; }
         public required ulong[] Addresses { get; init; }

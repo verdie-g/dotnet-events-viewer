@@ -2,7 +2,7 @@ using System.Text;
 
 namespace EventPipe;
 
-public class StackTrace
+public sealed class StackTrace
 {
     public static StackTrace Empty { get; } = new(-1, Array.Empty<MethodDescription>());
 
