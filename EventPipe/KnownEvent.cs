@@ -100,33 +100,38 @@ internal class KnownEvent
         [new Key(HttpClientProvider, 5, 0)] = new("ConnectionClosed", null, ConnectionClosedPayload.FieldDefinitions, ConnectionClosedPayload.Parse),
         [new Key(HttpClientProvider, 6, 0)] = new("RequestLeftQueue", null, RequestLeftQueuePayload.FieldDefinitions, RequestLeftQueuePayload.Parse),
         [new Key(HttpClientProvider, 7, 1)] = new("RequestHeaderStart", EventOpcode.Start, RequestHeaderStartPayload.FieldDefinitions, RequestHeaderStartPayload.Parse),
-        [new Key(HttpClientProvider, 8, 0)] = new("RequestHeaderStop", EventOpcode.Stop, [], GetEmptyDictionary),
-        [new Key(HttpClientProvider, 9, 0)] = new("RequestContentStart", EventOpcode.Start, [], GetEmptyDictionary),
+        [new Key(HttpClientProvider, 8, 0)] = CreateEmpty("RequestHeaderStop", EventOpcode.Stop),
+        [new Key(HttpClientProvider, 9, 0)] = CreateEmpty("RequestContentStart", EventOpcode.Start),
         [new Key(HttpClientProvider, 10, 0)] = new("RequestContentStop", EventOpcode.Stop, RequestContentStopPayload.FieldDefinitions, RequestContentStopPayload.Parse),
-        [new Key(HttpClientProvider, 11, 0)] = new("ResponseHeadersStart", EventOpcode.Start, [], GetEmptyDictionary),
+        [new Key(HttpClientProvider, 11, 0)] = CreateEmpty("ResponseHeadersStart", EventOpcode.Start),
         [new Key(HttpClientProvider, 12, 1)] = new("ResponseHeadersStop", EventOpcode.Stop, ResponseHeadersStopPayload.FieldDefinitions, ResponseHeadersStopPayload.Parse),
-        [new Key(HttpClientProvider, 13, 0)] = new("ResponseContentStart", EventOpcode.Start, [], GetEmptyDictionary),
-        [new Key(HttpClientProvider, 14, 0)] = new("ResponseContentStop", EventOpcode.Stop, [], GetEmptyDictionary),
+        [new Key(HttpClientProvider, 13, 0)] = CreateEmpty("ResponseContentStart", EventOpcode.Start),
+        [new Key(HttpClientProvider, 14, 0)] = CreateEmpty("ResponseContentStop", EventOpcode.Stop),
         [new Key(HttpClientProvider, 15, 0)] = new("RequestFailedDetailed", null, RequestFailedDetailedPayload.FieldDefinitions, RequestFailedDetailedPayload.Parse),
         [new Key(HttpClientProvider, 16, 0)] = new("Redirect", null, RedirectPayload.FieldDefinitions, RedirectPayload.Parse),
         [new Key(SocketsProvider, 1, 0)] = new("ConnectStart", EventOpcode.Start, ConnectStartPayload.FieldDefinitions, ConnectStartPayload.Parse),
-        [new Key(SocketsProvider, 2, 0)] = new("ConnectStop", EventOpcode.Stop, [], GetEmptyDictionary),
+        [new Key(SocketsProvider, 2, 0)] = CreateEmpty("ConnectStop", EventOpcode.Stop),
         [new Key(SocketsProvider, 3, 0)] = new("ConnectFailed", null, SocketErrorPayload.FieldDefinitions, SocketErrorPayload.Parse),
         [new Key(SocketsProvider, 4, 0)] = new("AcceptStart", EventOpcode.Start, AcceptStartPayload.FieldDefinitions, AcceptStartPayload.Parse),
-        [new Key(SocketsProvider, 5, 0)] = new("AcceptStop", EventOpcode.Stop, [], GetEmptyDictionary),
+        [new Key(SocketsProvider, 5, 0)] = CreateEmpty("AcceptStop", EventOpcode.Stop),
         [new Key(SocketsProvider, 6, 0)] = new("AcceptFailed", null, SocketErrorPayload.FieldDefinitions, SocketErrorPayload.Parse),
         [new Key(DnsProvider, 1, 0)] = new("ResolutionStart", EventOpcode.Start, ResolutionStartPayload.FieldDefinitions, ResolutionStartPayload.Parse),
-        [new Key(DnsProvider, 2, 0)] = new("ResolutionStop", EventOpcode.Stop, [], GetEmptyDictionary),
-        [new Key(DnsProvider, 3, 0)] = new("ResolutionFailed", null, [], GetEmptyDictionary),
+        [new Key(DnsProvider, 2, 0)] = CreateEmpty("ResolutionStop", EventOpcode.Stop),
+        [new Key(DnsProvider, 3, 0)] = CreateEmpty("ResolutionFailed", null),
         [new Key(DependencyInjectionProvider, 156, 0)] = new("ServiceProviderBuilt", null, ServiceProviderBuiltPayload.FieldDefinitions, ServiceProviderBuiltPayload.Parse),
         [new Key(DependencyInjectionProvider, 157, 0)] = new("ServiceProviderDescriptors", null, ServiceProviderDescriptorsPayload.FieldDefinitions, ServiceProviderDescriptorsPayload.Parse),
         [new Key(DependencyInjectionProvider, 158, 0)] = new("ServiceResolved", null, ServiceResolvedPayload.FieldDefinitions, ServiceResolvedPayload.Parse),
         [new Key(DependencyInjectionProvider, 159, 0)] = new("ScopeDisposed", null, ScopeDisposedPayload.FieldDefinitions, ScopeDisposedPayload.Parse),
     }.ToFrozenDictionary();
 
-    private static IReadOnlyDictionary<string, object> GetEmptyDictionary(ref FastSerializerSequenceReader _)
+    private static KnownEvent CreateEmpty(string name, EventOpcode? opcode)
     {
-        return EmptyDictionary;
+        return new KnownEvent(name, opcode, [], GetEmptyDictionary);
+
+        static IReadOnlyDictionary<string, object> GetEmptyDictionary(ref FastSerializerSequenceReader _)
+        {
+            return EmptyDictionary;
+        }
     }
 
     public string EventName { get; }
