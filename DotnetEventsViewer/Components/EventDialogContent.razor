@@ -1,3 +1,4 @@
+@using System.Text.Json
 @using EventPipe
 
 @implements IDialogContentComponent<Event>
@@ -16,29 +17,31 @@
     </p>
     @if (Content.Payload.Count != 0)
     {
-        <ul>
-            @foreach (var field in Content.Payload)
-            {
-                <li>@field.Key: @field.Value</li>
-            }
-        </ul>
+        <pre>
+            <code>@JsonSerializer.Serialize(Content.Payload, SerializerOptions)</code>
+        </pre>
     }
     @if (Content.StackTrace.Frames.Length != 0)
     {
         <p>Stack Trace:</p>
         <pre>
-        <code>
-        @foreach (var frame in Content.StackTrace.Frames)
-        {
-            @:0x@(frame.Address.ToString("X")) @(frame.ToString())@(Environment.NewLine)
-        }
-        </code>
-    </pre>
+            <code>
+            @foreach (var frame in Content.StackTrace.Frames)
+            {
+                @:0x@(frame.Address.ToString("X")) @(frame.ToString())@(Environment.NewLine)
+            }
+            </code>
+        </pre>
     }
 </FluentDialogBody>
 
 @code
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        WriteIndented = true,
+    };
+
     [Parameter]
     public Event Content { get; set; } = null!;
 }
