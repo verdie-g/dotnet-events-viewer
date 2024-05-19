@@ -1,29 +1,44 @@
-﻿namespace EventPipe;
+﻿using System.Runtime.InteropServices;
+
+namespace EventPipe;
 
 internal class StackResolver
 {
     private static readonly MethodDescription UnresolvedMethodDescription = new("??", "", "", 0, 0);
 
-    private readonly Dictionary<StackTraceGroupKey, StackTraceGroup> _stackTraceToStackGroup = new();
+    private readonly Dictionary<int, List<StackTraceGroup>> _groupedStackTraces = new();
     private readonly List<MethodDescription> _methodDescriptions = [];
 
-    public void AddStackAddresses(int stackIndex, ulong[] addresses)
+    public void AddStackAddresses(int stackIndex, ReadOnlySpan<ulong> addresses)
     {
-        StackTraceGroupKey groupKey = new(addresses);
-        if (_stackTraceToStackGroup.TryGetValue(groupKey, out var group))
+        int addressesHash = ComputeAddressesHash(addresses);
+        if (!_groupedStackTraces.TryGetValue(addressesHash, out var collisions))
         {
-            group.StackIndexes.Add(stackIndex);
-        }
-        else
-        {
-            group = new StackTraceGroup
+            StackTraceGroup group = new()
             {
                 StackIndexes = [stackIndex],
-                Addresses = addresses,
+                Addresses = addresses.ToArray(),
                 StackTrace = null,
             };
-            _stackTraceToStackGroup[groupKey] = group;
+            _groupedStackTraces[addressesHash] = [group];
+            return;
         }
+
+        foreach (var collision in CollectionsMarshal.AsSpan(collisions))
+        {
+            if (addresses.SequenceEqual(collision.Addresses))
+            {
+                collision.StackIndexes.Add(stackIndex);
+                return;
+            }
+        }
+
+        collisions.Add(new StackTraceGroup
+        {
+            StackIndexes = [stackIndex],
+            Addresses = addresses.ToArray(),
+            StackTrace = null,
+        });
     }
 
     public void AddMethodSymbolInfo(MethodDescription methodDescription)
@@ -33,12 +48,15 @@ internal class StackResolver
 
     public void ResolveEventStackTraces(List<Event> events)
     {
-        Dictionary<int, StackTraceGroup> stackIndexToStackTraceGroup = new(_stackTraceToStackGroup.Count);
-        foreach (var kvp in _stackTraceToStackGroup)
+        Dictionary<int, StackTraceGroup> stackIndexToStackTraceGroup = new(_groupedStackTraces.Count);
+        foreach (var kvp in _groupedStackTraces)
         {
-            foreach (var stackIndex in kvp.Value.StackIndexes)
+            foreach (var collision in kvp.Value)
             {
-                stackIndexToStackTraceGroup[stackIndex] = kvp.Value;
+                foreach (var stackIndex in collision.StackIndexes)
+                {
+                    stackIndexToStackTraceGroup[stackIndex] = collision;
+                }
             }
         }
 
@@ -123,26 +141,14 @@ internal class StackResolver
         public StackTrace? StackTrace { get; set; }
     }
 
-    private readonly struct StackTraceGroupKey(ulong[] addresses) : IEquatable<StackTraceGroupKey>
+    private static int ComputeAddressesHash(ReadOnlySpan<ulong> addresses)
     {
-        private readonly ulong[] _addresses = addresses;
-        private readonly int _hashCode = GetHashCode(addresses);
-
-        public bool Equals(StackTraceGroupKey other) => _addresses.SequenceEqual(other._addresses);
-
-        public override bool Equals(object? obj) => obj is StackTraceGroupKey other && Equals(other);
-
-        public override int GetHashCode() => _hashCode;
-
-        private static int GetHashCode(ulong[] addresses)
+        HashCode h = new();
+        foreach (ulong addr in addresses)
         {
-            HashCode h = new();
-            foreach (ulong addr in addresses)
-            {
-                h.Add(addr);
-            }
-
-            return h.ToHashCode();
+            h.Add(addr);
         }
+
+        return h.ToHashCode();
     }
 }

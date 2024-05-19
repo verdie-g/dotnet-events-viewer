@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using EventPipe.FastSerializer;
 
@@ -272,21 +273,31 @@ public sealed class EventPipeReader(Stream stream)
         int firstId = reader.ReadInt32();
         int count = reader.ReadInt32();
 
+        int stackIndex = _lastStackIndex;
         for (int i = 0; i < count; i += 1)
         {
+            int stackId = firstId + i;
+            stackIndex = _stackIndexOffset + stackId;
+
             int stackSize = reader.ReadInt32();
-            int addressesCount = stackSize / sizeof(ulong);
-            var addresses = new ulong[addressesCount];
-            for (int j = 0; j < addressesCount; j += 1)
+
+            ReadOnlySpan<ulong> addresses;
+            var unreadSpan = reader.UnreadSpan;
+            if (unreadSpan.Length >= stackSize)
             {
-                addresses[j] = (ulong)reader.ReadInt64();
+                addresses = MemoryMarshal.Cast<byte, ulong>(unreadSpan[..stackSize]);
+                _stackResolver.AddStackAddresses(stackIndex, addresses);
+                reader.Advance(stackSize);
+                continue;
             }
 
-            int stackId = firstId + i;
-            int stackIndex = _stackIndexOffset + stackId;
-            _lastStackIndex = stackIndex;
+            var addressBytes = reader.ReadBytes(stackSize).ToArray();
+            addresses = MemoryMarshal.Cast<byte, ulong>(addressBytes);
             _stackResolver.AddStackAddresses(stackIndex, addresses);
+
         }
+
+        _lastStackIndex = stackIndex;
     }
 
     private void ReadMetadataOrEventBlock(ref FastSerializerSequenceReader reader, long blockSize)
