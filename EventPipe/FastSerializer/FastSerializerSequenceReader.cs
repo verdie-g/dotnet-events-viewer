@@ -103,6 +103,14 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
 
     public bool TryReadSingle(out float value)
     {
+        var unreadSpan = _reader.UnreadSpan;
+        if (unreadSpan.Length >= sizeof(float))
+        {
+            value = BinaryPrimitives.ReadSingleBigEndian(unreadSpan[..sizeof(float)]);
+            Advance(sizeof(float));
+            return true;
+        }
+
         if (!TryReadBytes(sizeof(float), out var singleSeq))
         {
             value = default;
@@ -123,6 +131,14 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
 
     public bool TryReadDouble(out double value)
     {
+        var unreadSpan = _reader.UnreadSpan;
+        if (unreadSpan.Length >= sizeof(double))
+        {
+            value = BinaryPrimitives.ReadSingleBigEndian(unreadSpan[..sizeof(double)]);
+            Advance(sizeof(double));
+            return true;
+        }
+
         if (!TryReadBytes(sizeof(double), out var doubleSeq))
         {
             value = default;
