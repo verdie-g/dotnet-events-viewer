@@ -194,6 +194,14 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
     public bool TryReadGuid(out Guid value)
     {
         const int guidSize = 16;
+        var unreadSpan = _reader.UnreadSpan;
+        if (unreadSpan.Length >= guidSize)
+        {
+            value = new Guid(unreadSpan[..guidSize]);
+            Advance(guidSize);
+            return true;
+        }
+
         if (!_reader.TryReadExact(guidSize, out var seq))
         {
             value = default;
