@@ -134,7 +134,7 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
         var unreadSpan = _reader.UnreadSpan;
         if (unreadSpan.Length >= sizeof(double))
         {
-            value = BinaryPrimitives.ReadSingleBigEndian(unreadSpan[..sizeof(double)]);
+            value = BinaryPrimitives.ReadDoubleBigEndian(unreadSpan[..sizeof(double)]);
             Advance(sizeof(double));
             return true;
         }
