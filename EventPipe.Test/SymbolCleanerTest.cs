@@ -102,7 +102,6 @@ public class SymbolCleanerTest
             "instance void ()")
         {
             ExpectedResult = "System.Net.Http.HttpClient+<<SendAsync>g__Core|83_0>d.MoveNext()",
-            RunState = RunState.Ignored,
         };
         yield return new TestCaseData(
             "Sdk.Connection.GhostClientBase`2+<Process>d__42[System.__Canon,System.__Canon]",
@@ -126,6 +125,20 @@ public class SymbolCleanerTest
             "instance class System.Threading.Tasks.Task`1<value class Ghost.Contract.InvocationResult> (class Ghost.Transports.Http.Contract.IHttpRequest,class Ghost.Transports.Http.Contract.IHttpResponse,value class System.Threading.CancellationToken)")
         {
             ExpectedResult = "Ghost.Transports.Http.Common.Middlewares.HttpExceptionMiddleware.Invoke(Ghost.Transports.Http.Contract.IHttpRequest, Ghost.Transports.Http.Contract.IHttpResponse, System.Threading.CancellationToken)",
+        };
+        yield return new TestCaseData(
+            "LZ4.LZ4Stream",
+            "Write",
+            "instance void  (unsigned int8[],int32,int32)")
+        {
+            ExpectedResult = "LZ4.LZ4Stream.Write(unsigned int8[], int32, int32)",
+        };
+        yield return new TestCaseData(
+            "Contoso.API.Versatile.Functions.FlattenedFunction",
+            "Evaluate",
+            "instance value class Criteo.API.Versatile.EnumerableVariant  (class System.Collections.Generic.IEnumerable`1<value class Criteo.API.Versatile.EnumerableVariant>)")
+        {
+            ExpectedResult = "Contoso.API.Versatile.Functions.FlattenedFunction.Evaluate(System.Collections.Generic.IEnumerable<Criteo.API.Versatile.EnumerableVariant>)",
         };
     }
 }

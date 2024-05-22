@@ -22,44 +22,69 @@ internal static class SymbolCleaner
         return sb.ToString();
     }
 
-    private static ReadOnlySpan<char> AppendCleanedType(StringBuilder sb, ReadOnlySpan<char> ns)
+    private static ReadOnlySpan<char> AppendCleanedType(StringBuilder sb, ReadOnlySpan<char> str)
     {
+        bool subType = false;
         while (true)
         {
-            var typeNameEndIndex = ns.IndexOfAny(TypeEndSearchValues);
-            if (typeNameEndIndex != -1
-                && ns[typeNameEndIndex] == '>'
-                && sb.Length != 0
-                && sb[^1] == '+')
+            str = TrimWordStart(str, "required_modifier ");
+            str = TrimWordStart(str, "System.Runtime.InteropServices.InAttribute ");
+            str = TrimWordStart(str, "value ");
+            str = TrimWordStart(str, "class ");
+
+            int typeNameEndIndex = str.IndexOfAny(TypeEndSearchValues);
+
+            // Weird case where a subclass can contain angle brackets.
+            while (typeNameEndIndex != -1
+                   && str[typeNameEndIndex] == '>'
+                   && subType)
             {
-                // Weird case where a subclass can contain angle brackets. In that case, run the search again.
-                int typeNameEndIndex2 = ns[(typeNameEndIndex + 1)..].IndexOfAny(TypeEndSearchValues);
+                int typeNameEndIndex2 = str[(typeNameEndIndex + 1)..].IndexOfAny(TypeEndSearchValues);
+                typeNameEndIndex = typeNameEndIndex2 == -1 ? -1 : typeNameEndIndex + 1 + typeNameEndIndex2;
+            }
+
+            bool isWeirdTypeName = typeNameEndIndex != -1
+                                   && str[typeNameEndIndex] == '>'
+                                   && subType;
+            if (isWeirdTypeName)
+            {
+                int typeNameEndIndex2 = str[(typeNameEndIndex + 1)..].IndexOfAny(TypeEndSearchValues);
+                typeNameEndIndex = typeNameEndIndex2 == -1 ? -1 : typeNameEndIndex + 1 + typeNameEndIndex2;
+            }
+
+            // A ']' was found, continue the search if it's from an array type '[]'.
+            if (typeNameEndIndex != -1
+                && str[typeNameEndIndex] == ']'
+                && str[typeNameEndIndex - 1] == '[')
+            {
+                int typeNameEndIndex2 = str[(typeNameEndIndex + 1)..].IndexOfAny(TypeEndSearchValues);
                 typeNameEndIndex = typeNameEndIndex2 == -1 ? -1 : typeNameEndIndex + 1 + typeNameEndIndex2;
             }
 
             if (typeNameEndIndex == -1
-                || ns[typeNameEndIndex] is ',' or ']' or ')' or '>')
+                || str[typeNameEndIndex] is ',' or ']' or ')' or '>')
             {
-                var typeName = typeNameEndIndex == -1 ? ns : ns[..typeNameEndIndex];
+                var typeName = typeNameEndIndex == -1 ? str : str[..typeNameEndIndex];
                 AppendPrettifiedType(sb, typeName);
-                return ns[typeName.Length..];
+                return str[typeName.Length..];
             }
 
-            if (ns[typeNameEndIndex] == '`')
+            if (str[typeNameEndIndex] == '`')
             {
-                AppendPrettifiedType(sb, ns[..typeNameEndIndex]);
-                ns = AppendTypeArguments(sb, ns[typeNameEndIndex..]);
+                AppendPrettifiedType(sb, str[..typeNameEndIndex]);
+                str = AppendTypeArguments(sb, str[typeNameEndIndex..]);
             }
-            else if (ns[typeNameEndIndex] == '+')
+            else if (str[typeNameEndIndex] == '+')
             {
-                AppendPrettifiedType(sb, ns[..typeNameEndIndex]);
+                AppendPrettifiedType(sb, str[..typeNameEndIndex]);
                 sb.Append('+');
-                ns = ns[(typeNameEndIndex + 1)..];
+                str = str[(typeNameEndIndex + 1)..];
+                subType = true;
             }
 
-            if (ns.Length == 0)
+            if (str.Length == 0)
             {
-                return ns;
+                return str;
             }
         }
     }
@@ -119,7 +144,7 @@ internal static class SymbolCleaner
         {
             while (signature.Length > 0)
             {
-                signature = AppendCleanedArgument(sb, signature);
+                signature = AppendCleanedType(sb, signature);
                 sb.Append(", ");
                 signature = signature[1..];
             }
@@ -128,20 +153,6 @@ internal static class SymbolCleaner
         }
 
         sb.Append(')');
-    }
-
-    private static ReadOnlySpan<char> AppendCleanedArgument(StringBuilder sb, ReadOnlySpan<char> argument)
-    {
-        argument = TrimWordStart(argument, "required_modifier ");
-        argument = TrimWordStart(argument, "System.Runtime.InteropServices.InAttribute ");
-        argument = TrimWordStart(argument, "value ");
-        argument = TrimWordStart(argument, "class ");
-        return AppendCleanedType(sb, argument);
-
-        static ReadOnlySpan<char> TrimWordStart(ReadOnlySpan<char> span, ReadOnlySpan<char> word)
-        {
-            return span.StartsWith(word) ? span[word.Length..] : span;
-        }
     }
 
     private static void AppendPrettifiedType(StringBuilder sb, ReadOnlySpan<char> ns)
@@ -173,6 +184,11 @@ internal static class SymbolCleaner
 
         sb.Append(ns);
         sb.Append(suffix);
+    }
+
+    private static ReadOnlySpan<char> TrimWordStart(ReadOnlySpan<char> span, ReadOnlySpan<char> word)
+    {
+        return span.StartsWith(word) ? span[word.Length..] : span;
     }
 
     private static int CharToInt(char c)
