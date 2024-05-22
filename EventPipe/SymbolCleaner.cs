@@ -16,8 +16,17 @@ internal static class SymbolCleaner
     {
         StringBuilder sb = new(capacity: ns.Length + name.Length + signature.Length);
         AppendCleanedType(sb, ns);
-        sb.Append('.');
-        sb.Append(name);
+
+        if (name == ".ctor")
+        {
+            sb.Insert(0, "new ");
+        }
+        else
+        {
+            sb.Append('.');
+            sb.Append(name);
+        }
+
         AppendCleanedArguments(sb, signature);
         return sb.ToString();
     }

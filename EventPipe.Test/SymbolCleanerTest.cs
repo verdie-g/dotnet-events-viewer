@@ -72,7 +72,7 @@ public class SymbolCleanerTest
             "instance void (class Contoso.ConfigAsCode.IConfigAsCodeService)")
         {
             ExpectedResult =
-                "Contoso.Features.Data.FeatureAggregationCookieService..ctor(Contoso.ConfigAsCode.IConfigAsCodeService)",
+                "new Contoso.Features.Data.FeatureAggregationCookieService(Contoso.ConfigAsCode.IConfigAsCodeService)",
         };
         yield return new TestCaseData(
             "System.Diagnostics.Tracing.EventPipeEventProvider",
