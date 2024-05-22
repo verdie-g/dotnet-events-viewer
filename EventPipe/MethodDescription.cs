@@ -11,7 +11,6 @@ public sealed class MethodDescription
     public MethodDescription(string name, string @namespace)
         : this(name, @namespace, "", 0, 0)
     {
-
     }
 
     internal MethodDescription(string name, string @namespace, string signature, ulong address,
@@ -28,7 +27,7 @@ public sealed class MethodDescription
     {
         if (Namespace.Length != 0 && Name.Length != 0)
         {
-            return Namespace + '.' + Name;
+            return SymbolCleaner.Clean(Namespace, Name, Signature);
         }
 
         return Name;
