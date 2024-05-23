@@ -189,16 +189,36 @@ internal static class SymbolCleaner
 
             if (str[i] == '>')
             {
-                if (str[i + 1] == 'd')
+                if (str[i + 1] is 'd' or 'b')
                 {
                     i += 4; // Skips >d__
                     i += SkipDigits(str[i..]);
                     return i;
                 }
 
-                i += 3; // Skips g__
-                sb.Append('.');
-                continue;
+                if (str[i + 1] == 'g')
+                {
+                    i += 3; // Skips g__
+                    sb.Append('.');
+                    continue;
+                }
+
+                if (str[i + 1] == 'c')
+                {
+                    if (i + 2 >= str.Length)
+                    {
+                        return str.Length;
+                    }
+
+                    i += 16; // Skips >c__DisplayClass
+                    i += SkipDigits(str[i..]);
+                    i += 1; // Skips _
+                    i += SkipDigits(str[i..]);
+                    continue;
+                }
+
+                // Error
+                return str.Length;
             }
 
             if (str[i] == '|')

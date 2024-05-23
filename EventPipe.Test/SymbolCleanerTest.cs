@@ -125,10 +125,10 @@ public class SymbolCleanerTest
         yield return new TestCaseData(
             "Contoso.API.Versatile.Functions.FlattenedFunction",
             "Evaluate",
-            "instance value class Criteo.API.Versatile.EnumerableVariant  (class System.Collections.Generic.IEnumerable`1<value class Criteo.API.Versatile.EnumerableVariant>)")
+            "instance value class Contoso.API.Versatile.EnumerableVariant  (class System.Collections.Generic.IEnumerable`1<value class Contoso.API.Versatile.EnumerableVariant>)")
         {
             TestName = "Generic argument",
-            ExpectedResult = "Contoso.API.Versatile.Functions.FlattenedFunction.Evaluate(System.Collections.Generic.IEnumerable<Criteo.API.Versatile.EnumerableVariant>)",
+            ExpectedResult = "Contoso.API.Versatile.Functions.FlattenedFunction.Evaluate(System.Collections.Generic.IEnumerable<Contoso.API.Versatile.EnumerableVariant>)",
         };
         yield return new TestCaseData(
             "Program",
@@ -196,6 +196,14 @@ public class SymbolCleanerTest
             TestName = "Lambda",
             ExpectedResult = "Program.Main.lambda(int, System.Object)",
             RunState = RunState.Ignored,
+        };
+        yield return new TestCaseData(
+            "Contoso.CookiesUpdater.PublisherCookiesUpdater+<>c__DisplayClass10_0+<<OnBidRequest>b__0>d",
+            "MoveNext",
+            "instance void  ()")
+        {
+            TestName = "Async lambda",
+            ExpectedResult = "Contoso.CookiesUpdater.PublisherCookiesUpdater.OnBidRequest()",
         };
         yield return new TestCaseData(
             "Program+<>c__DisplayClass7_0",
