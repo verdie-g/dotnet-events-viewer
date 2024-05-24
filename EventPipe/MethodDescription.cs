@@ -27,7 +27,14 @@ public sealed class MethodDescription
     {
         if (Namespace.Length != 0 && Name.Length != 0)
         {
-            return SymbolCleaner.Clean(Namespace, Name, Signature);
+            try
+            {
+                return SymbolCleaner.Clean(Namespace, Name, Signature);
+            }
+            catch // It's hard to handle all cases so better have a fallback here.
+            {
+                return Namespace + "." + Name;
+            }
         }
 
         return Name;
