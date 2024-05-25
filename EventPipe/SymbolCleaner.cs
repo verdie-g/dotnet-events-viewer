@@ -35,6 +35,7 @@ internal static class SymbolCleaner
     private static int AppendCleanedType(StringBuilder sb, ReadOnlySpan<char> str)
     {
         int typeNameStartIndex = -1;
+        bool subType = false;
         int i;
         for (i = 0; i < str.Length; i += 1)
         {
@@ -57,14 +58,7 @@ internal static class SymbolCleaner
                 continue;
             }
 
-            if (str[i] == '<')
-            {
-                i += AppendCleanedGeneratedType(sb, str[i..]);
-                i -= 1;
-                continue;
-            }
-
-            if (str[i] is '`' or '[')
+            if (str[i] is '`' or '[' or '<')
             {
                 if (typeNameStartIndex != -1)
                 {
@@ -72,7 +66,16 @@ internal static class SymbolCleaner
                     typeNameStartIndex = -1;
                 }
 
-                i += AppendTypeArguments(sb, str[i..], hasTildeHeader: str[i] == '`');
+                // Some subclass names can contain '<', in that case it's not the start of type arguments.
+                if (str[i] == '<' && subType)
+                {
+                    i += AppendCleanedGeneratedType(sb, str[i..]);
+                }
+                else
+                {
+                    i += AppendTypeArguments(sb, str[i..], hasTildeHeader: str[i] == '`');
+                }
+
                 i -= 1;
                 continue;
             }
@@ -86,6 +89,7 @@ internal static class SymbolCleaner
                 }
 
                 sb.Append('+');
+                subType = true;
                 continue;
             }
 
@@ -180,10 +184,23 @@ internal static class SymbolCleaner
             sb[^1] = '.';
         }
 
-        for (int i = 0; i < str.Length; i += 1)
+        int i = 0;
+        for (; i < str.Length;)
         {
+            if (str[i] is '[')
+            {
+                break;
+            }
+
+            if (str[i] == '+')
+            {
+                i += 1;
+                continue;
+            }
+
             if (str[i] == '<')
             {
+                i += 1;
                 continue;
             }
 
@@ -198,18 +215,21 @@ internal static class SymbolCleaner
 
                 if (str[i + 1] == 'g')
                 {
-                    i += 3; // Skips g__
+                    i += 4; // Skips >g__
                     sb.Append('.');
                     continue;
                 }
 
                 if (str[i + 1] == 'c')
                 {
-                    if (i + 2 >= str.Length)
+                    sb.Append("()=>{}");
+                    if (i + 2 == str.Length || str[i + 2] != '_')
                     {
-                        return str.Length;
+                        i += 2; // Skips >c
+                        continue;
                     }
 
+                    sb.Append('.');
                     i += 16; // Skips >c__DisplayClass
                     i += SkipDigits(str[i..]);
                     i += 1; // Skips _
@@ -225,16 +245,21 @@ internal static class SymbolCleaner
             {
                 i += 1; // Skips |
                 i += SkipDigits(str[i..]);
-                i += 1; // Skips _
-                i += SkipDigits(str[i..]);
+                if (str[i] == '_')
+                {
+                    i += 1; // Skips _
+                    i += SkipDigits(str[i..]);
+                }
+
                 i += 2; // Skips >d
                 return i;
             }
 
             sb.Append(str[i]);
+            i += 1;
         }
 
-        return str.Length;
+        return i;
 
         static int SkipDigits(ReadOnlySpan<char> s)
         {
