@@ -61,11 +61,11 @@ public class EventPipeReaderTest
             Assert.That(trace.Events[0].ActivityId, Is.EqualTo(Guid.Empty));
             Assert.That(trace.Events[0].RelatedActivityId, Is.EqualTo(Guid.Empty));
             Assert.That(trace.Events[0].Payload, Has.Count.EqualTo(5));
-            Assert.That(trace.Events[0].Payload, Does.ContainKey("OriginatingTaskSchedulerID").WithValue(1));
-            Assert.That(trace.Events[0].Payload, Does.ContainKey("OriginatingTaskID").WithValue(0));
-            Assert.That(trace.Events[0].Payload, Does.ContainKey("TaskID").WithValue(4));
-            Assert.That(trace.Events[0].Payload, Does.ContainKey("Behavior").WithValue(2));
-            Assert.That(trace.Events[0].Payload, Does.ContainKey("ContinueWithTaskID").WithValue(5));
+            Assert.That(trace.Events[0].Payload["OriginatingTaskSchedulerID"], Is.EqualTo(1));
+            Assert.That(trace.Events[0].Payload["OriginatingTaskID"], Is.EqualTo(0));
+            Assert.That(trace.Events[0].Payload["TaskID"], Is.EqualTo(4));
+            Assert.That(trace.Events[0].Payload["Behavior"], Is.EqualTo(2));
+            Assert.That(trace.Events[0].Payload["ContinueWithTaskID"], Is.EqualTo(5));
 
             Assert.That(trace.Events[1].Index, Is.EqualTo(1));
             Assert.That(trace.Events[1].SequenceNumber, Is.EqualTo(2));
@@ -76,11 +76,11 @@ public class EventPipeReaderTest
             Assert.That(trace.Events[1].ActivityId, Is.EqualTo(Guid.Empty));
             Assert.That(trace.Events[1].RelatedActivityId, Is.EqualTo(Guid.Empty));
             Assert.That(trace.Events[1].Payload, Has.Count.EqualTo(5));
-            Assert.That(trace.Events[1].Payload, Does.ContainKey("OriginatingTaskSchedulerID").WithValue(1));
-            Assert.That(trace.Events[1].Payload, Does.ContainKey("OriginatingTaskID").WithValue(0));
-            Assert.That(trace.Events[1].Payload, Does.ContainKey("TaskID").WithValue(5));
-            Assert.That(trace.Events[1].Payload, Does.ContainKey("Behavior").WithValue(2));
-            Assert.That(trace.Events[1].Payload, Does.ContainKey("ContinueWithTaskID").WithValue(3));
+            Assert.That(trace.Events[1].Payload["OriginatingTaskSchedulerID"], Is.EqualTo(1));
+            Assert.That(trace.Events[1].Payload["OriginatingTaskID"], Is.EqualTo(0));
+            Assert.That(trace.Events[1].Payload["TaskID"], Is.EqualTo(5));
+            Assert.That(trace.Events[1].Payload["Behavior"], Is.EqualTo(2));
+            Assert.That(trace.Events[1].Payload["ContinueWithTaskID"], Is.EqualTo(3));
         });
     }
 
