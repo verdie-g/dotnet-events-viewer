@@ -7,7 +7,7 @@ internal class AllocationSizeAggregator : ICallTreeCountAggregator
 {
     public static AllocationSizeAggregator Instance { get; } = new();
 
-    public string Name => "Allocation Size";
+    public string Name => "Allocation Size (sampled)";
 
     public EventKey? StartEventKey { get; } = new(KnownProviders.Runtime, "GCAllocationTick", 10);
 
