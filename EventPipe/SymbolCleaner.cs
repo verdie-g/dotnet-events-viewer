@@ -305,6 +305,19 @@ internal static class SymbolCleaner
             return;
         }
 
+        str = str switch
+        {
+            "int16" => "short",
+            "int32" => "int",
+            "unsigned int32" => "uint",
+            "float32" => "float",
+            "float64" => "double",
+            "System.Int32" => "int",
+            "System.Object" => "object",
+            "System.String" => "string",
+            _ => str,
+        };
+
         sb.Append(str);
         sb.Append(suffix);
     }

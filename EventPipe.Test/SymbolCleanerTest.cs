@@ -19,7 +19,7 @@ public class SymbolCleanerTest
         {
             TestName = "Generic method",
             ExpectedResult =
-                "System.Collections.Concurrent.ConcurrentDictionary<T, T>.TryAddInternal(T, System.Nullable<int32>, T, bool, bool, T&)",
+                "System.Collections.Concurrent.ConcurrentDictionary<T, T>.TryAddInternal(T, System.Nullable<int>, T, bool, bool, T&)",
         };
         yield return new TestCaseData(
             "System.Threading.ExecutionContext",
@@ -28,7 +28,7 @@ public class SymbolCleanerTest
         {
             TestName = "Normal method",
             ExpectedResult =
-                "System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext, System.Threading.ContextCallback, System.Object)",
+                "System.Threading.ExecutionContext.RunInternal(System.Threading.ExecutionContext, System.Threading.ContextCallback, object)",
         };
         yield return new TestCaseData(
             "System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1+AsyncStateMachineBox`1[Contoso.Cookies.Cookies.EntryFetched,Contoso.Cookies.CookieSet+<GetEntryAsync>d__24]",
@@ -72,7 +72,7 @@ public class SymbolCleanerTest
         {
             TestName = "ref/in/ptr parameters",
             ExpectedResult =
-                "System.Diagnostics.Tracing.EventPipeEventProvider.EventWriteTransfer(System.Diagnostics.Tracing.EventDescriptor&, int, System.Guid*, System.Guid*, int32, EventData*)",
+                "System.Diagnostics.Tracing.EventPipeEventProvider.EventWriteTransfer(System.Diagnostics.Tracing.EventDescriptor&, int, System.Guid*, System.Guid*, int, EventData*)",
         };
         yield return new TestCaseData(
             "Contoso.Cookies.CookieEntry",
@@ -80,7 +80,7 @@ public class SymbolCleanerTest
             "instance generic value class Contoso.Cookies.EntryGetResult (!!0&,class System.Exception&,int32,bool)")
         {
             TestName = "Generic method with !!0",
-            ExpectedResult = "Contoso.Cookies.CookieEntry.TryGet(T&, System.Exception&, int32, bool)",
+            ExpectedResult = "Contoso.Cookies.CookieEntry.TryGet(T&, System.Exception&, int, bool)",
         };
         yield return new TestCaseData(
             "System.Collections.Immutable.ImmutableDictionary`2[Contoso.Banners.Configuration.Inventory.Sources.InventoryAvailabilityKey,Contoso.Banners.Configuration.Inventory.Sources.AvailableBanner]",
@@ -88,7 +88,7 @@ public class SymbolCleanerTest
             "class System.Collections.Immutable.ImmutableDictionary`2<!0,!1>  (class System.Collections.Immutable.SortedInt32KeyNode`1<value class HashBucket<!0,!1>>,class Comparers<!0,!1>,int32)")
         {
             TestName = "Generic arguments using angle brackets and no tilde",
-            ExpectedResult = "System.Collections.Immutable.ImmutableDictionary<Contoso.Banners.Configuration.Inventory.Sources.InventoryAvailabilityKey, Contoso.Banners.Configuration.Inventory.Sources.AvailableBanner>.Wrap(System.Collections.Immutable.SortedInt32KeyNode<HashBucket<T, T>>, Comparers<T, T>, int32)",
+            ExpectedResult = "System.Collections.Immutable.ImmutableDictionary<Contoso.Banners.Configuration.Inventory.Sources.InventoryAvailabilityKey, Contoso.Banners.Configuration.Inventory.Sources.AvailableBanner>.Wrap(System.Collections.Immutable.SortedInt32KeyNode<HashBucket<T, T>>, Comparers<T, T>, int)",
         };
         yield return new TestCaseData(
             "Sdk.Connection.GhostClientBase`2+<Process>d__42[System.__Canon,System.__Canon]",
@@ -140,7 +140,7 @@ public class SymbolCleanerTest
         {
             TestName = "Value tuple argument",
             ExpectedResult =
-                "Program.InstanceMethod(System.ValueTuple<int32, int16, float32, System.String, System.Guid>)",
+                "Program.InstanceMethod(System.ValueTuple<int, short, float, string, System.Guid>)",
         };
         yield return new TestCaseData(
             "Program+<InstanceMethodAsync>d__3",
@@ -189,7 +189,7 @@ public class SymbolCleanerTest
         {
             TestName = "Lambda in constructor",
             ExpectedResult =
-                "System.Threading.Tasks.Task+DelayPromiseWithCancellation.()=>{}.<.ctor>b__1_0(System.Object, System.Threading.CancellationToken)",
+                "System.Threading.Tasks.Task+DelayPromiseWithCancellation.()=>{}.<.ctor>b__1_0(object, System.Threading.CancellationToken)",
         };
         yield return new TestCaseData(
             "System.Net.Http.HttpConnectionPool+<>c",
@@ -205,7 +205,7 @@ public class SymbolCleanerTest
             "instance void  (class System.Object)")
         {
             TestName = "Generic lambda",
-            ExpectedResult = "System.Threading.Tasks.ValueTask<T>+ValueTaskSourceAsTask.()=>{}<System.Int32>.<.cctor>b__4_0(System.Object)",
+            ExpectedResult = "System.Threading.Tasks.ValueTask<T>+ValueTaskSourceAsTask.()=>{}<int>.<.cctor>b__4_0(object)",
         };
         yield return new TestCaseData(
             "Program",
@@ -237,7 +237,7 @@ public class SymbolCleanerTest
             "instance class System.Threading.Tasks.Task`1<bool>  (class Microsoft.EntityFrameworkCore.DbContext,class AsyncEnumerator<!0>,value class System.Threading.CancellationToken)")
         {
             TestName = "Async enumerable method",
-            ExpectedResult = "Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable<T>+AsyncEnumerator.()=>{}<System.Int32>.<MoveNextAsync>b__19_0(Microsoft.EntityFrameworkCore.DbContext, AsyncEnumerator<T>, System.Threading.CancellationToken)",
+            ExpectedResult = "Microsoft.EntityFrameworkCore.Query.Internal.SplitQueryingEnumerable<T>+AsyncEnumerator.()=>{}<int>.<MoveNextAsync>b__19_0(Microsoft.EntityFrameworkCore.DbContext, AsyncEnumerator<T>, System.Threading.CancellationToken)",
         };
         yield return new TestCaseData(
             "Program+<>c",
@@ -245,7 +245,7 @@ public class SymbolCleanerTest
             "instance void (int32,class System.Object)")
         {
             TestName = "Lambda",
-            ExpectedResult = "Program.()=>{}.<Main>b__7_0(int32, System.Object)",
+            ExpectedResult = "Program.()=>{}.<Main>b__7_0(int, object)",
         };
         yield return new TestCaseData(
             "Contoso.CookiesUpdater.PublisherCookiesUpdater+<>c__DisplayClass10_0+<<OnBidRequest>b__0>d",
@@ -261,7 +261,7 @@ public class SymbolCleanerTest
             "instance void (class System.String)")
         {
             TestName = "Closure",
-            ExpectedResult = "Program.()=>{}.<Main>b__1(System.String)",
+            ExpectedResult = "Program.()=>{}.<Main>b__1(string)",
             RunState = RunState.Ignored,
         };
     }
