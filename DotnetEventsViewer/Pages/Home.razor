@@ -89,7 +89,7 @@
         {
             Console.Error.WriteLine(e);
             ShowFileError(e is JSException or OutOfMemoryException
-                ? "File is too large to fit in memory. Please upvote issue https://github.com/dotnet/runtime/issues/101926"
+                ? "File is too large to fit in memory. Please upvote issue https://github.com/dotnet/runtime/issues/102574"
                 : "Invalid nettrace file");
             return;
         }
