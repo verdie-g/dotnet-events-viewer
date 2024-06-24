@@ -13,17 +13,61 @@
 <h1>Events Tree</h1>
 
 <QueryBuilder QueryType="QueryType.Tree" OnQuery="OnQuery" />
-<CallTreeView Tree="_callTree" Aggregator="_callTreeAggregator" />
+@if (_treeView != null)
+{
+    <FluentTreeView Items="_treeView" LazyLoadItems="true" />
+}
 
 @code {
     private CallTreeNode? _callTree;
     private ICallTreeCountAggregator? _callTreeAggregator;
+    private IEnumerable<ITreeViewItem>? _treeView;
 
     private void OnQuery(QueryResult queryResult)
     {
         var processor = queryResult.CallTreeAggregator!.CreateProcessor();
         _callTree = CallTreeNode.Create(queryResult.FilteredEvents, processor, queryResult.BottomUpTree);
         _callTreeAggregator = queryResult.CallTreeAggregator;
+        _treeView = [CallTreeToView(_callTree)];
+    }
+
+    private ITreeViewItem CallTreeToView(CallTreeNode node)
+    {
+        List<ITreeViewItem>? children = null;
+        if (node.Children != null)
+        {
+            children = new List<ITreeViewItem>();
+            foreach (var child in node.Children)
+            {
+                children.Add(CallTreeToView(child.Value));
+            }
+        }
+
+        return new TreeViewItem
+        {
+            Id = node.Id.ToString(),
+            Text = GenerateNodeText(_callTree!, node),
+            Items = children,
+            OnExpandedAsync = OnNodeExpandedAsync,
+        };
+    }
+
+    private string GenerateNodeText(CallTreeNode root, CallTreeNode node)
+    {
+        float ratio = node.Count / (float)root.Count;
+        return $"({100 * ratio:0.00}% - {_callTreeAggregator!.Format(node.Count)}) {node.MethodDescription}";
+    }
+
+    private Task OnNodeExpandedAsync(TreeViewItemExpandedEventArgs e)
+    {
+        var item = e.CurrentItem;
+        while (item.Items != null && item.Items.Count() == 1)
+        {
+            item = item.Items.First();
+            item.Expanded = true;
+        }
+
+        return Task.CompletedTask;
     }
 
 }
