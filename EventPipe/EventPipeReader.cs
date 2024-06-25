@@ -130,7 +130,7 @@ public sealed class EventPipeReader(Stream stream)
 
         if (!magicBytes.SequenceEqual(MagicBytes))
         {
-            throw new InvalidNetTraceFileException("Stream is not in the event pipe format");
+            throw new InvalidDataException("Stream is not in the event pipe format");
         }
 
         if (!reader.TryReadString(out var serializerSignatureSeq))
@@ -143,7 +143,7 @@ public sealed class EventPipeReader(Stream stream)
 
         if (!serializerSignature.SequenceEqual(SerializerSignature))
         {
-            throw new InvalidNetTraceFileException("Unexpected serializer signature");
+            throw new InvalidDataException("Unexpected serializer signature");
         }
 
         return true;
@@ -262,7 +262,7 @@ public sealed class EventPipeReader(Stream stream)
 
         if (reader.AbsolutePosition != blockEndPosition)
         {
-            throw new CorruptedBlockException($"{serializationType.Name} end was not reached", reader.AbsolutePosition);
+            throw new InvalidDataException($"{serializationType.Name} end was not reached at position {reader.AbsolutePosition}");
         }
 
         return true;
@@ -425,7 +425,7 @@ public sealed class EventPipeReader(Stream stream)
 
         if (reader.AbsolutePosition != payloadEndPosition)
         {
-            throw new CorruptedBlockException("Event blob payload end was not reached", reader.AbsolutePosition);
+            throw new InvalidDataException($"Event blob payload end was not reached at position {reader.AbsolutePosition}");
         }
 
         state.PreviousMetadataId = metadataId;
@@ -472,9 +472,7 @@ public sealed class EventPipeReader(Stream stream)
             {
                 if (fieldDefinitions.Count == 0)
                 {
-                    throw new CorruptedBlockException(
-                        "No V2 field definitions are expected after V1 field definitions",
-                        reader.AbsolutePosition);
+                    throw new InvalidDataException($"No V2 field definitions are expected after V1 field definitions at position {reader.AbsolutePosition}");
                 }
 
                 fieldDefinitions = ReadFieldDefinitions(ref reader, EventFieldDefinitionVersion.V2);
@@ -482,9 +480,7 @@ public sealed class EventPipeReader(Stream stream)
 
             if (reader.AbsolutePosition != tagPayloadEndPosition)
             {
-                throw new CorruptedBlockException(
-                    "Event metadata tag end was not reached",
-                    reader.AbsolutePosition);
+                throw new EndOfStreamException($"Event metadata tag end was not reached at position {reader.AbsolutePosition}");
             }
         }
 
@@ -656,8 +652,7 @@ public sealed class EventPipeReader(Stream stream)
 
     private static TEnum ReadByteAsEnum<TEnum>(ref FastSerializerSequenceReader reader) where TEnum : Enum
     {
-        CorruptedBlockException.ThrowIfFalse(TryReadByteAsEnum<TEnum>(ref reader, out var value), reader.AbsolutePosition);
-        return value;
+        return TryReadByteAsEnum<TEnum>(ref reader, out var value) ? value : throw new EndOfStreamException();
     }
 
     private static bool TryReadByteAsEnum<TEnum>(
@@ -682,8 +677,7 @@ public sealed class EventPipeReader(Stream stream)
 
     private static TEnum ReadInt32AsEnum<TEnum>(ref FastSerializerSequenceReader reader) where TEnum : Enum
     {
-        CorruptedBlockException.ThrowIfFalse(TryReadInt32AsEnum<TEnum>(ref reader, out var value), reader.AbsolutePosition);
-        return value;
+        return TryReadInt32AsEnum<TEnum>(ref reader, out var value) ? value : throw new EndOfStreamException();
     }
 
     private static bool TryReadInt32AsEnum<TEnum>(
@@ -715,13 +709,16 @@ public sealed class EventPipeReader(Stream stream)
     {
         if (expectedTag != actualTag)
         {
-            throw new Exception($"Expected tag '{expectedTag}' but got '{actualTag}'");
+            throw new InvalidDataException($"Expected tag '{expectedTag}' but got '{actualTag}'");
         }
     }
 
     private static void ReadPadding(ref FastSerializerSequenceReader reader)
     {
-        CorruptedBlockException.ThrowIfFalse(TryReadPadding(ref reader), reader.AbsolutePosition);
+        if (!TryReadPadding(ref reader))
+        {
+            throw new EndOfStreamException();
+        }
     }
 
     private static bool TryReadPadding(ref FastSerializerSequenceReader reader)

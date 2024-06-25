@@ -265,7 +265,7 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
 
         if (b > 0b_1111u)
         {
-            throw new FormatException();
+            throw new InvalidDataException();
         }
 
         res |= (uint)b << (maxBytesWithoutOverflow * 7);
@@ -308,7 +308,7 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
 
         if (b > 0b_1u)
         {
-            throw new FormatException();
+            throw new InvalidDataException();
         }
 
         res |= (ulong)b << (maxBytesWithoutOverflow * 7);
@@ -318,6 +318,9 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
 
     private void ThrowIfFalse([DoesNotReturnIf(false)] bool b)
     {
-        CorruptedBlockException.ThrowIfFalse(b, AbsolutePosition);
+        if (!b)
+        {
+            throw new EndOfStreamException();
+        }
     }
 }
