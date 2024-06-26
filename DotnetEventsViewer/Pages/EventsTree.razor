@@ -37,9 +37,9 @@
         if (node.Children != null)
         {
             children = new List<ITreeViewItem>();
-            foreach (var child in node.Children)
+            foreach (var child in node.Children.Values.OrderByDescending(n => n.Count))
             {
-                children.Add(CallTreeToView(child.Value));
+                children.Add(CallTreeToView(child));
             }
         }
 
