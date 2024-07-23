@@ -87,6 +87,9 @@ internal class KnownEvent
         [new Key(TplProvider, 11, 0)] = new("TaskWaitEnd", null, TaskWaitEndPayload.FieldDefinitions, TaskWaitEndPayload.Parse),
         [new Key(TplProvider, 12, 0)] = new("AwaitTaskContinuationScheduled", EventOpcode.Send, AwaitTaskContinuationScheduledPayload.FieldDefinitions, AwaitTaskContinuationScheduledPayload.Parse),
         [new Key(TplProvider, 13, 0)] = new("TaskWaitContinuationComplete", null, TaskWaitContinuationPayload.FieldDefinitions, TaskWaitContinuationPayload.Parse),
+        [new Key(TplProvider, 14, 1)] = new("TraceOperationStart", null, TraceOperationStartPayload.FieldDefinitions, TraceOperationStartPayload.Parse),
+        [new Key(TplProvider, 15, 1)] = new("TraceOperationStop", null, TraceOperationStopPayload.FieldDefinitions, TraceOperationStopPayload.Parse),
+        [new Key(TplProvider, 16, 1)] = new("TraceOperationRelation", null, TraceOperationRelationPayload.FieldDefinitions, TraceOperationRelationPayload.Parse),
         [new Key(TplProvider, 19, 0)] = new("TaskWaitContinuationStarted", null, TaskWaitContinuationPayload.FieldDefinitions, TaskWaitContinuationPayload.Parse),
         [new Key(ArrayPoolProvider, 1, 0)] = new("BufferRented", null, BufferRentedPayload.FieldDefinitions, BufferRentedPayload.Parse),
         [new Key(ArrayPoolProvider, 2, 0)] = new("BufferAllocated", null, BufferAllocatedPayload.FieldDefinitions, BufferAllocatedPayload.Parse),
@@ -5544,6 +5547,230 @@ internal class KnownEvent
         private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
         {
             yield return new KeyValuePair<string, object>("TaskID", _taskId);
+        }
+    }
+
+    private sealed class TraceOperationStartPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("TaskID", TypeCode.Int32),
+            new("OperationName", TypeCode.String),
+            new("RelatedContext", TypeCode.Int64),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new TraceOperationStartPayload(
+                reader.ReadInt32(),
+                reader.ReadNullTerminatedString(),
+                reader.ReadInt64());
+        }
+
+        private readonly int _taskId;
+        private readonly string _operationName;
+        private readonly long _relatedContext;
+
+        private TraceOperationStartPayload(int taskId, string operationName, long relatedContext)
+        {
+            _taskId = taskId;
+            _operationName = operationName;
+            _relatedContext = relatedContext;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "TaskID":
+                    value = _taskId;
+                    return true;
+                case "OperationName":
+                    value = _operationName;
+                    return true;
+                case "RelatedContext":
+                    value = _relatedContext;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("TaskID", _taskId);
+            yield return new KeyValuePair<string, object>("OperationName", _operationName);
+            yield return new KeyValuePair<string, object>("RelatedContext", _relatedContext);
+        }
+    }
+
+    private sealed class TraceOperationStopPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("TaskID", TypeCode.Int32),
+            new("Status", TypeCode.Int32),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new TraceOperationStopPayload(
+                reader.ReadInt32(),
+                reader.ReadInt32());
+        }
+
+        private readonly int _taskId;
+        private readonly int _status;
+
+        private TraceOperationStopPayload(int taskId, int status)
+        {
+            _taskId = taskId;
+            _status = status;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "TaskID":
+                    value = _taskId;
+                    return true;
+                case "Status":
+                    value = _status;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("TaskID", _taskId);
+            yield return new KeyValuePair<string, object>("Status", _status);
+        }
+    }
+
+    private sealed class TraceOperationRelationPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("TaskID", TypeCode.Int32),
+            new("Relation", TypeCode.Int32),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new TraceOperationRelationPayload(
+                reader.ReadInt32(),
+                reader.ReadInt32());
+        }
+
+        private readonly int _taskId;
+        private readonly int _relation;
+
+        private TraceOperationRelationPayload(int taskId, int relation)
+        {
+            _taskId = taskId;
+            _relation = relation;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "TaskID":
+                    value = _taskId;
+                    return true;
+                case "Status":
+                    value = _relation;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("TaskID", _taskId);
+            yield return new KeyValuePair<string, object>("Relation", _relation);
         }
     }
 
