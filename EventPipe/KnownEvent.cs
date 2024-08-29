@@ -52,7 +52,8 @@ internal class KnownEvent
         [new Key(RuntimeProvider, 57, 0)] = new("ThreadPoolWorkerThreadWait", null, ThreadPoolWorkerThreadPayload.FieldDefinitions, ThreadPoolWorkerThreadPayload.Parse),
         [new Key(RuntimeProvider, 58, 0)] = new("YieldProcessorMeasurement", null, YieldProcessorMeasurementPayload.FieldDefinitions, YieldProcessorMeasurementPayload.Parse),
         [new Key(RuntimeProvider, 80, 1)] = new("ExceptionThrown", null, ExceptionPayload.FieldDefinitions, ExceptionPayload.Parse),
-        [new Key(RuntimeProvider, 81, 1)] = new("ContentionStart", null, ContentionPayload.FieldDefinitions, ContentionPayload.Parse),
+        [new Key(RuntimeProvider, 81, 1)] = new("ContentionStart", null, ContentionStartPayload.FieldDefinitions, ContentionStartPayload.Parse),
+        [new Key(RuntimeProvider, 81, 2)] = new("ContentionStart", null, ContentionStartV2Payload.FieldDefinitions, ContentionStartV2Payload.Parse),
         [new Key(RuntimeProvider, 85, 0)] = new("ThreadCreated", null, ThreadCreatedPayload.FieldDefinitions, ThreadCreatedPayload.Parse),
         [new Key(RuntimeProvider, 88, 0)] = new("ILStubGenerated", null, IlStubGeneratedPayload.FieldDefinitions, IlStubGeneratedPayload.Parse),
         [new Key(RuntimeProvider, 91, 1)] = new("ContentionStop", null, ContentionStopV1Payload.FieldDefinitions, ContentionStopV1Payload.Parse),
@@ -2092,7 +2093,7 @@ internal class KnownEvent
         }
     }
 
-    private sealed class ContentionPayload : IReadOnlyDictionary<string, object>
+    private sealed class ContentionStartPayload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
@@ -2102,7 +2103,7 @@ internal class KnownEvent
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
-            return new ContentionPayload(
+            return new ContentionStartPayload(
                 reader.ReadByte(),
                 reader.ReadUInt16());
         }
@@ -2110,7 +2111,7 @@ internal class KnownEvent
         private readonly byte _contentionFlags;
         private readonly ushort _clrInstanceId;
 
-        private ContentionPayload(byte contentionFlags, ushort clrInstanceId)
+        private ContentionStartPayload(byte contentionFlags, ushort clrInstanceId)
         {
             _contentionFlags = contentionFlags;
             _clrInstanceId = clrInstanceId;
@@ -2161,6 +2162,103 @@ internal class KnownEvent
         {
             yield return new KeyValuePair<string, object>("ContentionFlags", _contentionFlags);
             yield return new KeyValuePair<string, object>("ClrInstanceID", _clrInstanceId);
+        }
+    }
+    
+    private sealed class ContentionStartV2Payload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("ContentionFlags", TypeCode.Byte),
+            new("ClrInstanceID", TypeCode.UInt16),
+            new("LockID", TypeCode.UInt64),
+            new("AssociatedObjectID", TypeCode.UInt64),
+            new("LockOwnerThreadID", TypeCode.UInt64),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new ContentionStartV2Payload(
+                reader.ReadByte(),
+                reader.ReadUInt16(),
+                reader.ReadUInt64(),
+                reader.ReadUInt64(),
+                reader.ReadUInt64());
+        }
+
+        private readonly byte _contentionFlags;
+        private readonly ushort _clrInstanceId;
+        private readonly ulong _lockId;
+        private readonly ulong _associatedObjectId;
+        private readonly ulong _lockOwnerThreadId;
+
+        private ContentionStartV2Payload(byte contentionFlags, ushort clrInstanceId, ulong lockId, ulong associatedObjectId,
+            ulong lockOwnerThreadId)
+        {
+            _contentionFlags = contentionFlags;
+            _clrInstanceId = clrInstanceId;
+            _lockId = lockId;
+            _associatedObjectId = associatedObjectId;
+            _lockOwnerThreadId = lockOwnerThreadId;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "ContentionFlags":
+                    value = _contentionFlags;
+                    return true;
+                case "ClrInstanceID":
+                    value = _clrInstanceId;
+                    return true;
+                case "LockID":
+                    value = _lockId;
+                    return true;
+                case "AssociatedObjectID":
+                    value = _associatedObjectId;
+                    return true;
+                case "LockOwnerThreadID":
+                    value = _lockOwnerThreadId;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("ContentionFlags", _contentionFlags);
+            yield return new KeyValuePair<string, object>("ClrInstanceID", _clrInstanceId);
+            yield return new KeyValuePair<string, object>("LockID", _lockId);
+            yield return new KeyValuePair<string, object>("AssociatedObjectID", _associatedObjectId);
+            yield return new KeyValuePair<string, object>("LockOwnerThreadID", _lockOwnerThreadId);
         }
     }
 
