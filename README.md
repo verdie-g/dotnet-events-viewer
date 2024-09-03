@@ -15,7 +15,14 @@ to PerfView:
 ### I'm getting a `File is too large to fit in memory` error when loading a nettrace
 
 Unfortunately, WebAssembly currently only allows 32-bit addressing, so it means the decompressed file is limited to
-4 GiB. Also, there is currently another issue, only 1 of the 4 GiB can be used https://github.com/dotnet/runtime/issues/101926.
+4 GiB. Also, there is currently another issue, only 1 of the 4 GiB can be use [dotnet/runtime#101926](https://github.com/dotnet/runtime/issues/101926).
+
+### Some events are named `Event XX` and don't have any payload
+
+Nettrace files are expected to include the schemas for all their events, but this isn't the case for some providers
+([dotnet/runtime#96365](https://github.com/dotnet/runtime/issues/96365)). As a workaround, you can manually define
+these schemas in [this file](https://github.com/verdie-g/dotnet-events-viewer/blob/b4744a2f3a3edcacac89f149e746c9523c9447b0/EventPipe/KnownEvent.cs),
+which also improves deserialization speed and results in a more compact memory representation.
 
 ### The feature X from PerfView is not available with this tool
 
