@@ -29,7 +29,7 @@
                     <FluentCombobox TOption="Field"
                                     Width="200px"
                                     Placeholder="Select the field to filter on"
-                                    Items="GetFields(Query.Filters[idx])"
+                                    Items="GetFields()"
                                     Autocomplete="ComboboxAutocomplete.Both"
                                     OptionText="@(f => f.Name)"
                                     @bind-SelectedOption="Query.Filters[idx].Field"
@@ -147,7 +147,7 @@
     protected override void OnInitialized()
     {
         _allFields = Field.StaticEventField
-            .Concat(EnumerateDynamicFieldSelectors(State.Trace!))
+            .Concat(EnumerateDynamicFieldSelectors(State.Trace!, State.Query!.Filters))
             .OrderBy(s => s.Name)
             .ToArray();
         Query = State.Query!;
@@ -158,10 +158,17 @@
         _messageStore = new ValidationMessageStore(_editContext);
     }
 
-    private IEnumerable<Field> EnumerateDynamicFieldSelectors(Trace trace)
+    private IEnumerable<Field> EnumerateDynamicFieldSelectors(Trace trace, Filter[] filters)
     {
         return trace.EventMetadata
-            .SelectMany(m => m.FieldDefinitions.Select(d => Field.FromPayloadFieldDefinition(d, m)))
+            .SelectMany(m => m.FieldDefinitions.Select(d =>
+            {
+                // FluentCombobox.SelectedOption is expected to exist in FluentCombobox.Items but if the field is
+                // created dynamically, the reference comparison will fail and the filter will be set to null when
+                // changing page. The hack here, is to reuse existing fields before creating a new instance.
+                var filter = filters.FirstOrDefault(x => x.Field.Name == d.Name);
+                return filter?.Field ?? Field.FromPayloadFieldDefinition(d, m);
+            }))
             .DistinctBy(s => s.Name);
     }
 
@@ -188,7 +195,7 @@
             .Where(m => m.EventName.Contains(e.Text, StringComparison.OrdinalIgnoreCase));
     }
 
-    private IEnumerable<Field> GetFields(Filter forFilter)
+    private IEnumerable<Field> GetFields()
     {
         if (Query.EventKeys.Length == 0)
         {
