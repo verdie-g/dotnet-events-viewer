@@ -49,6 +49,30 @@
     </ChildContent>
 </FluentInputFile>
 
+<h2 style="margin-top: 8px">Collect events with dotnet-trace</h2>
+
+<p>
+    Here are a few examples about how to collect the most common EventPipe events. These commands will generate a
+    nettrace file that you can drop up there.
+</p>
+
+<h3>Collect allocation events</h3>
+
+<pre><code>dotnet-trace collect --clrevents gc --clreventlevel verbose --process-id $PID</code></pre>
+
+<h3>Collect CPU samples</h3>
+
+<pre><code>dotnet-trace collect --profile cpu-sampling --process-id $PID</code></pre>
+
+<h3>Collect contention events</h3>
+
+<pre><code>dotnet-trace collect --clrevents contention --process-id $PID</code></pre>
+
+<h3>Collect wait events</h3>
+
+<pre><code>dotnet-trace collect --clrevents waithandle --clreventlevel verbose --process-id $PID</code></pre>
+
+
 @code {
     private int _progressPercent;
 
