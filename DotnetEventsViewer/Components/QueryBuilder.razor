@@ -147,7 +147,7 @@
     protected override void OnInitialized()
     {
         _allFields = Field.StaticEventField
-            .Concat(EnumerateDynamicFieldSelectors(State.Trace!, State.Query!.Filters))
+            .Concat(EnumerateDynamicFields(State.Trace!, State.Query!.Filters))
             .OrderBy(s => s.Name)
             .ToArray();
         Query = State.Query!;
@@ -158,18 +158,46 @@
         _messageStore = new ValidationMessageStore(_editContext);
     }
 
-    private IEnumerable<Field> EnumerateDynamicFieldSelectors(Trace trace, Filter[] filters)
+    private IEnumerable<Field> EnumerateDynamicFields(Trace trace, Filter[] filters)
     {
-        return trace.EventMetadata
-            .SelectMany(m => m.FieldDefinitions.Select(d =>
+        // Some fields can have the same name. In that case, the field should be displayed once in the combobox,
+        // but it should work on all events that have that field. It's assumed in this method, that if two fields
+        // have the same name, they have a similar FieldDefinition.
+        Dictionary<string, List<EventMetadata>> eventMetadataByFieldName = [];
+        foreach (var metadata in trace.EventMetadata)
+        {
+            foreach (var fieldDefinition in metadata.FieldDefinitions)
             {
-                // FluentCombobox.SelectedOption is expected to exist in FluentCombobox.Items but if the field is
-                // created dynamically, the reference comparison will fail and the filter will be set to null when
-                // changing page. The hack here, is to reuse existing fields before creating a new instance.
-                var filter = filters.FirstOrDefault(x => x.Field.Name == d.Name);
-                return filter?.Field ?? Field.FromPayloadFieldDefinition(d, m);
-            }))
-            .DistinctBy(s => s.Name);
+                if (!eventMetadataByFieldName.TryGetValue(fieldDefinition.Name, out var eventMetadataForFieldName))
+                {
+                    eventMetadataForFieldName = [];
+                    eventMetadataByFieldName[fieldDefinition.Name] = eventMetadataForFieldName;
+                }
+
+                eventMetadataForFieldName.Add(metadata);
+            }
+        }
+
+        List<Field> fields = new(eventMetadataByFieldName.Count);
+        foreach (var eventMetadataForFieldName in eventMetadataByFieldName)
+        {
+            // FluentCombobox.SelectedOption is expected to exist in FluentCombobox.Items but if the field is
+            // created dynamically, the reference comparison will fail and the filter will be set to null when
+            // changing page. The hack here, is to reuse existing fields before creating a new instance.
+            var filter = filters.FirstOrDefault(x => x.Field.Name == eventMetadataForFieldName.Key);
+            if (filter?.Field != null)
+            {
+                fields.Add(filter.Field);
+                continue;
+            }
+
+            var fieldDefinition = eventMetadataForFieldName.Value[0].FieldDefinitions.First(d => d.Name == eventMetadataForFieldName.Key);
+            var field = Field.FromNameAndType(eventMetadataForFieldName.Key, fieldDefinition.TypeCode, eventMetadataForFieldName.Value.ToArray());
+            fields.Add(field);
+        }
+
+
+        return fields;
     }
 
     private void OnAddFilter()
@@ -202,8 +230,11 @@
             return _allFields;
         }
 
-        return _allFields.Where(f => f.AssociatedEventMetadata == null
-            || Query.EventKeys.Any(k => k.Matches(f.AssociatedEventMetadata))).ToArray();
+        return _allFields
+            .Where(f =>
+                f.AssociatedEventMetadata == null
+                || Query.EventKeys.Any(k => f.AssociatedEventMetadata.Any(k.Matches)))
+            .ToArray();
     }
 
     private void OnColumnFieldSearch(OptionsSearchEventArgs<Field> e)
@@ -215,7 +246,7 @@
         else
         {
             e.Items = _allFields.Where(f =>
-                (f.AssociatedEventMetadata == null || Query.EventKeys.Any(k => k.Matches(f.AssociatedEventMetadata)))
+                (f.AssociatedEventMetadata == null || Query.EventKeys.Any(k => f.AssociatedEventMetadata.Any(k.Matches)))
                 && f.Name.Contains(e.Text, StringComparison.OrdinalIgnoreCase));
         }
     }
