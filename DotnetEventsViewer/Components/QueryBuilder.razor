@@ -15,7 +15,7 @@
                             AutoComplete="off"
                             Placeholder="Select event names"
                             OnOptionsSearch="@OnEventKeySearch"
-                            MaximumSelectedOptions="3"
+                            MaximumSelectedOptions="4"
                             OptionText="k => k.EventName"
                             @bind-SelectedOptions:get="Query.EventKeys"
                             @bind-SelectedOptions:set="(IEnumerable<EventKey>? k) => Query.EventKeys = k!.ToArray()"
