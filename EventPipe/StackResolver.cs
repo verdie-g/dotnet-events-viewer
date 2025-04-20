@@ -6,39 +6,31 @@ internal class StackResolver
 {
     private static readonly MethodDescription UnresolvedMethodDescription = new("??", "", "", 0, 0);
 
-    private readonly Dictionary<int, List<StackTraceGroup>> _groupedStackTraces = new();
-    private readonly List<MethodDescription> _methodDescriptions = [];
+    private readonly Dictionary<ulong[], StackTraceGroup> _groupedStackTraces;
+    private readonly Dictionary<ulong[], StackTraceGroup>.AlternateLookup<ReadOnlySpan<ulong>> _groupedStackTracesAlternate;
+    private readonly List<MethodDescription> _methodDescriptions;
+
+    public StackResolver()
+    {
+        _groupedStackTraces = new Dictionary<ulong[], StackTraceGroup>(new UInt64ArrayComparer());
+        _groupedStackTracesAlternate = _groupedStackTraces.GetAlternateLookup<ReadOnlySpan<ulong>>();
+        _methodDescriptions = [];
+    }
 
     public void AddStackAddresses(int stackIndex, ReadOnlySpan<ulong> addresses)
     {
-        int addressesHash = ComputeAddressesHash(addresses);
-        if (!_groupedStackTraces.TryGetValue(addressesHash, out var collisions))
+        if (!_groupedStackTracesAlternate.TryGetValue(addresses, out var group))
         {
-            StackTraceGroup group = new()
+            group = new StackTraceGroup
             {
-                StackIndexes = [stackIndex],
+                StackIndexes = [],
                 Addresses = addresses.ToArray(),
                 StackTrace = null,
             };
-            _groupedStackTraces[addressesHash] = [group];
-            return;
+            _groupedStackTracesAlternate[addresses] = group;
         }
 
-        foreach (var collision in CollectionsMarshal.AsSpan(collisions))
-        {
-            if (addresses.SequenceEqual(collision.Addresses))
-            {
-                collision.StackIndexes.Add(stackIndex);
-                return;
-            }
-        }
-
-        collisions.Add(new StackTraceGroup
-        {
-            StackIndexes = [stackIndex],
-            Addresses = addresses.ToArray(),
-            StackTrace = null,
-        });
+        group.StackIndexes.Add(stackIndex);
     }
 
     public void AddMethodSymbolInfo(MethodDescription methodDescription)
@@ -51,12 +43,9 @@ internal class StackResolver
         Dictionary<int, StackTraceGroup> stackIndexToStackTraceGroup = new(_groupedStackTraces.Count);
         foreach (var kvp in _groupedStackTraces)
         {
-            foreach (var collision in kvp.Value)
+            foreach (var stackIndex in kvp.Value.StackIndexes)
             {
-                foreach (var stackIndex in collision.StackIndexes)
-                {
-                    stackIndexToStackTraceGroup[stackIndex] = collision;
-                }
+                stackIndexToStackTraceGroup[stackIndex] = kvp.Value;
             }
         }
 
@@ -154,14 +143,38 @@ internal class StackResolver
         public StackTrace? StackTrace { get; set; }
     }
 
-    private static int ComputeAddressesHash(ReadOnlySpan<ulong> addresses)
+
+    private sealed class UInt64ArrayComparer : IEqualityComparer<ulong[]>, IAlternateEqualityComparer<ReadOnlySpan<ulong>, ulong[]>
     {
-        HashCode h = new();
-        foreach (ulong addr in addresses)
+        public bool Equals(ulong[]? x, ulong[]? y)
         {
-            h.Add(addr);
+            return x!.Length == y!.Length && x.SequenceEqual(y);
         }
 
-        return h.ToHashCode();
+        public bool Equals(ReadOnlySpan<ulong> alternate, ulong[] other)
+        {
+            return alternate.Length == other.Length && alternate.SequenceEqual(other);
+        }
+
+        public int GetHashCode(ulong[] obj)
+        {
+            return GetHashCode(obj.AsSpan());
+        }
+
+        public int GetHashCode(ReadOnlySpan<ulong> alternate)
+        {
+            HashCode hash = new();
+            foreach (ulong x in alternate)
+            {
+                hash.Add(x);
+            }
+
+            return hash.ToHashCode();
+        }
+
+        public ulong[] Create(ReadOnlySpan<ulong> alternate)
+        {
+            return alternate.ToArray();
+        }
     }
 }
