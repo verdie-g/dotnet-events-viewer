@@ -10,6 +10,11 @@ to PerfView:
   yet-another-tool to download and keep up-to-date. Note that the analysed trace files never exit your browser.
 - **Cross-Platform**: since it runs in the browser, this tool works on Windows, Mac, and Linux.
 
+## Blog Posts
+
+- Sept. 2024: [A Perfview Alternative in WebAssembly](https://techblog.criteo.com/a-perfview-alternative-in-webassembly-f6833820b699)
+- Dec. 2024: [Investigate Thread Pool Starvation with .NET Events Viewer](https://techblog.criteo.com/investigate-thread-pool-starvation-with-net-events-viewer-1fa8453afd80)
+
 ## FAQ
 
 ### I'm getting a `File is too large to fit in memory` error when loading a nettrace
