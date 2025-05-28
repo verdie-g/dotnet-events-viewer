@@ -1,4 +1,4 @@
-using EventPipe;
+using NetTrace;
 
 namespace DotnetEventsViewer.Models;
 

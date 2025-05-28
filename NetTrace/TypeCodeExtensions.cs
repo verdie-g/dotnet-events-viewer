@@ -1,4 +1,4 @@
-﻿namespace EventPipe;
+﻿namespace NetTrace;
 
 public static class TypeCodeExtensions
 {

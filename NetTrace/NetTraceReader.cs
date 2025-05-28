@@ -6,13 +6,13 @@ using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using EventPipe.FastSerializer;
+using NetTrace.FastSerializer;
 
 // ReSharper disable UnusedVariable
 
-namespace EventPipe;
+namespace NetTrace;
 
-public sealed class EventPipeReader(Stream stream)
+public sealed class NetTraceReader(Stream stream)
 {
     private const int ReaderVersion = 4;
 
@@ -48,7 +48,7 @@ public sealed class EventPipeReader(Stream stream)
     private int _lastStackIndex;
     private int _stackIndexOffset;
 
-    public EventPipeReader AddProgress(IProgress<Progression> progress)
+    public NetTraceReader AddProgress(IProgress<Progression> progress)
     {
         _progress = progress;
         return this;

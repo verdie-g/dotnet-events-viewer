@@ -1,4 +1,4 @@
-﻿namespace EventPipe;
+﻿namespace NetTrace;
 
 public record TraceMetadata(
     DateTime Date,

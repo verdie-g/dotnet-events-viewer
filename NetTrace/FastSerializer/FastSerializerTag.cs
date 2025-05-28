@@ -1,4 +1,4 @@
-﻿namespace EventPipe.FastSerializer;
+﻿namespace NetTrace.FastSerializer;
 
 public enum FastSerializerTag : byte
 {

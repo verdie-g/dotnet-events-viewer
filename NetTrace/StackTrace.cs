@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace EventPipe;
+namespace NetTrace;
 
 public sealed class StackTrace
 {

@@ -1,6 +1,6 @@
 ﻿using DotnetEventsViewer.Models;
 using DotnetEventsViewer.Querying;
-using EventPipe;
+using NetTrace;
 
 namespace DotnetEventsViewer.State;
 

@@ -1,6 +1,6 @@
 ﻿@page "/"
 @using DotnetEventsViewer.State
-@using EventPipe
+@using NetTrace
 @using DotnetEventsViewer.Models
 @using DotnetEventsViewer.Querying
 
@@ -92,8 +92,8 @@
         // Remove reference to previously loaded trace.
         StateContainer.Trace = null;
 
-        EventPipeReader reader = new(inputFile.Stream!);
-        reader.AddProgress(new Progress<EventPipeReader.Progression>(p =>
+        NetTraceReader reader = new(inputFile.Stream!);
+        reader.AddProgress(new Progress<NetTraceReader.Progression>(p =>
         {
             int progressPercent = (int)(100f * p.BytesRead / inputFile.Size);
             if (progressPercent == _progressPercent)

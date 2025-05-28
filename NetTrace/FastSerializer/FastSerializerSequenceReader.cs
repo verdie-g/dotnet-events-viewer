@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace EventPipe.FastSerializer;
+namespace NetTrace.FastSerializer;
 
 internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, long readStartPosition)
 {

@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.Tracing;
 
-namespace EventPipe;
+namespace NetTrace;
 
 public record EventMetadata(
     int MetadataId,

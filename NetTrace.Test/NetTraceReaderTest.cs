@@ -1,8 +1,9 @@
 using System.Diagnostics.Tracing;
+using NetTrace;
 
-namespace EventPipe.Test;
+namespace NetTrace.Test;
 
-public class EventPipeReaderTest
+public class NetTraceReaderTest
 {
     private static readonly byte[] HeaderBytes = Convert.FromBase64String("TmV0dHJhY2UUAAAAIUZhc3RTZXJpYWxpemF0aW9uLjE=");
     private static readonly byte[] FooterBytes = [0x1]; // NullReference tag.
@@ -89,7 +90,7 @@ public class EventPipeReaderTest
         byte[] objectsBytes = Convert.FromBase64String(objectsBase64);
         byte[] netTraceBytes = HeaderBytes.Concat(objectsBytes).Concat(FooterBytes).ToArray();
         using MemoryStream netTraceStream = new(netTraceBytes);
-        EventPipeReader reader = new(netTraceStream);
+        NetTraceReader reader = new(netTraceStream);
         return await reader.ReadFullTraceAsync();
     }
 }

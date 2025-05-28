@@ -13,7 +13,7 @@ DiagnosticsClient client = new(pid);
 EventPipeSession session = await client.StartEventPipeSessionAsync(
     [new EventPipeProvider("System.Threading.Tasks.TplEventSource", EventLevel.Verbose, 0x3)],
     true);
-EventPipeReader reader = new(session.EventStream);
+NetTraceReader reader = new(session.EventStream);
 Task<Trace> traceTask = reader.ReadFullTraceAsync();
 
 await Task.Delay(5000);
@@ -28,7 +28,7 @@ Here the nettrace stream is read from a file.
 
 ```csharp
 await using var nettraceStream = File.OpenRead(path);
-EventPipeReader reader = new(nettraceStream);
+NetTraceReader reader = new(nettraceStream);
 Trace trace = await reader.ReadFullTraceAsync();
 ```
 
@@ -37,8 +37,8 @@ Trace trace = await reader.ReadFullTraceAsync();
 This code reads deserialize a nettrace file from the disk and prints the allocation by type/code location.
 
 ```csharp
-await using var nettraceStream = File.OpenRead(@"demo.nettrace");
-EventPipeReader reader = new(nettraceStream);
+await using var nettraceStream = File.OpenRead("demo.nettrace");
+NetTraceReader reader = new(nettraceStream);
 Trace trace = await reader.ReadFullTraceAsync();
 
 Dictionary<(string type, int stackId), (ulong totalSize, List<Event> evts)> allocationsByType = [];

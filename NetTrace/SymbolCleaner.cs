@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text;
 
-namespace EventPipe;
+namespace NetTrace;
 
 /// <summary>
 /// .NET symbols are super verbose and hard to read. This class is responsible to make them look like as close

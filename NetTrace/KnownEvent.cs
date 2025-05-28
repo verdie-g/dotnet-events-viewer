@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
-using EventPipe.FastSerializer;
+using NetTrace.FastSerializer;
 
-namespace EventPipe;
+namespace NetTrace;
 
 /// <summary>
 /// Some Microsoft-Windows-DotNETRuntime events have incomplete metadata in the trace (https://github.com/dotnet/runtime/issues/96365)
@@ -2164,7 +2164,7 @@ internal class KnownEvent
             yield return new KeyValuePair<string, object>("ClrInstanceID", _clrInstanceId);
         }
     }
-    
+
     private sealed class ContentionStartV2Payload : IReadOnlyDictionary<string, object>
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =

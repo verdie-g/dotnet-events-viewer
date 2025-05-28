@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace EventPipe;
+namespace NetTrace;
 
 internal class StackResolver
 {

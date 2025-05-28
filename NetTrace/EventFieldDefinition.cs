@@ -1,4 +1,4 @@
-﻿namespace EventPipe;
+﻿namespace NetTrace;
 
 /// <summary>
 /// Definition of the field of an event pipe event.

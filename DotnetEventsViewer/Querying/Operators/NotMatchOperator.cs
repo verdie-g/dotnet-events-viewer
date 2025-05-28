@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using EventPipe;
+using NetTrace;
 
 namespace DotnetEventsViewer.Querying.Operators;
 

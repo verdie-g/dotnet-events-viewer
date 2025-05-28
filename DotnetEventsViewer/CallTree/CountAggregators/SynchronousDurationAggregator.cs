@@ -1,5 +1,5 @@
 using DotnetEventsViewer.Models;
-using EventPipe;
+using NetTrace;
 
 namespace DotnetEventsViewer.CallTree.CountAggregators;
 

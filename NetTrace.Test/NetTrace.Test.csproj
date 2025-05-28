@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EventPipe\EventPipe.csproj" />
+    <ProjectReference Include="..\NetTrace\NetTrace.csproj" />
   </ItemGroup>
 
 </Project>

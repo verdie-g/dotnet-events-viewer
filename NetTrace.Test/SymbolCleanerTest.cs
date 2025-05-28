@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework.Interfaces;
 
-namespace EventPipe.Test;
+namespace NetTrace.Test;
 
 public class SymbolCleanerTest
 {

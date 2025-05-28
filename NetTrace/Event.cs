@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace EventPipe;
+namespace NetTrace;
 
 [DebuggerDisplay("{(Metadata.EventName.Length == 0 ? Metadata.EventId.ToString() : Metadata.EventName)}")]
 public sealed class Event
