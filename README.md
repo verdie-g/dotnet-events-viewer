@@ -10,11 +10,12 @@ to PerfView:
   yet-another-tool to download and keep up-to-date. Note that the analysed trace files never exit your browser.
 - **Cross-Platform**: since it runs in the browser, this tool works on Windows, Mac, and Linux.
 
-## Blog Posts
+## Talks & Writeups
 
 - Sept. 2024: [A Perfview Alternative in WebAssembly](https://medium.com/criteo-engineering/a-perfview-alternative-in-webassembly-f6833820b699) (medium.com)
 - Dec. 2024: [Investigate Thread Pool Starvation with .NET Events Viewer](https://medium.com/criteo-engineering/investigate-thread-pool-starvation-with-net-events-viewer-1fa8453afd80) (medium.com)
 - May 2025: [Debug ThreadPool starvation](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/debug-threadpool-starvation) (learn.microsoft.com)
+- Aug. 2025: [Building a better PerfView with Blazor](https://www.youtube.com/live/H_gOSliozjM?si=os-doaC8LYqL7Llm) (youtube.com)
 
 ## FAQ
 
