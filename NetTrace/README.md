@@ -3,7 +3,7 @@
 ## Read `EventPipeSession.EventStream`
 
 In the following example, using the nuget `Microsoft.Diagnostics.NETCore.Client`
-an event pipe session is started on a progress given its pid.
+an event pipe session is started on a process given its pid.
 `EventPipeSession.EventStream` contains a stream of a nettrace file that could
 be written on the disk but here all its events are deserialized in memory using
 `EventPipeReader.ReadFullTraceAsync`.
