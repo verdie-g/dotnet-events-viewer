@@ -302,27 +302,27 @@
         }
     }
 
-    private bool TryParseFilterValue(TypeCode fieldType, string value, out object parsedValue)
+    private bool TryParseFilterValue(NetTraceTypeCode fieldType, string value, out object parsedValue)
     {
         bool ok;
         switch (fieldType)
         {
-            case TypeCode.Boolean when value == "0":
+            case NetTraceTypeCode.Boolean32 when value == "0":
                 ok = true;
                 parsedValue = false;
                 break;
-            case TypeCode.Boolean when value == "1":
+            case NetTraceTypeCode.Boolean32 when value == "1":
                 ok = true;
                 parsedValue = true;
                 break;
-            case TypeCodeExtensions.Guid:
+            case NetTraceTypeCode.Guid:
                 ok = Guid.TryParse(value, out Guid guidValue);
                 parsedValue = guidValue;
                 break;
             default:
                 try
                 {
-                    parsedValue = Convert.ChangeType(value, fieldType);
+                    parsedValue = Convert.ChangeType(value, (TypeCode)fieldType);
                     ok = true;
                 }
                 catch

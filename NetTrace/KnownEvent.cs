@@ -203,17 +203,17 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("CommandLine", TypeCode.String),
-            new("OSInformation", TypeCode.String),
-            new("ArchInformation", TypeCode.String),
+            new("CommandLine", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("OSInformation", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ArchInformation", NetTraceTypeCode.NullTerminatedUtf16String),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new ProcessInfoPayload(
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString());
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String());
         }
 
         private readonly string _commandLine;
@@ -283,12 +283,12 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("Count", TypeCode.UInt32),
-            new("Depth", TypeCode.UInt32),
-            new("Reason", TypeCode.UInt32),
-            new("Type", TypeCode.UInt32),
-            new("ClrInstanceID", TypeCode.UInt16),
-            new("ClientSequenceNumber", TypeCode.UInt64),
+            new("Count", NetTraceTypeCode.UInt32),
+            new("Depth", NetTraceTypeCode.UInt32),
+            new("Reason", NetTraceTypeCode.UInt32),
+            new("Type", NetTraceTypeCode.UInt32),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
+            new("ClientSequenceNumber", NetTraceTypeCode.UInt64),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -388,9 +388,9 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("Count", TypeCode.UInt32),
-            new("Depth", TypeCode.UInt32),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("Count", NetTraceTypeCode.UInt32),
+            new("Depth", NetTraceTypeCode.UInt32),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -468,7 +468,7 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -532,22 +532,22 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("GenerationSize0", TypeCode.UInt64),
-            new("TotalPromotedSize0", TypeCode.UInt64),
-            new("GenerationSize1", TypeCode.UInt64),
-            new("TotalPromotedSize1", TypeCode.UInt64),
-            new("GenerationSize2", TypeCode.UInt64),
-            new("TotalPromotedSize2", TypeCode.UInt64),
-            new("GenerationSize3", TypeCode.UInt64),
-            new("TotalPromotedSize3", TypeCode.UInt64),
-            new("FinalizationPromotedSize", TypeCode.UInt64),
-            new("FinalizationPromotedCount", TypeCode.UInt64),
-            new("PinnedObjectCount", TypeCode.UInt32),
-            new("SinkBlockCount", TypeCode.UInt32),
-            new("GCHandleCount", TypeCode.UInt32),
-            new("ClrInstanceID", TypeCode.UInt16),
-            new("GenerationSize4", TypeCode.UInt64),
-            new("TotalPromotedSize4", TypeCode.UInt64),
+            new("GenerationSize0", NetTraceTypeCode.UInt64),
+            new("TotalPromotedSize0", NetTraceTypeCode.UInt64),
+            new("GenerationSize1", NetTraceTypeCode.UInt64),
+            new("TotalPromotedSize1", NetTraceTypeCode.UInt64),
+            new("GenerationSize2", NetTraceTypeCode.UInt64),
+            new("TotalPromotedSize2", NetTraceTypeCode.UInt64),
+            new("GenerationSize3", NetTraceTypeCode.UInt64),
+            new("TotalPromotedSize3", NetTraceTypeCode.UInt64),
+            new("FinalizationPromotedSize", NetTraceTypeCode.UInt64),
+            new("FinalizationPromotedCount", NetTraceTypeCode.UInt64),
+            new("PinnedObjectCount", NetTraceTypeCode.UInt32),
+            new("SinkBlockCount", NetTraceTypeCode.UInt32),
+            new("GCHandleCount", NetTraceTypeCode.UInt32),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
+            new("GenerationSize4", NetTraceTypeCode.UInt64),
+            new("TotalPromotedSize4", NetTraceTypeCode.UInt64),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -720,9 +720,9 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("Reason", TypeCode.UInt32),
-            new("Count", TypeCode.UInt32),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("Reason", NetTraceTypeCode.UInt32),
+            new("Count", NetTraceTypeCode.UInt32),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -800,15 +800,15 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("AllocationAmount", TypeCode.UInt32),
-            new("AllocationKind", TypeCode.UInt32),
-            new("ClrInstanceID", TypeCode.UInt16),
-            new("AllocationAmount64", TypeCode.UInt64),
-            new("TypeID", TypeCode.UInt64),
-            new("TypeName", TypeCode.String),
-            new("HeapIndex", TypeCode.UInt32),
-            new("Address", TypeCode.UInt64),
-            new("ObjectSize", TypeCode.UInt64),
+            new("AllocationAmount", NetTraceTypeCode.UInt32),
+            new("AllocationKind", NetTraceTypeCode.UInt32),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
+            new("AllocationAmount64", NetTraceTypeCode.UInt64),
+            new("TypeID", NetTraceTypeCode.UInt64),
+            new("TypeName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("HeapIndex", NetTraceTypeCode.UInt32),
+            new("Address", NetTraceTypeCode.UInt64),
+            new("ObjectSize", NetTraceTypeCode.UInt64),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -819,7 +819,7 @@ internal class KnownEvent
                 reader.ReadUInt16(),
                 reader.ReadUInt64(),
                 reader.ReadUInt64(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadUInt32(),
                 reader.ReadUInt64(),
                 reader.ReadUInt64());
@@ -929,8 +929,8 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("Count", TypeCode.UInt32),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("Count", NetTraceTypeCode.UInt32),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -1001,11 +1001,11 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("Generation", TypeCode.Byte),
-            new("RangeStart", TypeCode.UInt64),
-            new("RangeUsedLength", TypeCode.UInt64),
-            new("RangeReservedLength", TypeCode.UInt64),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("Generation", NetTraceTypeCode.Byte),
+            new("RangeStart", NetTraceTypeCode.UInt64),
+            new("RangeUsedLength", NetTraceTypeCode.UInt64),
+            new("RangeReservedLength", NetTraceTypeCode.UInt64),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -1098,9 +1098,9 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("TypeID", TypeCode.UInt64),
-            new("ObjectID", TypeCode.UInt64),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("TypeID", NetTraceTypeCode.UInt64),
+            new("ObjectID", NetTraceTypeCode.UInt64),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -1178,12 +1178,12 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("HandleID", TypeCode.UInt64),
-            new("ObjectID", TypeCode.UInt64),
-            new("Kind", TypeCode.UInt32),
-            new("Generation", TypeCode.UInt32),
-            new("AppDomainID", TypeCode.UInt64),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("HandleID", NetTraceTypeCode.UInt64),
+            new("ObjectID", NetTraceTypeCode.UInt64),
+            new("Kind", NetTraceTypeCode.UInt32),
+            new("Generation", NetTraceTypeCode.UInt32),
+            new("AppDomainID", NetTraceTypeCode.UInt64),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -1283,8 +1283,8 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("HandleID", TypeCode.UInt64),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("HandleID", NetTraceTypeCode.UInt64),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -1355,11 +1355,11 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("HandleID", TypeCode.UInt64),
-            new("ObjectID", TypeCode.UInt64),
-            new("ObjectSize", TypeCode.UInt64),
-            new("TypeName", TypeCode.String),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("HandleID", NetTraceTypeCode.UInt64),
+            new("ObjectID", NetTraceTypeCode.UInt64),
+            new("ObjectSize", NetTraceTypeCode.UInt64),
+            new("TypeName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -1368,7 +1368,7 @@ internal class KnownEvent
                 reader.ReadUInt64(),
                 reader.ReadUInt64(),
                 reader.ReadUInt64(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadUInt16());
         }
 
@@ -1452,8 +1452,8 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("Reason", TypeCode.UInt32),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("Reason", NetTraceTypeCode.UInt32),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -1524,8 +1524,8 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("Throughput", TypeCode.Double),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("Throughput", NetTraceTypeCode.Double),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -1596,10 +1596,10 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("AverageThroughput", TypeCode.Double),
-            new("NewWorkerThreadCount", TypeCode.UInt32),
-            new("Reason", TypeCode.UInt32),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("AverageThroughput", NetTraceTypeCode.Double),
+            new("NewWorkerThreadCount", NetTraceTypeCode.UInt32),
+            new("Reason", NetTraceTypeCode.UInt32),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -1685,17 +1685,17 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("Duration", TypeCode.Double),
-            new("Throughput", TypeCode.Double),
-            new("ThreadWave", TypeCode.Double),
-            new("ThroughputWave", TypeCode.Double),
-            new("ThroughputErrorEstimate", TypeCode.Double),
-            new("AverageThroughputErrorEstimate", TypeCode.Double),
-            new("ThroughputRatio", TypeCode.Double),
-            new("Confidence", TypeCode.Double),
-            new("NewControlSetting", TypeCode.Double),
-            new("NewThreadWaveMagnitude", TypeCode.UInt16),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("Duration", NetTraceTypeCode.Double),
+            new("Throughput", NetTraceTypeCode.Double),
+            new("ThreadWave", NetTraceTypeCode.Double),
+            new("ThroughputWave", NetTraceTypeCode.Double),
+            new("ThroughputErrorEstimate", NetTraceTypeCode.Double),
+            new("AverageThroughputErrorEstimate", NetTraceTypeCode.Double),
+            new("ThroughputRatio", NetTraceTypeCode.Double),
+            new("Confidence", NetTraceTypeCode.Double),
+            new("NewControlSetting", NetTraceTypeCode.Double),
+            new("NewThreadWaveMagnitude", NetTraceTypeCode.UInt16),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -1832,9 +1832,9 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("ActiveWorkerThreadCount", TypeCode.UInt32),
-            new("RetiredWorkerThreadCount", TypeCode.UInt32),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("ActiveWorkerThreadCount", NetTraceTypeCode.UInt32),
+            new("RetiredWorkerThreadCount", NetTraceTypeCode.UInt32),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -1912,9 +1912,9 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("ClrInstanceID", TypeCode.UInt16),
-            new("NsPerYield", TypeCode.Double),
-            new("EstablishedNsPerYield", TypeCode.Double),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
+            new("NsPerYield", NetTraceTypeCode.Double),
+            new("EstablishedNsPerYield", NetTraceTypeCode.Double),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -1992,19 +1992,19 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("ExceptionType", TypeCode.String),
-            new("ExceptionMessage", TypeCode.String),
-            new("ExceptionEIP", TypeCode.UInt64),
-            new("ExceptionHRESULT", TypeCode.UInt32),
-            new("ExceptionFlags", TypeCode.UInt16),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("ExceptionType", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ExceptionMessage", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ExceptionEIP", NetTraceTypeCode.UInt64),
+            new("ExceptionHRESULT", NetTraceTypeCode.UInt32),
+            new("ExceptionFlags", NetTraceTypeCode.UInt16),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new ExceptionPayload(
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadUInt64(),
                 reader.ReadUInt32(),
                 reader.ReadUInt16(),
@@ -2097,8 +2097,8 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("ContentionFlags", TypeCode.Byte),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("ContentionFlags", NetTraceTypeCode.Byte),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -2169,11 +2169,11 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("ContentionFlags", TypeCode.Byte),
-            new("ClrInstanceID", TypeCode.UInt16),
-            new("LockID", TypeCode.UInt64),
-            new("AssociatedObjectID", TypeCode.UInt64),
-            new("LockOwnerThreadID", TypeCode.UInt64),
+            new("ContentionFlags", NetTraceTypeCode.Byte),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
+            new("LockID", NetTraceTypeCode.UInt64),
+            new("AssociatedObjectID", NetTraceTypeCode.UInt64),
+            new("LockOwnerThreadID", NetTraceTypeCode.UInt64),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -2266,12 +2266,12 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("ManagedThreadID", TypeCode.UInt64),
-            new("AppDomainID", TypeCode.UInt64),
-            new("Flags", TypeCode.UInt32),
-            new("ManagedThreadIndex", TypeCode.UInt32),
-            new("OSThreadID", TypeCode.UInt32),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("ManagedThreadID", NetTraceTypeCode.UInt64),
+            new("AppDomainID", NetTraceTypeCode.UInt64),
+            new("Flags", NetTraceTypeCode.UInt32),
+            new("ManagedThreadIndex", NetTraceTypeCode.UInt32),
+            new("OSThreadID", NetTraceTypeCode.UInt32),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -2371,17 +2371,17 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("ClrInstanceID", TypeCode.UInt16),
-            new("ModuleID", TypeCode.UInt64),
-            new("StubMethodID", TypeCode.UInt64),
-            new("StubFlags", TypeCode.UInt32),
-            new("ManagedInteropMethodToken", TypeCode.UInt32),
-            new("ManagedInteropMethodNamespace", TypeCode.String),
-            new("ManagedInteropMethodName", TypeCode.String),
-            new("ManagedInteropMethodSignature", TypeCode.String),
-            new("NativeMethodSignature", TypeCode.String),
-            new("StubMethodSignature", TypeCode.String),
-            new("StubMethodILCode", TypeCode.String),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
+            new("ModuleID", NetTraceTypeCode.UInt64),
+            new("StubMethodID", NetTraceTypeCode.UInt64),
+            new("StubFlags", NetTraceTypeCode.UInt32),
+            new("ManagedInteropMethodToken", NetTraceTypeCode.UInt32),
+            new("ManagedInteropMethodNamespace", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ManagedInteropMethodName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ManagedInteropMethodSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("NativeMethodSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("StubMethodSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("StubMethodILCode", NetTraceTypeCode.NullTerminatedUtf16String),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -2392,12 +2392,12 @@ internal class KnownEvent
                 reader.ReadUInt64(),
                 reader.ReadUInt32(),
                 reader.ReadUInt32(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString());
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String());
         }
 
         private readonly ushort _clrInstanceId;
@@ -2518,9 +2518,9 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("ContentionFlags", TypeCode.Byte),
-            new("ClrInstanceID", TypeCode.UInt16),
-            new("DurationNs", TypeCode.Double),
+            new("ContentionFlags", NetTraceTypeCode.Byte),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
+            new("DurationNs", NetTraceTypeCode.Double),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -2598,16 +2598,16 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("MethodID", TypeCode.UInt64),
-            new("ModuleID", TypeCode.UInt64),
-            new("MethodStartAddress", TypeCode.UInt64),
-            new("MethodSize", TypeCode.UInt32),
-            new("MethodToken", TypeCode.UInt32),
-            new("MethodFlags", TypeCode.UInt32),
-            new("MethodNamespace", TypeCode.String),
-            new("MethodName", TypeCode.String),
-            new("MethodSignature", TypeCode.String),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("MethodID", NetTraceTypeCode.UInt64),
+            new("ModuleID", NetTraceTypeCode.UInt64),
+            new("MethodStartAddress", NetTraceTypeCode.UInt64),
+            new("MethodSize", NetTraceTypeCode.UInt32),
+            new("MethodToken", NetTraceTypeCode.UInt32),
+            new("MethodFlags", NetTraceTypeCode.UInt32),
+            new("MethodNamespace", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("MethodName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("MethodSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -2619,9 +2619,9 @@ internal class KnownEvent
                 reader.ReadUInt32(),
                 reader.ReadUInt32(),
                 reader.ReadUInt32(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadUInt16());
         }
 
@@ -2736,17 +2736,17 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("MethodID", TypeCode.UInt64),
-            new("ModuleID", TypeCode.UInt64),
-            new("MethodStartAddress", TypeCode.UInt64),
-            new("MethodSize", TypeCode.UInt32),
-            new("MethodToken", TypeCode.UInt32),
-            new("MethodFlags", TypeCode.UInt32),
-            new("MethodNamespace", TypeCode.String),
-            new("MethodName", TypeCode.String),
-            new("MethodSignature", TypeCode.String),
-            new("ClrInstanceID", TypeCode.UInt16),
-            new("ReJITID", TypeCode.UInt64),
+            new("MethodID", NetTraceTypeCode.UInt64),
+            new("ModuleID", NetTraceTypeCode.UInt64),
+            new("MethodStartAddress", NetTraceTypeCode.UInt64),
+            new("MethodSize", NetTraceTypeCode.UInt32),
+            new("MethodToken", NetTraceTypeCode.UInt32),
+            new("MethodFlags", NetTraceTypeCode.UInt32),
+            new("MethodNamespace", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("MethodName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("MethodSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
+            new("ReJITID", NetTraceTypeCode.UInt64),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -2758,9 +2758,9 @@ internal class KnownEvent
                 reader.ReadUInt32(),
                 reader.ReadUInt32(),
                 reader.ReadUInt32(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadUInt16(),
                 reader.ReadUInt64());
         }
@@ -2882,14 +2882,14 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("MethodID", TypeCode.UInt64),
-            new("ModuleID", TypeCode.UInt64),
-            new("MethodToken", TypeCode.UInt32),
-            new("MethodILSize", TypeCode.UInt32),
-            new("MethodNamespace", TypeCode.String),
-            new("MethodName", TypeCode.String),
-            new("MethodSignature", TypeCode.String),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("MethodID", NetTraceTypeCode.UInt64),
+            new("ModuleID", NetTraceTypeCode.UInt64),
+            new("MethodToken", NetTraceTypeCode.UInt32),
+            new("MethodILSize", NetTraceTypeCode.UInt32),
+            new("MethodNamespace", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("MethodName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("MethodSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -2899,9 +2899,9 @@ internal class KnownEvent
                 reader.ReadUInt64(),
                 reader.ReadUInt32(),
                 reader.ReadUInt32(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadUInt16());
         }
 
@@ -3003,13 +3003,13 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("MethodID", TypeCode.UInt64),
-            new("ModuleID", TypeCode.UInt64),
-            new("JitHotCodeRequestSize", TypeCode.UInt64),
-            new("JitRODataRequestSize", TypeCode.UInt64),
-            new("AllocatedSizeForJitCode", TypeCode.UInt64),
-            new("JitAllocFlag", TypeCode.UInt32),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("MethodID", NetTraceTypeCode.UInt64),
+            new("ModuleID", NetTraceTypeCode.UInt64),
+            new("JitHotCodeRequestSize", NetTraceTypeCode.UInt64),
+            new("JitRODataRequestSize", NetTraceTypeCode.UInt64),
+            new("AllocatedSizeForJitCode", NetTraceTypeCode.UInt64),
+            new("JitAllocFlag", NetTraceTypeCode.UInt32),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -3116,30 +3116,30 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("MethodBeingCompiledNamespace", TypeCode.String),
-            new("MethodBeingCompiledName", TypeCode.String),
-            new("MethodBeingCompiledNameSignature", TypeCode.String),
-            new("InlinerNamespace", TypeCode.String),
-            new("InlinerName", TypeCode.String),
-            new("InlinerNameSignature", TypeCode.String),
-            new("InlineeNamespace", TypeCode.String),
-            new("InlineeName", TypeCode.String),
-            new("InlineeNameSignature", TypeCode.String),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("MethodBeingCompiledNamespace", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("MethodBeingCompiledName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("MethodBeingCompiledNameSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("InlinerNamespace", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("InlinerName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("InlinerNameSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("InlineeNamespace", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("InlineeName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("InlineeNameSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new MethodJitInliningSucceededPayload(
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadUInt16());
         }
 
@@ -3255,32 +3255,32 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("MethodBeingCompiledNamespace", TypeCode.String),
-            new("MethodBeingCompiledName", TypeCode.String),
-            new("MethodBeingCompiledNameSignature", TypeCode.String),
-            new("CallerNamespace", TypeCode.String),
-            new("CallerName", TypeCode.String),
-            new("CallerNameSignature", TypeCode.String),
-            new("CalleeNamespace", TypeCode.String),
-            new("CalleeName", TypeCode.String),
-            new("CalleeNameSignature", TypeCode.String),
-            new("TailPrefix", TypeCode.Boolean),
-            new("TailCallType", TypeCode.UInt32),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("MethodBeingCompiledNamespace", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("MethodBeingCompiledName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("MethodBeingCompiledNameSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("CallerNamespace", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("CallerName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("CallerNameSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("CalleeNamespace", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("CalleeName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("CalleeNameSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("TailPrefix", NetTraceTypeCode.Boolean32),
+            new("TailCallType", NetTraceTypeCode.UInt32),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new MethodJitTailCallSucceededPayload(
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadInt32() != 0,
                 reader.ReadUInt32(),
                 reader.ReadUInt16());
@@ -3410,34 +3410,34 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("MethodBeingCompiledNamespace", TypeCode.String),
-            new("MethodBeingCompiledName", TypeCode.String),
-            new("MethodBeingCompiledNameSignature", TypeCode.String),
-            new("InlinerNamespace", TypeCode.String),
-            new("InlinerName", TypeCode.String),
-            new("InlinerNameSignature", TypeCode.String),
-            new("InlineeNamespace", TypeCode.String),
-            new("InlineeName", TypeCode.String),
-            new("InlineeNameSignature", TypeCode.String),
-            new("FailAlways", TypeCode.Boolean),
-            new("FailReason", TypeCode.String),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("MethodBeingCompiledNamespace", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("MethodBeingCompiledName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("MethodBeingCompiledNameSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("InlinerNamespace", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("InlinerName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("InlinerNameSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("InlineeNamespace", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("InlineeName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("InlineeNameSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("FailAlways", NetTraceTypeCode.Boolean32),
+            new("FailReason", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new MethodJitInliningFailedPayload(
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadInt32() != 0,
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadUInt16());
         }
 
@@ -3565,10 +3565,10 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("HeapNum", TypeCode.UInt32),
-            new("ClrInstanceID", TypeCode.UInt16),
-            new("Type", TypeCode.UInt32),
-            new("Bytes", TypeCode.UInt64),
+            new("HeapNum", NetTraceTypeCode.UInt32),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
+            new("Type", NetTraceTypeCode.UInt32),
+            new("Bytes", NetTraceTypeCode.UInt64),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -3653,11 +3653,11 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("Heap", TypeCode.UInt32),
-            new("JoinTime", TypeCode.UInt32),
-            new("JoinType", TypeCode.UInt32),
-            new("ClrInstanceID", TypeCode.UInt16),
-            new("JoinID", TypeCode.UInt32),
+            new("Heap", NetTraceTypeCode.UInt32),
+            new("JoinTime", NetTraceTypeCode.UInt32),
+            new("JoinType", NetTraceTypeCode.UInt32),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
+            new("JoinID", NetTraceTypeCode.UInt32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -3749,10 +3749,10 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("EntryEIP", TypeCode.UInt64),
-            new("MethodID", TypeCode.UInt64),
-            new("MethodName", TypeCode.String),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("EntryEIP", NetTraceTypeCode.UInt64),
+            new("MethodID", NetTraceTypeCode.UInt64),
+            new("MethodName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -3760,7 +3760,7 @@ internal class KnownEvent
             return new ExceptionHandlingPayload(
                 reader.ReadUInt64(),
                 reader.ReadUInt64(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadUInt16());
         }
 
@@ -3837,9 +3837,9 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("WaitSource", TypeCode.Byte),
-            new("AssociatedObjectID", TypeCode.UInt64),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("WaitSource", NetTraceTypeCode.Byte),
+            new("AssociatedObjectID", NetTraceTypeCode.UInt64),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -3917,7 +3917,7 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -3981,16 +3981,16 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("MethodID", TypeCode.UInt64),
-            new("ModuleID", TypeCode.UInt64),
-            new("MethodStartAddress", TypeCode.UInt64),
-            new("MethodSize", TypeCode.UInt32),
-            new("MethodToken", TypeCode.UInt32),
-            new("MethodFlags", TypeCode.UInt32),
-            new("MethodNamespace", TypeCode.String),
-            new("MethodName", TypeCode.String),
-            new("MethodSignature", TypeCode.String),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("MethodID", NetTraceTypeCode.UInt64),
+            new("ModuleID", NetTraceTypeCode.UInt64),
+            new("MethodStartAddress", NetTraceTypeCode.UInt64),
+            new("MethodSize", NetTraceTypeCode.UInt32),
+            new("MethodToken", NetTraceTypeCode.UInt32),
+            new("MethodFlags", NetTraceTypeCode.UInt32),
+            new("MethodNamespace", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("MethodName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("MethodSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -4002,9 +4002,9 @@ internal class KnownEvent
                 reader.ReadUInt32(),
                 reader.ReadUInt32(),
                 reader.ReadUInt32(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadUInt16());
         }
 
@@ -4119,17 +4119,17 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("MethodID", TypeCode.UInt64),
-            new("ModuleID", TypeCode.UInt64),
-            new("MethodStartAddress", TypeCode.UInt64),
-            new("MethodSize", TypeCode.UInt32),
-            new("MethodToken", TypeCode.UInt32),
-            new("MethodFlags", TypeCode.UInt32),
-            new("MethodNamespace", TypeCode.String),
-            new("MethodName", TypeCode.String),
-            new("MethodSignature", TypeCode.String),
-            new("ClrInstanceID", TypeCode.UInt16),
-            new("ReJITID", TypeCode.UInt64),
+            new("MethodID", NetTraceTypeCode.UInt64),
+            new("ModuleID", NetTraceTypeCode.UInt64),
+            new("MethodStartAddress", NetTraceTypeCode.UInt64),
+            new("MethodSize", NetTraceTypeCode.UInt32),
+            new("MethodToken", NetTraceTypeCode.UInt32),
+            new("MethodFlags", NetTraceTypeCode.UInt32),
+            new("MethodNamespace", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("MethodName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("MethodSignature", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
+            new("ReJITID", NetTraceTypeCode.UInt64),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -4141,9 +4141,9 @@ internal class KnownEvent
                 reader.ReadUInt32(),
                 reader.ReadUInt32(),
                 reader.ReadUInt32(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadUInt16(),
                 reader.ReadUInt64());
         }
@@ -4265,7 +4265,7 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -4329,14 +4329,14 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("ModuleID", TypeCode.UInt64),
-            new("AssemblyID", TypeCode.UInt64),
-            new("AppDomainID", TypeCode.UInt64),
-            new("ModuleFlags", TypeCode.UInt32),
-            new("Reserved1", TypeCode.UInt32),
-            new("ModuleILPath", TypeCode.String),
-            new("ModuleNativePath", TypeCode.String),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("ModuleID", NetTraceTypeCode.UInt64),
+            new("AssemblyID", NetTraceTypeCode.UInt64),
+            new("AppDomainID", NetTraceTypeCode.UInt64),
+            new("ModuleFlags", NetTraceTypeCode.UInt32),
+            new("Reserved1", NetTraceTypeCode.UInt32),
+            new("ModuleILPath", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ModuleNativePath", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -4347,8 +4347,8 @@ internal class KnownEvent
                 reader.ReadUInt64(),
                 reader.ReadUInt32(),
                 reader.ReadUInt32(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadUInt16());
         }
 
@@ -4450,19 +4450,19 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("ModuleID", TypeCode.UInt64),
-            new("AssemblyID", TypeCode.UInt64),
-            new("ModuleFlags", TypeCode.UInt32),
-            new("Reserved1", TypeCode.UInt32),
-            new("ModuleILPath", TypeCode.String),
-            new("ModuleNativePath", TypeCode.String),
-            new("ClrInstanceID", TypeCode.UInt16),
-            new("ManagedPdbSignature", TypeCodeExtensions.Guid),
-            new("ManagedPdbAge", TypeCode.UInt32),
-            new("ManagedPdbBuildPath", TypeCode.String),
-            new("NativePdbSignature", TypeCodeExtensions.Guid),
-            new("NativePdbAge", TypeCode.UInt32),
-            new("NativePdbBuildPath", TypeCode.String),
+            new("ModuleID", NetTraceTypeCode.UInt64),
+            new("AssemblyID", NetTraceTypeCode.UInt64),
+            new("ModuleFlags", NetTraceTypeCode.UInt32),
+            new("Reserved1", NetTraceTypeCode.UInt32),
+            new("ModuleILPath", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ModuleNativePath", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
+            new("ManagedPdbSignature", NetTraceTypeCode.Guid),
+            new("ManagedPdbAge", NetTraceTypeCode.UInt32),
+            new("ManagedPdbBuildPath", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("NativePdbSignature", NetTraceTypeCode.Guid),
+            new("NativePdbAge", NetTraceTypeCode.UInt32),
+            new("NativePdbBuildPath", NetTraceTypeCode.NullTerminatedUtf16String),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -4472,15 +4472,15 @@ internal class KnownEvent
                 reader.ReadUInt64(),
                 reader.ReadUInt32(),
                 reader.ReadUInt32(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadUInt16(),
                 reader.ReadGuid(),
                 reader.ReadUInt32(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadGuid(),
                 reader.ReadUInt32(),
-                reader.ReadNullTerminatedString());
+                reader.ReadNullTerminatedUtf16String());
         }
 
         private readonly ulong _moduleId;
@@ -4613,12 +4613,12 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("AssemblyID", TypeCode.UInt64),
-            new("AppDomainID", TypeCode.UInt64),
-            new("BindingID", TypeCode.UInt64),
-            new("AssemblyFlags", TypeCode.UInt32),
-            new("FullyQualifiedAssemblyName", TypeCode.String),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("AssemblyID", NetTraceTypeCode.UInt64),
+            new("AppDomainID", NetTraceTypeCode.UInt64),
+            new("BindingID", NetTraceTypeCode.UInt64),
+            new("AssemblyFlags", NetTraceTypeCode.UInt32),
+            new("FullyQualifiedAssemblyName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -4628,7 +4628,7 @@ internal class KnownEvent
                 reader.ReadUInt64(),
                 reader.ReadUInt64(),
                 reader.ReadUInt32(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadUInt16());
         }
 
@@ -4718,11 +4718,11 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("AppDomainID", TypeCode.UInt64),
-            new("AppDomainFlags", TypeCode.UInt32),
-            new("AppDomainName", TypeCode.String),
-            new("AppDomainIndex", TypeCode.UInt32),
-            new("ClrInstanceID", TypeCode.UInt16),
+            new("AppDomainID", NetTraceTypeCode.UInt64),
+            new("AppDomainFlags", NetTraceTypeCode.UInt32),
+            new("AppDomainName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("AppDomainIndex", NetTraceTypeCode.UInt32),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -4730,7 +4730,7 @@ internal class KnownEvent
             return new AppDomainLoadUnloadRundownV1Payload(
                 reader.ReadUInt64(),
                 reader.ReadUInt32(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadUInt32(),
                 reader.ReadUInt16());
         }
@@ -4815,21 +4815,21 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("ClrInstanceID", TypeCode.UInt16),
-            new("Sku", TypeCode.UInt16),
-            new("BclMajorVersion", TypeCode.UInt16),
-            new("BclMinorVersion", TypeCode.UInt16),
-            new("BclBuildNumber", TypeCode.UInt16),
-            new("BclQfeNumber", TypeCode.UInt16),
-            new("VMMajorVersion", TypeCode.UInt16),
-            new("VMMinorVersion", TypeCode.UInt16),
-            new("VMBuildNumber", TypeCode.UInt16),
-            new("VMQfeNumber", TypeCode.UInt16),
-            new("StartupFlags", TypeCode.UInt32),
-            new("StartupMode", TypeCode.Byte),
-            new("CommandLine", TypeCode.String),
-            new("ComObjectGuid", TypeCodeExtensions.Guid),
-            new("RuntimeDllPath", TypeCode.String),
+            new("ClrInstanceID", NetTraceTypeCode.UInt16),
+            new("Sku", NetTraceTypeCode.UInt16),
+            new("BclMajorVersion", NetTraceTypeCode.UInt16),
+            new("BclMinorVersion", NetTraceTypeCode.UInt16),
+            new("BclBuildNumber", NetTraceTypeCode.UInt16),
+            new("BclQfeNumber", NetTraceTypeCode.UInt16),
+            new("VMMajorVersion", NetTraceTypeCode.UInt16),
+            new("VMMinorVersion", NetTraceTypeCode.UInt16),
+            new("VMBuildNumber", NetTraceTypeCode.UInt16),
+            new("VMQfeNumber", NetTraceTypeCode.UInt16),
+            new("StartupFlags", NetTraceTypeCode.UInt32),
+            new("StartupMode", NetTraceTypeCode.Byte),
+            new("CommandLine", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("ComObjectGuid", NetTraceTypeCode.Guid),
+            new("RuntimeDllPath", NetTraceTypeCode.NullTerminatedUtf16String),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -4847,9 +4847,9 @@ internal class KnownEvent
                 reader.ReadUInt16(),
                 reader.ReadUInt32(),
                 reader.ReadByte(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadGuid(),
-                reader.ReadNullTerminatedString());
+                reader.ReadNullTerminatedUtf16String());
         }
 
         private readonly ushort _clrInstanceId;
@@ -4994,7 +4994,7 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("Type", TypeCode.Int32),
+            new("Type", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -5058,12 +5058,12 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("OriginatingTaskSchedulerID", TypeCode.Int32),
-            new("OriginatingTaskID", TypeCode.Int32),
-            new("TaskID", TypeCode.Int32),
-            new("CreatingTaskID", TypeCode.Int32),
-            new("TaskCreationOptions", TypeCode.Int32),
-            new("appDomain", TypeCode.Int32),
+            new("OriginatingTaskSchedulerID", NetTraceTypeCode.Int32),
+            new("OriginatingTaskID", NetTraceTypeCode.Int32),
+            new("TaskID", NetTraceTypeCode.Int32),
+            new("CreatingTaskID", NetTraceTypeCode.Int32),
+            new("TaskCreationOptions", NetTraceTypeCode.Int32),
+            new("appDomain", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -5163,9 +5163,9 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("OriginatingTaskSchedulerID", TypeCode.Int32),
-            new("OriginatingTaskID", TypeCode.Int32),
-            new("TaskID", TypeCode.Int32),
+            new("OriginatingTaskSchedulerID", NetTraceTypeCode.Int32),
+            new("OriginatingTaskID", NetTraceTypeCode.Int32),
+            new("TaskID", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -5243,10 +5243,10 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("OriginatingTaskSchedulerID", TypeCode.Int32),
-            new("OriginatingTaskID", TypeCode.Int32),
-            new("TaskID", TypeCode.Int32),
-            new("IsExceptional", TypeCode.Boolean),
+            new("OriginatingTaskSchedulerID", NetTraceTypeCode.Int32),
+            new("OriginatingTaskID", NetTraceTypeCode.Int32),
+            new("TaskID", NetTraceTypeCode.Int32),
+            new("IsExceptional", NetTraceTypeCode.Boolean32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -5331,11 +5331,11 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("OriginatingTaskSchedulerID", TypeCode.Int32),
-            new("OriginatingTaskID", TypeCode.Int32),
-            new("TaskID", TypeCode.Int32),
-            new("Behavior", TypeCode.Int32),
-            new("ContinueWithTaskID", TypeCode.Int32),
+            new("OriginatingTaskSchedulerID", NetTraceTypeCode.Int32),
+            new("OriginatingTaskID", NetTraceTypeCode.Int32),
+            new("TaskID", NetTraceTypeCode.Int32),
+            new("Behavior", NetTraceTypeCode.Int32),
+            new("ContinueWithTaskID", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -5428,9 +5428,9 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("OriginatingTaskSchedulerID", TypeCode.Int32),
-            new("OriginatingTaskID", TypeCode.Int32),
-            new("TaskID", TypeCode.Int32),
+            new("OriginatingTaskSchedulerID", NetTraceTypeCode.Int32),
+            new("OriginatingTaskID", NetTraceTypeCode.Int32),
+            new("TaskID", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -5508,9 +5508,9 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("OriginatingTaskSchedulerID", TypeCode.Int32),
-            new("OriginatingTaskID", TypeCode.Int32),
-            new("ContinueWithTaskID", TypeCode.Int32),
+            new("OriginatingTaskSchedulerID", NetTraceTypeCode.Int32),
+            new("OriginatingTaskID", NetTraceTypeCode.Int32),
+            new("ContinueWithTaskID", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -5589,7 +5589,7 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("TaskID", TypeCode.Int32),
+            new("TaskID", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -5652,16 +5652,16 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("TaskID", TypeCode.Int32),
-            new("OperationName", TypeCode.String),
-            new("RelatedContext", TypeCode.Int64),
+            new("TaskID", NetTraceTypeCode.Int32),
+            new("OperationName", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("RelatedContext", NetTraceTypeCode.Int64),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new TraceOperationStartPayload(
                 reader.ReadInt32(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadInt64());
         }
 
@@ -5732,8 +5732,8 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("TaskID", TypeCode.Int32),
-            new("Status", TypeCode.Int32),
+            new("TaskID", NetTraceTypeCode.Int32),
+            new("Status", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -5804,8 +5804,8 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("TaskID", TypeCode.Int32),
-            new("Relation", TypeCode.Int32),
+            new("TaskID", NetTraceTypeCode.Int32),
+            new("Relation", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -5876,10 +5876,10 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("bufferId", TypeCode.Int32),
-            new("bufferSize", TypeCode.Int32),
-            new("poolId", TypeCode.Int32),
-            new("bucketId", TypeCode.Int32),
+            new("bufferId", NetTraceTypeCode.Int32),
+            new("bufferSize", NetTraceTypeCode.Int32),
+            new("poolId", NetTraceTypeCode.Int32),
+            new("bucketId", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -5964,11 +5964,11 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("bufferId", TypeCode.Int32),
-            new("bufferSize", TypeCode.Int32),
-            new("poolId", TypeCode.Int32),
-            new("bucketId", TypeCode.Int32),
-            new("reason", TypeCode.Int32),
+            new("bufferId", NetTraceTypeCode.Int32),
+            new("bufferSize", NetTraceTypeCode.Int32),
+            new("poolId", NetTraceTypeCode.Int32),
+            new("bucketId", NetTraceTypeCode.Int32),
+            new("reason", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -6060,9 +6060,9 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("bufferId", TypeCode.Int32),
-            new("bufferSize", TypeCode.Int32),
-            new("poolId", TypeCode.Int32),
+            new("bufferId", NetTraceTypeCode.Int32),
+            new("bufferSize", NetTraceTypeCode.Int32),
+            new("poolId", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -6140,9 +6140,9 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("bufferId", TypeCode.Int32),
-            new("bufferSize", TypeCode.Int32),
-            new("poolId", TypeCode.Int32),
+            new("bufferId", NetTraceTypeCode.Int32),
+            new("bufferSize", NetTraceTypeCode.Int32),
+            new("poolId", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -6220,8 +6220,8 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("milliseconds", TypeCode.Int32),
-            new("pressure", TypeCode.Int32),
+            new("milliseconds", NetTraceTypeCode.Int32),
+            new("pressure", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -6292,11 +6292,11 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("bufferId", TypeCode.Int32),
-            new("bufferSize", TypeCode.Int32),
-            new("poolId", TypeCode.Int32),
-            new("bucketId", TypeCode.Int32),
-            new("reason", TypeCode.Int32),
+            new("bufferId", NetTraceTypeCode.Int32),
+            new("bufferSize", NetTraceTypeCode.Int32),
+            new("poolId", NetTraceTypeCode.Int32),
+            new("bucketId", NetTraceTypeCode.Int32),
+            new("reason", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -6388,22 +6388,22 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("scheme", TypeCode.String),
-            new("host", TypeCode.String),
-            new("port", TypeCode.Int32),
-            new("pathAndQuery", TypeCode.String),
-            new("versionMajor", TypeCode.Byte),
-            new("versionMinor", TypeCode.Byte),
-            new("versionPolicy", TypeCode.Int32),
+            new("scheme", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("host", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("port", NetTraceTypeCode.Int32),
+            new("pathAndQuery", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("versionMajor", NetTraceTypeCode.Byte),
+            new("versionMinor", NetTraceTypeCode.Byte),
+            new("versionPolicy", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new RequestStartPayload(
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadInt32(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadByte(),
                 reader.ReadByte(),
                 reader.ReadInt32());
@@ -6500,7 +6500,7 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("statusCode", TypeCode.Int32),
+            new("statusCode", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -6564,13 +6564,13 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("exceptionMessage", TypeCode.String),
+            new("exceptionMessage", NetTraceTypeCode.NullTerminatedUtf16String),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new RequestFailedPayload(
-                reader.ReadNullTerminatedString());
+                reader.ReadNullTerminatedUtf16String());
         }
 
         private readonly string _exceptionMessage;
@@ -6628,8 +6628,8 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("versionMajor", TypeCode.Byte),
-            new("versionMinor", TypeCode.Byte),
+            new("versionMajor", NetTraceTypeCode.Byte),
+            new("versionMinor", NetTraceTypeCode.Byte),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -6700,8 +6700,8 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("versionMajor", TypeCode.Byte),
-            new("versionMinor", TypeCode.Byte),
+            new("versionMajor", NetTraceTypeCode.Byte),
+            new("versionMinor", NetTraceTypeCode.Byte),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -6772,9 +6772,9 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("timeOnQueueMilliseconds", TypeCode.Double),
-            new("versionMajor", TypeCode.Byte),
-            new("versionMinor", TypeCode.Byte),
+            new("timeOnQueueMilliseconds", NetTraceTypeCode.Double),
+            new("versionMajor", NetTraceTypeCode.Byte),
+            new("versionMinor", NetTraceTypeCode.Byte),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -6852,7 +6852,7 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("connectionId", TypeCode.Int64),
+            new("connectionId", NetTraceTypeCode.Int64),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -6916,7 +6916,7 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("contentLength", TypeCode.Int64),
+            new("contentLength", NetTraceTypeCode.Int64),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -6980,7 +6980,7 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("statusCode", TypeCode.Int32),
+            new("statusCode", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -7044,13 +7044,13 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("exception", TypeCode.String),
+            new("exception", NetTraceTypeCode.NullTerminatedUtf16String),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new RequestFailedDetailedPayload(
-                reader.ReadNullTerminatedString());
+                reader.ReadNullTerminatedUtf16String());
         }
 
         private readonly string _exception;
@@ -7108,13 +7108,13 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("redirectUri", TypeCode.String),
+            new("redirectUri", NetTraceTypeCode.NullTerminatedUtf16String),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new RedirectPayload(
-                reader.ReadNullTerminatedString());
+                reader.ReadNullTerminatedUtf16String());
         }
 
         private readonly string _redirectUri;
@@ -7172,13 +7172,13 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("address", TypeCode.String),
+            new("address", NetTraceTypeCode.NullTerminatedUtf16String),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new ConnectStartPayload(
-                reader.ReadNullTerminatedString());
+                reader.ReadNullTerminatedUtf16String());
         }
 
         private readonly string _address;
@@ -7236,15 +7236,15 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("error", TypeCode.Int32),
-            new("exceptionMessage", TypeCode.String),
+            new("error", NetTraceTypeCode.Int32),
+            new("exceptionMessage", NetTraceTypeCode.NullTerminatedUtf16String),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new SocketErrorPayload(
                 reader.ReadInt32(),
-                reader.ReadNullTerminatedString());
+                reader.ReadNullTerminatedUtf16String());
         }
 
         private readonly int _error;
@@ -7308,13 +7308,13 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("address", TypeCode.String),
+            new("address", NetTraceTypeCode.NullTerminatedUtf16String),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new AcceptStartPayload(
-                reader.ReadNullTerminatedString());
+                reader.ReadNullTerminatedUtf16String());
         }
 
         private readonly string _address;
@@ -7372,13 +7372,13 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("hostNameOrAddress", TypeCode.String),
+            new("hostNameOrAddress", NetTraceTypeCode.NullTerminatedUtf16String),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new ResolutionStartPayload(
-                reader.ReadNullTerminatedString());
+                reader.ReadNullTerminatedUtf16String());
         }
 
         private readonly string _hostNameOrAddress;
@@ -7436,12 +7436,12 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("serviceProviderHashCode", TypeCode.Int32),
-            new("singletonServices", TypeCode.Int32),
-            new("scopedServices", TypeCode.Int32),
-            new("transientServices", TypeCode.Int32),
-            new("closedGenericsServices", TypeCode.Int32),
-            new("openGenericsServices", TypeCode.Int32),
+            new("serviceProviderHashCode", NetTraceTypeCode.Int32),
+            new("singletonServices", NetTraceTypeCode.Int32),
+            new("scopedServices", NetTraceTypeCode.Int32),
+            new("transientServices", NetTraceTypeCode.Int32),
+            new("closedGenericsServices", NetTraceTypeCode.Int32),
+            new("openGenericsServices", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -7540,17 +7540,17 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("serviceProviderHashCode", TypeCode.Int32),
-            new("descriptors", TypeCode.String),
-            new("chunkIndex", TypeCode.Int32),
-            new("chunkCount", TypeCode.Int32),
+            new("serviceProviderHashCode", NetTraceTypeCode.Int32),
+            new("descriptors", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("chunkIndex", NetTraceTypeCode.Int32),
+            new("chunkCount", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new ServiceProviderDescriptorsPayload(
                 reader.ReadInt32(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadInt32(),
                 reader.ReadInt32());
         }
@@ -7628,14 +7628,14 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("serviceType", TypeCode.String),
-            new("serviceProviderHashCode", TypeCode.Int32),
+            new("serviceType", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("serviceProviderHashCode", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new ServiceResolvedPayload(
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadInt32());
         }
 
@@ -7700,9 +7700,9 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("serviceProviderHashCode", TypeCode.Int32),
-            new("scopedServicesResolved", TypeCode.Int32),
-            new("disposableServices", TypeCode.Int32),
+            new("serviceProviderHashCode", NetTraceTypeCode.Int32),
+            new("scopedServicesResolved", NetTraceTypeCode.Int32),
+            new("disposableServices", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -7780,17 +7780,17 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("guid", TypeCodeExtensions.Guid),
-            new("tag", TypeCode.String),
-            new("requestedSize", TypeCode.Int64),
-            new("actualSize", TypeCode.Int64),
+            new("guid", NetTraceTypeCode.Guid),
+            new("tag", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("requestedSize", NetTraceTypeCode.Int64),
+            new("actualSize", NetTraceTypeCode.Int64),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new MemoryStreamCreatedPayload(
                 reader.ReadGuid(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadInt64(),
                 reader.ReadInt64());
         }
@@ -7868,21 +7868,21 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("guid", TypeCodeExtensions.Guid),
-            new("tag", TypeCode.String),
-            new("lifetimeMs", TypeCode.Int64),
-            new("allocationStack", TypeCode.String),
-            new("disposeStack", TypeCode.String),
+            new("guid", NetTraceTypeCode.Guid),
+            new("tag", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("lifetimeMs", NetTraceTypeCode.Int64),
+            new("allocationStack", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("disposeStack", NetTraceTypeCode.NullTerminatedUtf16String),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new MemoryStreamDisposedPayload(
                 reader.ReadGuid(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadInt64(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString());
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String());
         }
 
         private readonly Guid _guid;
@@ -7964,21 +7964,21 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("guid", TypeCodeExtensions.Guid),
-            new("tag", TypeCode.String),
-            new("allocationStack", TypeCode.String),
-            new("disposeStack1", TypeCode.String),
-            new("disposeStack2", TypeCode.String),
+            new("guid", NetTraceTypeCode.Guid),
+            new("tag", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("allocationStack", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("disposeStack1", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("disposeStack2", NetTraceTypeCode.NullTerminatedUtf16String),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new MemoryStreamDoubleDisposePayload(
                 reader.ReadGuid(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString());
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String());
         }
 
         private readonly Guid _guid;
@@ -8060,17 +8060,17 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("guid", TypeCodeExtensions.Guid),
-            new("tag", TypeCode.String),
-            new("allocationStack", TypeCode.String),
+            new("guid", NetTraceTypeCode.Guid),
+            new("tag", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("allocationStack", NetTraceTypeCode.NullTerminatedUtf16String),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new MemoryStreamFinalizedPayload(
                 reader.ReadGuid(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString());
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String());
         }
 
         private readonly Guid _guid;
@@ -8140,18 +8140,18 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("guid", TypeCodeExtensions.Guid),
-            new("tag", TypeCode.String),
-            new("stack", TypeCode.String),
-            new("size", TypeCode.Int64),
+            new("guid", NetTraceTypeCode.Guid),
+            new("tag", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("stack", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("size", NetTraceTypeCode.Int64),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new MemoryStreamToArrayPayload(
                 reader.ReadGuid(),
-                reader.ReadNullTerminatedString(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadInt64());
         }
 
@@ -8228,9 +8228,9 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("blockSize", TypeCode.Int32),
-            new("largeBufferMultiple", TypeCode.Int32),
-            new("maximumBufferSize", TypeCode.Int32),
+            new("blockSize", NetTraceTypeCode.Int32),
+            new("largeBufferMultiple", NetTraceTypeCode.Int32),
+            new("maximumBufferSize", NetTraceTypeCode.Int32),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -8308,7 +8308,7 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("smallPoolInUseBytes", TypeCode.Int64),
+            new("smallPoolInUseBytes", NetTraceTypeCode.Int64),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -8372,8 +8372,8 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("requiredSize", TypeCode.Int64),
-            new("largePoolInUseBytes", TypeCode.Int64),
+            new("requiredSize", NetTraceTypeCode.Int64),
+            new("largePoolInUseBytes", NetTraceTypeCode.Int64),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
@@ -8444,19 +8444,19 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("guid", TypeCodeExtensions.Guid),
-            new("tag", TypeCode.String),
-            new("requiredSize", TypeCode.Int64),
-            new("allocationStack", TypeCode.String),
+            new("guid", NetTraceTypeCode.Guid),
+            new("tag", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("requiredSize", NetTraceTypeCode.Int64),
+            new("allocationStack", NetTraceTypeCode.NullTerminatedUtf16String),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new MemoryStreamNonPooledLargeBufferCreatedPayload(
                 reader.ReadGuid(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadInt64(),
-                reader.ReadNullTerminatedString());
+                reader.ReadNullTerminatedUtf16String());
         }
 
         private readonly Guid _guid;
@@ -8532,23 +8532,23 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("guid", TypeCodeExtensions.Guid),
-            new("tag", TypeCode.String),
-            new("bufferType", TypeCode.Int32),
-            new("reason", TypeCode.Int32),
-            new("smallBlocksFree", TypeCode.Int64),
-            new("smallPoolBytesFree", TypeCode.Int64),
-            new("smallPoolBytesInUse", TypeCode.Int64),
-            new("largeBlocksFree", TypeCode.Int64),
-            new("largePoolBytesFree", TypeCode.Int64),
-            new("largePoolBytesInUse", TypeCode.Int64),
+            new("guid", NetTraceTypeCode.Guid),
+            new("tag", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("bufferType", NetTraceTypeCode.Int32),
+            new("reason", NetTraceTypeCode.Int32),
+            new("smallBlocksFree", NetTraceTypeCode.Int64),
+            new("smallPoolBytesFree", NetTraceTypeCode.Int64),
+            new("smallPoolBytesInUse", NetTraceTypeCode.Int64),
+            new("largeBlocksFree", NetTraceTypeCode.Int64),
+            new("largePoolBytesFree", NetTraceTypeCode.Int64),
+            new("largePoolBytesInUse", NetTraceTypeCode.Int64),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new MemoryStreamDiscardBufferPayload(
                 reader.ReadGuid(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadInt32(),
                 reader.ReadInt32(),
                 reader.ReadInt64(),
@@ -8668,21 +8668,21 @@ internal class KnownEvent
     {
         public static EventFieldDefinition[] FieldDefinitions { get; } =
         [
-            new("guid", TypeCodeExtensions.Guid),
-            new("tag", TypeCode.String),
-            new("requestedCapacity", TypeCode.Int64),
-            new("maxCapacity", TypeCode.Int64),
-            new("allocationStack", TypeCode.String),
+            new("guid", NetTraceTypeCode.Guid),
+            new("tag", NetTraceTypeCode.NullTerminatedUtf16String),
+            new("requestedCapacity", NetTraceTypeCode.Int64),
+            new("maxCapacity", NetTraceTypeCode.Int64),
+            new("allocationStack", NetTraceTypeCode.NullTerminatedUtf16String),
         ];
 
         public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
         {
             return new MemoryStreamOverCapacityPayload(
                 reader.ReadGuid(),
-                reader.ReadNullTerminatedString(),
+                reader.ReadNullTerminatedUtf16String(),
                 reader.ReadInt64(),
                 reader.ReadInt64(),
-                reader.ReadNullTerminatedString());
+                reader.ReadNullTerminatedUtf16String());
         }
 
         private readonly Guid _guid;

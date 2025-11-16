@@ -1,5 +1,4 @@
 using System.Diagnostics.Tracing;
-using NetTrace;
 
 namespace NetTrace.Test;
 
@@ -42,15 +41,15 @@ public class NetTraceReaderTest
             Assert.That(trace.Events[0].Metadata.Opcode, Is.EqualTo(EventOpcode.Send));
             Assert.That(trace.Events[0].Metadata.FieldDefinitions, Has.Count.EqualTo(5));
             Assert.That(trace.Events[0].Metadata.FieldDefinitions[0].Name, Is.EqualTo("OriginatingTaskSchedulerID"));
-            Assert.That(trace.Events[0].Metadata.FieldDefinitions[0].TypeCode, Is.EqualTo(TypeCode.Int32));
+            Assert.That(trace.Events[0].Metadata.FieldDefinitions[0].TypeCode, Is.EqualTo(NetTraceTypeCode.Int32));
             Assert.That(trace.Events[0].Metadata.FieldDefinitions[1].Name, Is.EqualTo("OriginatingTaskID"));
-            Assert.That(trace.Events[0].Metadata.FieldDefinitions[1].TypeCode, Is.EqualTo(TypeCode.Int32));
+            Assert.That(trace.Events[0].Metadata.FieldDefinitions[1].TypeCode, Is.EqualTo(NetTraceTypeCode.Int32));
             Assert.That(trace.Events[0].Metadata.FieldDefinitions[2].Name, Is.EqualTo("TaskID"));
-            Assert.That(trace.Events[0].Metadata.FieldDefinitions[2].TypeCode, Is.EqualTo(TypeCode.Int32));
+            Assert.That(trace.Events[0].Metadata.FieldDefinitions[2].TypeCode, Is.EqualTo(NetTraceTypeCode.Int32));
             Assert.That(trace.Events[0].Metadata.FieldDefinitions[3].Name, Is.EqualTo("Behavior"));
-            Assert.That(trace.Events[0].Metadata.FieldDefinitions[3].TypeCode, Is.EqualTo(TypeCode.Int32));
+            Assert.That(trace.Events[0].Metadata.FieldDefinitions[3].TypeCode, Is.EqualTo(NetTraceTypeCode.Int32));
             Assert.That(trace.Events[0].Metadata.FieldDefinitions[4].Name, Is.EqualTo("ContinueWithTaskID"));
-            Assert.That(trace.Events[0].Metadata.FieldDefinitions[4].TypeCode, Is.EqualTo(TypeCode.Int32));
+            Assert.That(trace.Events[0].Metadata.FieldDefinitions[4].TypeCode, Is.EqualTo(NetTraceTypeCode.Int32));
             Assert.That(trace.Events[1].Metadata, Is.SameAs(trace.Events[0].Metadata));
 
             Assert.That(trace.Events[0].Index, Is.EqualTo(0));

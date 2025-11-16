@@ -151,7 +151,14 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
         return true;
     }
 
-    public bool TryReadString(out ReadOnlySequence<byte> value)
+    public string ReadUtf8String()
+    {
+        int length = ReadVarInt32();
+        ReadOnlySequence<byte> utf8Bytes = ReadBytes(length);
+        return Encoding.UTF8.GetString(utf8Bytes);
+    }
+
+    public bool TryReadNullTerminatedUtf16String(out ReadOnlySequence<byte> value)
     {
         if (!TryReadInt32(out int length))
         {
@@ -162,7 +169,7 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
         return TryReadBytes(length, out value);
     }
 
-    public string ReadNullTerminatedString()
+    public string ReadNullTerminatedUtf16String()
     {
         var unreadCharSpan = MemoryMarshal.Cast<byte, char>(UnreadSpan);
         int nullIdx = unreadCharSpan.IndexOf((char)0);

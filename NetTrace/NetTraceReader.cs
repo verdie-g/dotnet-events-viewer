@@ -37,6 +37,7 @@ public sealed class NetTraceReader(Stream stream)
     private bool _headerRead;
     private long _readPosition;
     private TraceMetadata? _traceMetadata;
+    private bool _isV6Format;
 
     /// <summary>
     /// The sequence point block notifies that the stack id sequence was reset to zero (i.e. new events can reuse
@@ -97,7 +98,7 @@ public sealed class NetTraceReader(Stream stream)
 
         if (!_headerRead)
         {
-            if (!TryReadHeader(ref reader))
+            if (!TryReadHeader(ref reader, ref _isV6Format))
             {
                 return consumed;
             }
@@ -107,7 +108,7 @@ public sealed class NetTraceReader(Stream stream)
             _readPosition = oldReadPosition + reader.Consumed;
         }
 
-        while (!reader.End && TryReadObject(ref reader))
+        while (!reader.End && _isV6Format ? TryReadObjectV6(ref reader) : TryReadObject(ref reader))
         {
             consumed = reader.Position;
             _readPosition = oldReadPosition + reader.Consumed;
@@ -118,7 +119,7 @@ public sealed class NetTraceReader(Stream stream)
         return consumed;
     }
 
-    private static bool TryReadHeader(ref FastSerializerSequenceReader reader)
+    private static bool TryReadHeader(ref FastSerializerSequenceReader reader, ref bool isV6Format)
     {
         if (!reader.TryReadBytes(MagicBytes.Length, out var magicBytesSeq))
         {
@@ -133,7 +134,31 @@ public sealed class NetTraceReader(Stream stream)
             throw new InvalidDataException("Stream is not in the event pipe format");
         }
 
-        if (!reader.TryReadString(out var serializerSignatureSeq))
+        if (!reader.TryReadInt32(out int serializerSignatureLength))
+        {
+            return false;
+        }
+
+        // In 2025, a new format V6+ was introduced that changed a lot of things. It replaces FastSerializer and can
+        // be detected with that length equal to 0.
+        if (serializerSignatureLength == 0)
+        {
+            if (!reader.TryReadInt32(out int major)
+                || !reader.TryReadInt32(out int minor))
+            {
+                return false;
+            }
+
+            if (major < 6)
+            {
+                throw new InvalidDataException("Unexpected version " + major);
+            }
+
+            isV6Format = true;
+            return true;
+        }
+
+        if (!reader.TryReadBytes(serializerSignatureLength, out var serializerSignatureSeq))
         {
             return false;
         }
@@ -170,11 +195,72 @@ public sealed class NetTraceReader(Stream stream)
         }
 
         var blockRead = serializationType.Name == "Trace"
-            ? TryReadTraceObject(ref reader)
+            ? TryReadTraceBlock(ref reader)
             : TryReadBlock(ref reader, in serializationType);
 
         return blockRead
                && TryReadAndAssertTag(ref reader, FastSerializerTag.EndObject);
+    }
+
+    private bool TryReadObjectV6(ref FastSerializerSequenceReader reader)
+    {
+        if (!reader.TryReadInt32(out int objectHeader))
+        {
+            return false;
+        }
+
+        int blockSize = objectHeader & 0xFFFFFF;
+        var blockKind = (BlockKindV6)(objectHeader >> 24);
+
+        if (reader.Remaining < blockSize)
+        {
+            return false;
+        }
+
+        long blockStartPosition = reader.AbsolutePosition;
+        long blockEndPosition = blockStartPosition + blockSize;
+
+        switch (blockKind)
+        {
+            case BlockKindV6.EndOfStream:
+                return true;
+            case BlockKindV6.Trace:
+                ReadTraceBlockV6(ref reader);
+                break;
+            case BlockKindV6.Event:
+                ReadEventBlockV6(ref reader, blockSize);
+                break;
+            case BlockKindV6.Metadata:
+                ReadMetadataBlockV6(ref reader, blockSize);
+                break;
+            case BlockKindV6.SequencePoint:
+                ReadSequencePointBlockV6(ref reader);
+                break;
+            case BlockKindV6.StackBlock:
+                ReadStackBlockV6(ref reader);
+                break;
+            case BlockKindV6.Thread:
+                ReadThreadBlockV6(ref reader, blockSize);
+                break;
+            case BlockKindV6.RemoveThread:
+                ReadRemoveThreadBlockV6(ref reader, blockSize);
+                break;
+            case BlockKindV6.LabelList:
+                ReadLabelListBlockV6(ref reader, blockSize);
+                break;
+            default:
+                // Skip block for forward compatibility.
+                reader.Advance(blockSize);
+                break;
+        }
+
+        long remainingBytes = blockEndPosition - reader.AbsolutePosition;
+        if (remainingBytes > 0)
+        {
+            reader.Advance(remainingBytes);
+        }
+
+        return true;
     }
 
     private bool TryReadSerializationType(
@@ -199,7 +285,7 @@ public sealed class NetTraceReader(Stream stream)
         return true;
     }
 
-    private bool TryReadTraceObject(ref FastSerializerSequenceReader reader)
+    private bool TryReadTraceBlock(ref FastSerializerSequenceReader reader)
     {
         if (!reader.TryReadInt16(out short year)
             || !reader.TryReadInt16(out short month)
@@ -224,6 +310,49 @@ public sealed class NetTraceReader(Stream stream)
             cpuSamplingRate);
 
         return true;
+    }
+
+    private void ReadTraceBlockV6(ref FastSerializerSequenceReader reader)
+    {
+        short year = reader.ReadInt16();
+        short month = reader.ReadInt16();
+        short dayOfWeek = reader.ReadInt16();
+        short day = reader.ReadInt16();
+        short hour = reader.ReadInt16();
+        short minute = reader.ReadInt16();
+        short second = reader.ReadInt16();
+        short millisecond = reader.ReadInt16();
+        long qpcSyncTime = reader.ReadInt64();
+        long qpcFrequency = reader.ReadInt64();
+        int pointerSize = reader.ReadInt32();
+        int keyValueCount = reader.ReadInt32();
+
+        int processId = -1;
+        int numberOfProcessors = -1;
+        int cpuSamplingRate = -1;
+
+        for (int i = 0; i < keyValueCount; i += 1)
+        {
+            string key = reader.ReadUtf8String();
+            string val = reader.ReadUtf8String();
+
+            if (key == "ProcessId" && int.TryParse(val, out int intVal))
+            {
+                processId = intVal;
+            }
+            else if (key == "HardwareThreadCount" && int.TryParse(val, out intVal))
+            {
+                numberOfProcessors = intVal;
+            }
+            else if (key == "ExpectedCPUSamplingRate" && int.TryParse(val, out intVal))
+            {
+                cpuSamplingRate = intVal;
+            }
+        }
+
+        DateTime date = new(year, month, day, hour, minute, second, millisecond);
+        _traceMetadata = new TraceMetadata(date, qpcSyncTime, qpcFrequency, pointerSize, processId, numberOfProcessors,
+            cpuSamplingRate);
     }
 
     private bool TryReadBlock(ref FastSerializerSequenceReader reader, in SerializationType serializationType)
@@ -298,6 +427,89 @@ public sealed class NetTraceReader(Stream stream)
         }
 
         _lastStackIndex = stackIndex;
+    }
+
+    private void ReadStackBlockV6(ref FastSerializerSequenceReader reader)
+    {
+        int firstId = reader.ReadInt32();
+        int count = reader.ReadInt32();
+
+        int stackIndex = _lastStackIndex;
+        for (int i = 0; i < count; i += 1)
+        {
+            int stackId = firstId + i;
+            stackIndex = _stackIndexOffset + stackId;
+
+            int stackSize = reader.ReadInt32();
+
+            ReadOnlySpan<ulong> addresses;
+            var unreadSpan = reader.UnreadSpan;
+            if (unreadSpan.Length >= stackSize)
+            {
+                addresses = MemoryMarshal.Cast<byte, ulong>(unreadSpan[..stackSize]);
+                _stackResolver.AddStackAddresses(stackIndex, addresses);
+                reader.Advance(stackSize);
+                continue;
+            }
+
+            var addressBytes = reader.ReadBytes(stackSize).ToArray();
+            addresses = MemoryMarshal.Cast<byte, ulong>(addressBytes);
+            _stackResolver.AddStackAddresses(stackIndex, addresses);
+        }
+
+        _lastStackIndex = stackIndex;
+    }
+
+    private void ReadThreadBlockV6(ref FastSerializerSequenceReader reader, long blockSize)
+    {
+        long blockEndPosition = reader.AbsolutePosition + blockSize;
+
+        while (reader.AbsolutePosition < blockEndPosition)
+        {
+            long rowStartPosition = reader.AbsolutePosition;
+            ushort rowSize = reader.ReadUInt16();
+            long rowEndPosition = rowStartPosition + sizeof(ushort) + rowSize;
+
+            long threadIndex = reader.ReadVarInt64();
+
+            // Skip any remaining thread info (names, process IDs, etc.)
+            long remainingBytes = rowEndPosition - reader.AbsolutePosition;
+            if (remainingBytes > 0)
+            {
+                reader.Advance(remainingBytes);
+            }
+        }
+    }
+
+    private void ReadRemoveThreadBlockV6(ref FastSerializerSequenceReader reader, long blockSize)
+    {
+        long blockEndPosition = reader.AbsolutePosition + blockSize;
+
+        while (reader.AbsolutePosition < blockEndPosition)
+        {
+            long threadIndex = reader.ReadVarInt64();
+            int sequenceNumber = reader.ReadVarInt32();
+        }
+    }
+
+    private void ReadLabelListBlockV6(ref FastSerializerSequenceReader reader, long blockSize)
+    {
+        long blockEndPosition = reader.AbsolutePosition + blockSize;
+
+        int firstIndex = reader.ReadInt32();
+        int count = reader.ReadInt32();
+
+        for (int i = 0; i < count; i += 1)
+        {
+            bool isLast = false;
+            while (!isLast)
+            {
+                byte kind = reader.ReadByte();
+                isLast = (kind & 0x80) != 0;
+
+                reader.Advance(blockEndPosition - reader.AbsolutePosition);
+            }
+        }
     }
 
     private void ReadMetadataOrEventBlock(ref FastSerializerSequenceReader reader, long blockSize)
@@ -445,9 +657,9 @@ public sealed class NetTraceReader(Stream stream)
         long metadataEndPosition)
     {
         int metadataId = reader.ReadInt32();
-        string providerName = reader.ReadNullTerminatedString();
+        string providerName = reader.ReadNullTerminatedUtf16String();
         int eventId = reader.ReadInt32();
-        string eventName = reader.ReadNullTerminatedString();
+        string eventName = reader.ReadNullTerminatedUtf16String();
         long keywords = reader.ReadInt64();
         int version = reader.ReadInt32();
         var level = ReadInt32AsEnum<EventLevel>(ref reader);
@@ -497,46 +709,332 @@ public sealed class NetTraceReader(Stream stream)
             eventName = $"Event {eventId}";
         }
 
-        return new EventMetadata(metadataId, providerName, eventId, eventName, (EventKeywords)keywords,
-            version, level, opCode, fieldDefinitions);
+        return new EventMetadata(metadataId, null, providerName, eventId, eventName, "", (EventKeywords)keywords,
+            version, level, opCode, fieldDefinitions, null);
+    }
+
+    private void ReadMetadataBlockV6(ref FastSerializerSequenceReader reader, long blockSize)
+    {
+        long blockStartPosition = reader.AbsolutePosition;
+        long blockEndPosition = blockStartPosition + blockSize;
+
+        int headerSize = reader.ReadUInt16();
+        reader.Advance(headerSize);
+
+        while (reader.AbsolutePosition < blockEndPosition)
+        {
+            long metadataStartPosition = reader.AbsolutePosition;
+            ushort metadataLength = reader.ReadUInt16();
+            long metadataEndPosition = metadataStartPosition + sizeof(ushort) + metadataLength;
+
+            int metadataId = reader.ReadVarInt32();
+            string providerName = reader.ReadUtf8String();
+            int eventId = reader.ReadVarInt32();
+            string eventName = reader.ReadUtf8String();
+            IReadOnlyList<EventFieldDefinition> fieldDefinitions = ReadFieldDefinitions(ref reader, EventFieldDefinitionVersion.V6);
+
+            EventOpcode? opCode = null;
+            EventLevel level = EventLevel.Informational;
+            EventKeywords keywords = EventKeywords.None;
+            int version = 0;
+            Guid? providerGuid = null;
+            string? messageTemplate = null;
+            string description = "";
+
+            if (reader.AbsolutePosition < metadataEndPosition)
+            {
+                ushort optionalMetadataSize = reader.ReadUInt16();
+                long optionalMetadataEndPosition = reader.AbsolutePosition + optionalMetadataSize;
+
+                while (reader.AbsolutePosition < optionalMetadataEndPosition)
+                {
+                    var kind = ReadByteAsEnum<EventMetadataTag>(ref reader);
+                    switch (kind)
+                    {
+                        case EventMetadataTag.OpCode:
+                            opCode = ReadByteAsEnum<EventOpcode>(ref reader);
+                            break;
+                        case EventMetadataTag.Keyword:
+                            keywords = (EventKeywords)reader.ReadInt64();
+                            break;
+                        case EventMetadataTag.Level:
+                            level = ReadByteAsEnum<EventLevel>(ref reader);
+                            break;
+                        case EventMetadataTag.Version:
+                            version = reader.ReadByte();
+                            break;
+                        case EventMetadataTag.MessageTemplate:
+                            messageTemplate = reader.ReadUtf8String();
+                            break;
+                        case EventMetadataTag.Description:
+                            description = reader.ReadUtf8String();
+                            break;
+                        case EventMetadataTag.KeyValue:
+                            reader.ReadUtf8String(); // key
+                            reader.ReadUtf8String(); // value
+                            break;
+                        case EventMetadataTag.ProviderGuid:
+                            providerGuid = reader.ReadGuid();
+                            break;
+                        case EventMetadataTag.ParameterPayload:
+                            break;
+                    }
+                }
+            }
+
+            providerName = InternString(providerName);
+
+            long remainingBytes = metadataEndPosition - reader.AbsolutePosition;
+            if (remainingBytes > 0)
+            {
+                reader.Advance(remainingBytes);
+            }
+
+            EventMetadata metadata = new(metadataId, providerGuid, providerName, eventId, eventName, description,
+                keywords, version, level, opCode, fieldDefinitions, messageTemplate);
+            _eventMetadata[metadataId] = metadata;
+        }
+    }
+
+    private void ReadEventBlockV6(ref FastSerializerSequenceReader reader, long blockSize)
+    {
+        long headerStartPosition = reader.AbsolutePosition;
+        long blockEndPosition = headerStartPosition + blockSize;
+
+        short headerSize = reader.ReadInt16();
+        var flags = ReadInt16AsEnum<EventBlockFlags>(ref reader);
+        long minTimestamp = reader.ReadInt64();
+        long maxTimestamp = reader.ReadInt64();
+        reader.Advance(headerSize - (reader.AbsolutePosition - headerStartPosition));
+
+        if (flags.HasFlag(EventBlockFlags.Compressed))
+        {
+            CompressedEventBlobState state = new();
+            while (reader.AbsolutePosition < blockEndPosition)
+            {
+                ReadCompressedEventBlobV6(ref reader, ref state);
+            }
+        }
+        else
+        {
+            while (reader.AbsolutePosition < blockEndPosition)
+            {
+                ReadUncompressedEventBlobV6(ref reader);
+            }
+        }
+    }
+
+    private void ReadUncompressedEventBlobV6(ref FastSerializerSequenceReader reader)
+    {
+        int eventSize = reader.ReadInt32();
+        int metadataId = reader.ReadInt32() & 0x7FFFFFFF;
+        int sequenceNumber = reader.ReadInt32();
+        long threadIndex = reader.ReadInt64();
+        long captureThreadIndex = reader.ReadInt64();
+        int processorNumber = reader.ReadInt32();
+        int stackId = reader.ReadInt32();
+        long timeStamp = reader.ReadInt64();
+        int labelListId = reader.ReadInt32();
+        int payloadSize = reader.ReadInt32();
+
+        long payloadEndPosition = reader.AbsolutePosition + payloadSize;
+
+        var metadata = _eventMetadata[metadataId];
+        IReadOnlyDictionary<string, object> payload = ReadEventPayload(ref reader, metadata);
+
+        int stackIndex = _stackIndexOffset + stackId;
+        long timeStampRelativeNs = ConvertQpcToRelativeNs(timeStamp);
+        Event evt = new(_events.Count, sequenceNumber, captureThreadIndex, threadIndex, stackIndex, timeStampRelativeNs,
+            Guid.Empty, Guid.Empty, payload, metadata);
+        _events.Add(evt);
+
+        HandleSpecialEvent(evt);
+
+        if (reader.AbsolutePosition != payloadEndPosition)
+        {
+            reader.Advance(payloadEndPosition - reader.AbsolutePosition);
+        }
+    }
+
+    private void ReadCompressedEventBlobV6(ref FastSerializerSequenceReader reader, ref CompressedEventBlobState state)
+    {
+        var flags = ReadByteAsEnum<CompressedEventFlags>(ref reader);
+
+        var metadataId = flags.HasFlag(CompressedEventFlags.HasMetadataId)
+            ? reader.ReadVarInt32()
+            : state.PreviousMetadataId;
+
+        int sequenceNumber;
+        long captureThreadId;
+        int processorNumber;
+        if (flags.HasFlag(CompressedEventFlags.HasSequenceNumberAndCaptureThreadIdAndProcessorNumber))
+        {
+            sequenceNumber = reader.ReadVarInt32() + state.PreviousSequenceNumber;
+            captureThreadId = reader.ReadVarInt64();
+            processorNumber = reader.ReadVarInt32();
+        }
+        else
+        {
+            sequenceNumber = state.PreviousSequenceNumber;
+            captureThreadId = state.PreviousCaptureThreadId;
+            processorNumber = state.PreviousProcessorNumber;
+        }
+
+        if (metadataId != 0)
+        {
+            sequenceNumber += 1;
+        }
+
+        long threadId = flags.HasFlag(CompressedEventFlags.HasThreadId)
+            ? reader.ReadVarInt64()
+            : state.PreviousThreadId;
+
+        int stackId = flags.HasFlag(CompressedEventFlags.HasStackId)
+            ? reader.ReadVarInt32()
+            : state.PreviousStackId;
+
+        long timeStamp = reader.ReadVarInt64() + state.PreviousTimeStamp;
+
+        int labelListId = flags.HasFlag(CompressedEventFlags.HasActivityId)
+            ? reader.ReadVarInt32()
+            : state.PreviousLabelListId;
+
+        int payloadSize = flags.HasFlag(CompressedEventFlags.HasPayloadSize)
+            ? reader.ReadVarInt32()
+            : state.PreviousPayloadSize;
+
+        long payloadEndPosition = reader.AbsolutePosition + payloadSize;
+
+        var metadata = _eventMetadata[metadataId];
+
+        IReadOnlyDictionary<string, object> payload;
+        if (metadata.FieldDefinitions.Count == 0)
+        {
+            reader.Advance(payloadEndPosition - reader.AbsolutePosition);
+            payload = EmptyDictionary;
+        }
+        else
+        {
+            payload = ReadEventPayload(ref reader, metadata);
+        }
+
+        int stackIndex = _stackIndexOffset + stackId;
+        long timeStampRelativeNs = ConvertQpcToRelativeNs(timeStamp);
+        Event evt = new(_events.Count, sequenceNumber, captureThreadId, threadId, stackIndex, timeStampRelativeNs,
+            Guid.Empty, Guid.Empty, payload, metadata);
+        _events.Add(evt);
+
+        HandleSpecialEvent(evt);
+
+        if (reader.AbsolutePosition != payloadEndPosition)
+        {
+            reader.Advance(payloadEndPosition - reader.AbsolutePosition);
+        }
+
+        state.PreviousMetadataId = metadataId;
+        state.PreviousSequenceNumber = sequenceNumber;
+        state.PreviousCaptureThreadId = captureThreadId;
+        state.PreviousProcessorNumber = processorNumber;
+        state.PreviousThreadId = threadId;
+        state.PreviousStackId = stackId;
+        state.PreviousTimeStamp = timeStamp;
+        state.PreviousLabelListId = labelListId;
+        state.PreviousPayloadSize = payloadSize;
     }
 
     private EventFieldDefinition[] ReadFieldDefinitions(
         ref FastSerializerSequenceReader reader,
         EventFieldDefinitionVersion version)
     {
-        int fieldCount = reader.ReadInt32();
+        int fieldCount = version >= EventFieldDefinitionVersion.V6 ? reader.ReadUInt16() : reader.ReadInt32();
         if (fieldCount == 0)
         {
-            return Array.Empty<EventFieldDefinition>();
+            return [];
         }
 
         var fieldDefinitions = new EventFieldDefinition[fieldCount];
         for (int i = 0; i < fieldCount; i += 1)
         {
-            var typeCode = ReadInt32AsEnum<TypeCode>(ref reader);
-
-            TypeCode arrayTypeCode = default;
-            if (version == EventFieldDefinitionVersion.V2
-                && typeCode == TypeCodeExtensions.Array)
-            {
-                arrayTypeCode = ReadInt32AsEnum<TypeCode>(ref reader);
-            }
-
-            EventFieldDefinition[]? subFieldDefinitions = null;
-            if (typeCode == TypeCode.Object)
-            {
-                subFieldDefinitions = ReadFieldDefinitions(ref reader, version);
-            }
-
-            string fieldName = reader.ReadNullTerminatedString();
-            fieldName = InternString(fieldName);
-
-            TypeCode? nullableArrayTypeCode = arrayTypeCode == default ? null : arrayTypeCode;
-            fieldDefinitions[i] = new EventFieldDefinition(fieldName, typeCode, nullableArrayTypeCode, subFieldDefinitions);
+            fieldDefinitions[i] = version >= EventFieldDefinitionVersion.V6
+                ? ReadFieldDefinitionV6(ref reader, version)
+                : ReadFieldDefinition(ref reader, version);
         }
 
         return fieldDefinitions;
+    }
+
+    private EventFieldDefinition ReadFieldDefinition(
+        ref FastSerializerSequenceReader reader,
+        EventFieldDefinitionVersion version)
+    {
+        var typeCode = ReadInt32AsEnum<NetTraceTypeCode>(ref reader);
+
+        NetTraceTypeCode arrayTypeCode = default;
+        if (version == EventFieldDefinitionVersion.V2
+            && typeCode == NetTraceTypeCode.Array)
+        {
+            arrayTypeCode = ReadInt32AsEnum<NetTraceTypeCode>(ref reader);
+        }
+
+        EventFieldDefinition[]? subFieldDefinitions = null;
+        if (typeCode == NetTraceTypeCode.Object)
+        {
+            subFieldDefinitions = ReadFieldDefinitions(ref reader, version);
+        }
+
+        string fieldName = reader.ReadNullTerminatedUtf16String();
+        fieldName = InternString(fieldName);
+
+        NetTraceTypeCode? nullableArrayTypeCode = arrayTypeCode == default ? null : arrayTypeCode;
+        return new EventFieldDefinition(fieldName, typeCode, nullableArrayTypeCode, subFieldDefinitions);
+    }
+
+    private EventFieldDefinition ReadFieldDefinitionV6(
+        ref FastSerializerSequenceReader reader,
+        EventFieldDefinitionVersion version)
+    {
+        ushort fieldLength = reader.ReadUInt16();
+        long contentStartPosition = reader.AbsolutePosition;
+        long fieldEndPosition = contentStartPosition + fieldLength;
+
+        string fieldName = reader.ReadUtf8String();
+        var typeCode = ReadByteAsEnum<NetTraceTypeCode>(ref reader);
+
+        NetTraceTypeCode? arrayElementTypeCode = null;
+        EventFieldDefinition[]? subFieldDefinitions = null;
+
+        if (typeCode is NetTraceTypeCode.Array or NetTraceTypeCode.RelLoc or NetTraceTypeCode.DataLoc)
+        {
+            var elemType = ReadByteAsEnum<NetTraceTypeCode>(ref reader);
+            arrayElementTypeCode = elemType;
+            if (elemType == NetTraceTypeCode.Object)
+            {
+                subFieldDefinitions = ReadFieldDefinitions(ref reader, version);
+            }
+        }
+        else if (typeCode == NetTraceTypeCode.FixedLengthArray)
+        {
+            var elemType = ReadByteAsEnum<NetTraceTypeCode>(ref reader);
+            arrayElementTypeCode = elemType;
+            ushort elementCount = reader.ReadUInt16();
+            if (elemType == NetTraceTypeCode.Object)
+            {
+                subFieldDefinitions = ReadFieldDefinitions(ref reader, version);
+            }
+        }
+        else if (typeCode == NetTraceTypeCode.Object)
+        {
+            subFieldDefinitions = ReadFieldDefinitions(ref reader, version);
+        }
+
+        long remainingBytes = fieldEndPosition - reader.AbsolutePosition;
+        if (remainingBytes > 0)
+        {
+            reader.Advance(remainingBytes);
+        }
+
+        fieldName = InternString(fieldName);
+        return new EventFieldDefinition(fieldName, typeCode, arrayElementTypeCode, subFieldDefinitions);
     }
 
     private IReadOnlyDictionary<string, object> ReadEventPayload(
@@ -574,26 +1072,31 @@ public sealed class NetTraceReader(Stream stream)
         ref FastSerializerSequenceReader reader,
         EventFieldDefinition fieldDefinition)
     {
-        if (fieldDefinition.TypeCode == TypeCodeExtensions.Guid)
+        if (fieldDefinition.TypeCode == NetTraceTypeCode.Guid)
         {
             return reader.ReadGuid();
         }
 
         return fieldDefinition.TypeCode switch
         {
-            TypeCode.Object => ReadEventPayload(ref reader, fieldDefinition.SubFieldDefinitions!),
-            TypeCode.Boolean => InternBoolean(reader.ReadInt32() != 0),
-            TypeCode.SByte => Intern((sbyte)reader.ReadInt32(), _internedSByte),
-            TypeCode.Byte => Intern(reader.ReadByte(), _internedByte),
-            TypeCode.Int16 => Intern(reader.ReadInt16(), _internedInt16),
-            TypeCode.UInt16 => Intern(reader.ReadUInt16(), _internedUInt16),
-            TypeCode.Int32 => reader.ReadInt32(),
-            TypeCode.UInt32 => reader.ReadUInt32(),
-            TypeCode.Int64 => reader.ReadInt64(),
-            TypeCode.UInt64 => reader.ReadUInt64(),
-            TypeCode.Single => reader.ReadSingle(),
-            TypeCode.Double => reader.ReadDouble(),
-            TypeCode.String => reader.ReadNullTerminatedString(),
+            NetTraceTypeCode.Object => ReadEventPayload(ref reader, fieldDefinition.SubFieldDefinitions!),
+            NetTraceTypeCode.Boolean32 => InternBoolean(reader.ReadInt32() != 0),
+            NetTraceTypeCode.SByte => Intern((sbyte)reader.ReadInt32(), _internedSByte),
+            NetTraceTypeCode.Byte => Intern(reader.ReadByte(), _internedByte),
+            NetTraceTypeCode.Int16 => Intern(reader.ReadInt16(), _internedInt16),
+            NetTraceTypeCode.UInt16 => Intern(reader.ReadUInt16(), _internedUInt16),
+            NetTraceTypeCode.Int32 => reader.ReadInt32(),
+            NetTraceTypeCode.UInt32 => reader.ReadUInt32(),
+            NetTraceTypeCode.Int64 => reader.ReadInt64(),
+            NetTraceTypeCode.UInt64 => reader.ReadUInt64(),
+            NetTraceTypeCode.Single => reader.ReadSingle(),
+            NetTraceTypeCode.Double => reader.ReadDouble(),
+            NetTraceTypeCode.NullTerminatedUtf16String => reader.ReadNullTerminatedUtf16String(),
+            NetTraceTypeCode.VarInt => reader.ReadVarInt64(),
+            NetTraceTypeCode.VarUInt => reader.ReadVarInt64(),
+            NetTraceTypeCode.Utf8CodeUnit => Intern(reader.ReadByte(), _internedByte),
+            NetTraceTypeCode.Boolean8 => InternBoolean(reader.ReadByte() != 0),
+            NetTraceTypeCode.Array => throw new NotSupportedException("Array type not yet supported in payload reading"),
             _ => throw new NotSupportedException($"Type {fieldDefinition.TypeCode} is not supported")
         };
     }
@@ -639,6 +1142,21 @@ public sealed class NetTraceReader(Stream stream)
         for (int i = 0; i < threadCount; i += 1)
         {
             ReadThreadSequencePoint(ref reader);
+        }
+
+        _stackIndexOffset = _lastStackIndex;
+    }
+
+    private void ReadSequencePointBlockV6(ref FastSerializerSequenceReader reader)
+    {
+        long timeStamp = reader.ReadInt64();
+        int flags = reader.ReadInt32();
+        int threadCount = reader.ReadInt32();
+
+        for (int i = 0; i < threadCount; i += 1)
+        {
+            long threadIndex = reader.ReadVarInt64();
+            int sequenceNumber = reader.ReadVarInt32();
         }
 
         _stackIndexOffset = _lastStackIndex;
@@ -824,6 +1342,19 @@ public sealed class NetTraceReader(Stream stream)
         Compressed = 1 << 0,
     }
 
+    private enum BlockKindV6 : byte
+    {
+        EndOfStream = 0,
+        Trace = 1,
+        Event = 2,
+        Metadata = 3,
+        SequencePoint = 4,
+        StackBlock = 5,
+        Thread = 6,
+        RemoveThread = 7,
+        LabelList = 8,
+    }
+
     private struct CompressedEventBlobState
     {
         public int PreviousMetadataId { get; set; }
@@ -836,6 +1367,7 @@ public sealed class NetTraceReader(Stream stream)
         public Guid PreviousActivityId { get; set; }
         public Guid PreviousRelatedActivityId { get; set; }
         public int PreviousPayloadSize { get; set; }
+        public int PreviousLabelListId { get; set; }
     }
 
     [Flags]
@@ -855,11 +1387,19 @@ public sealed class NetTraceReader(Stream stream)
     {
         V1,
         V2,
+        V6,
     }
 
     private enum EventMetadataTag : byte
     {
         OpCode = 1,
         ParameterPayload = 2,
+        Keyword = 3,
+        MessageTemplate = 4,
+        Description = 5,
+        KeyValue = 6,
+        ProviderGuid = 7,
+        Level = 8,
+        Version = 9,
     }
 }
