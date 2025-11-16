@@ -19,11 +19,6 @@ to PerfView:
 
 ## FAQ
 
-### I'm getting a `File is too large to fit in memory` error when loading a nettrace
-
-Unfortunately, WebAssembly currently only allows 32-bit addressing, so it means the decompressed file is limited to
-4 GiB. Also, there is currently another issue, only 1 of the 4 GiB can be use [dotnet/runtime#101926](https://github.com/dotnet/runtime/issues/101926).
-
 ### Some events are named `Event XX` and don't have any payload
 
 Nettrace files are expected to include the schemas for all their events, but this isn't the case for some providers
