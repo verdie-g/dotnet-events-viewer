@@ -65,8 +65,8 @@ public enum NetTraceTypeCode
     /// <summary>A fixed-length array of elements. The length is determined by the metadata.</summary>
     FixedLengthArray = 22,
 
-    /// <summary>A single UTF8 code unit (1 byte).</summary>
-    Utf8CodeUnit = 23,
+    /// <summary>A UInt16 length-prefixed UTF8 string.</summary>
+    Utf8String = 23,
 
     /// <summary>An array at a relative location within the payload.</summary>
     RelLoc = 24,

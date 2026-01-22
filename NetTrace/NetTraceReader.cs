@@ -1094,11 +1094,21 @@ public sealed class NetTraceReader(Stream stream)
             NetTraceTypeCode.NullTerminatedUtf16String => reader.ReadNullTerminatedUtf16String(),
             NetTraceTypeCode.VarInt => reader.ReadVarInt64(),
             NetTraceTypeCode.VarUInt => reader.ReadVarInt64(),
-            NetTraceTypeCode.Utf8CodeUnit => Intern(reader.ReadByte(), _internedByte),
+            NetTraceTypeCode.Utf8String => reader.ReadShortUtf8String(),
             NetTraceTypeCode.Boolean8 => InternBoolean(reader.ReadByte() != 0),
-            NetTraceTypeCode.Array => throw new NotSupportedException("Array type not yet supported in payload reading"),
+            NetTraceTypeCode.Array => ReadArray(ref reader, fieldDefinition),
             _ => throw new NotSupportedException($"Type {fieldDefinition.TypeCode} is not supported")
         };
+    }
+
+    private object ReadArray(ref FastSerializerSequenceReader reader, EventFieldDefinition fieldDefinition)
+    {
+        if (fieldDefinition.ArrayTypeCode == NetTraceTypeCode.Utf8String)
+        {
+            return reader.ReadShortUtf8String();
+        }
+
+        throw new NotSupportedException("Array type not yet supported in payload reading");
     }
 
     private void HandleSpecialEvent(Event evt)

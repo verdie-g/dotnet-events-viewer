@@ -158,6 +158,13 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
         return Encoding.UTF8.GetString(utf8Bytes);
     }
 
+    public string ReadShortUtf8String()
+    {
+        ushort length = ReadUInt16();
+        ReadOnlySequence<byte> utf8Bytes = ReadBytes(length);
+        return Encoding.UTF8.GetString(utf8Bytes);
+    }
+
     public bool TryReadNullTerminatedUtf16String(out ReadOnlySequence<byte> value)
     {
         if (!TryReadInt32(out int length))
@@ -284,6 +291,11 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
     {
         ThrowIfFalse(TryReadVarInt64(out long value));
         return value;
+    }
+
+    public ulong ReadVarUInt64()
+    {
+        return (ulong)ReadVarInt64();
     }
 
     public bool TryReadVarInt64(out long value)

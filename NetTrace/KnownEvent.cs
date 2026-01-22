@@ -24,6 +24,8 @@ internal class KnownEvent
     public const string DnsProvider = "System.Net.NameResolution";
     public const string DependencyInjectionProvider = "Microsoft-Extensions-DependencyInjection";
     public const string RecyclableMemoryStreamProvider = "Microsoft-IO-RecyclableMemoryStream";
+    public const string UniversalSystemProvider = "Universal.System";
+    public const string UniversalEventsProvider = "Universal.Events";
 
     private static readonly IReadOnlyDictionary<string, object> EmptyDictionary = new Dictionary<string, object>();
 
@@ -139,6 +141,12 @@ internal class KnownEvent
         [new Key(RecyclableMemoryStreamProvider, 9, 3)] = new("MemoryStreamNonPooledLargeBufferCreated", null, MemoryStreamNonPooledLargeBufferCreatedPayload.FieldDefinitions, MemoryStreamNonPooledLargeBufferCreatedPayload.Parse),
         [new Key(RecyclableMemoryStreamProvider, 10, 2)] = new("MemoryStreamDiscardBuffer", null, MemoryStreamDiscardBufferPayload.FieldDefinitions, MemoryStreamDiscardBufferPayload.Parse),
         [new Key(RecyclableMemoryStreamProvider, 11, 3)] = new("MemoryStreamOverCapacity", null, MemoryStreamOverCapacityPayload.FieldDefinitions, MemoryStreamOverCapacityPayload.Parse),
+        [new Key(UniversalSystemProvider, 0, 0)] = new("ExistingProcess", null, ProcessCreatePayload.FieldDefinitions, ProcessCreatePayload.Parse),
+        [new Key(UniversalSystemProvider, 1, 0)] = new("ProcessCreate", null, ProcessCreatePayload.FieldDefinitions, ProcessCreatePayload.Parse),
+        [new Key(UniversalSystemProvider, 2, 0)] = CreateEmpty("ProcessExit", null),
+        [new Key(UniversalSystemProvider, 3, 0)] = new("ProcessMapping", null, ProcessMappingPayload.FieldDefinitions, ProcessMappingPayload.Parse),
+        [new Key(UniversalSystemProvider, 4, 0)] = new("ProcessSymbol", null, ProcessSymbolPayload.FieldDefinitions, ProcessSymbolPayload.Parse),
+        [new Key(UniversalSystemProvider, 5, 0)] = new("ProcessMappingMetadata", null, ProcessMappingMetadataPayload.FieldDefinitions, ProcessMappingMetadataPayload.Parse),
     }.ToFrozenDictionary();
 
     private static KnownEvent CreateEmpty(string name, EventOpcode? opcode)
@@ -196,8 +204,6 @@ internal class KnownEvent
             return HashCode.Combine(EventId, Version, ProviderName);
         }
     }
-
-    public delegate IReadOnlyDictionary<string, object> EventParser(ref FastSerializerSequenceReader reader);
 
     private sealed class ProcessInfoPayload : IReadOnlyDictionary<string, object>
     {
@@ -8759,4 +8765,366 @@ internal class KnownEvent
             yield return new KeyValuePair<string, object>("allocationStack", _allocationStack);
         }
     }
+
+    private sealed class ProcessCreatePayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("NamespaceId", NetTraceTypeCode.VarUInt),
+            new("Name", NetTraceTypeCode.Utf8String),
+            new("NamespaceName", NetTraceTypeCode.Utf8String),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new ProcessCreatePayload(
+                reader.ReadVarUInt64(),
+                reader.ReadShortUtf8String(),
+                reader.ReadShortUtf8String());
+        }
+
+        private readonly ulong _namespaceId;
+        private readonly string _name;
+        private readonly string _namespaceName;
+
+        private ProcessCreatePayload(ulong namespaceId, string name, string namespaceName)
+        {
+            _namespaceId = namespaceId;
+            _name = name;
+            _namespaceName = namespaceName;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "NamespaceId":
+                    value = _namespaceId;
+                    return true;
+                case "Name":
+                    value = _name;
+                    return true;
+                case "NamespaceName":
+                    value = _namespaceName;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("NamespaceId", _namespaceId);
+            yield return new KeyValuePair<string, object>("Name", _name);
+            yield return new KeyValuePair<string, object>("NamespaceName", _namespaceName);
+        }
+    }
+
+    private sealed class ProcessMappingPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("Id", NetTraceTypeCode.VarUInt),
+            new("StartAddress", NetTraceTypeCode.VarUInt),
+            new("EndAddress", NetTraceTypeCode.VarUInt),
+            new("FileOffset", NetTraceTypeCode.VarUInt),
+            new("FileName", NetTraceTypeCode.Utf8String),
+            new("MetadataId", NetTraceTypeCode.VarUInt),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new ProcessMappingPayload(
+                reader.ReadVarUInt64(),
+                reader.ReadVarUInt64(),
+                reader.ReadVarUInt64(),
+                reader.ReadVarUInt64(),
+                reader.ReadShortUtf8String(),
+                reader.ReadVarUInt64());
+        }
+
+        private readonly ulong _id;
+        private readonly ulong _startAddress;
+        private readonly ulong _endAddress;
+        private readonly ulong _fileOffset;
+        private readonly string _fileName;
+        private readonly ulong _metadataId;
+
+        private ProcessMappingPayload(ulong id, ulong startAddress, ulong endAddress, ulong fileOffset, string fileName, ulong metadataId)
+        {
+            _id = id;
+            _startAddress = startAddress;
+            _endAddress = endAddress;
+            _fileOffset = fileOffset;
+            _fileName = fileName;
+            _metadataId = metadataId;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "Id":
+                    value = _id;
+                    return true;
+                case "StartAddress":
+                    value = _startAddress;
+                    return true;
+                case "EndAddress":
+                    value = _endAddress;
+                    return true;
+                case "FileOffset":
+                    value = _fileOffset;
+                    return true;
+                case "FileName":
+                    value = _fileName;
+                    return true;
+                case "MetadataId":
+                    value = _metadataId;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("Id", _id);
+            yield return new KeyValuePair<string, object>("StartAddress", _startAddress);
+            yield return new KeyValuePair<string, object>("EndAddress", _endAddress);
+            yield return new KeyValuePair<string, object>("FileOffset", _fileOffset);
+            yield return new KeyValuePair<string, object>("FileName", _fileName);
+            yield return new KeyValuePair<string, object>("MetadataId", _metadataId);
+        }
+    }
+
+    private sealed class ProcessMappingMetadataPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("Id", NetTraceTypeCode.VarUInt),
+            new("SymbolMetadata", NetTraceTypeCode.Utf8String),
+            new("VersionMetadata", NetTraceTypeCode.Utf8String),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new ProcessMappingMetadataPayload(
+                reader.ReadVarUInt64(),
+                reader.ReadShortUtf8String(),
+                reader.ReadShortUtf8String());
+        }
+
+        private readonly ulong _id;
+        private readonly string _symbolMetadata;
+        private readonly string _versionMetadata;
+
+        private ProcessMappingMetadataPayload(ulong id, string symbolMetadata, string versionMetadata)
+        {
+            _id = id;
+            _symbolMetadata = symbolMetadata;
+            _versionMetadata = versionMetadata;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "Id":
+                    value = _id;
+                    return true;
+                case "SymbolMetadata":
+                    value = _symbolMetadata;
+                    return true;
+                case "VersionMetadata":
+                    value = _versionMetadata;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("Id", _id);
+            yield return new KeyValuePair<string, object>("SymbolMetadata", _symbolMetadata);
+            yield return new KeyValuePair<string, object>("VersionMetadata", _versionMetadata);
+        }
+    }
+
+    private sealed class ProcessSymbolPayload : IReadOnlyDictionary<string, object>
+    {
+        public static EventFieldDefinition[] FieldDefinitions { get; } =
+        [
+            new("Id", NetTraceTypeCode.VarUInt),
+            new("MappingId", NetTraceTypeCode.VarUInt),
+            new("StartAddress", NetTraceTypeCode.VarUInt),
+            new("EndAddress", NetTraceTypeCode.VarUInt),
+            new("Name", NetTraceTypeCode.Utf8String),
+        ];
+
+        public static IReadOnlyDictionary<string, object> Parse(ref FastSerializerSequenceReader reader)
+        {
+            return new ProcessSymbolPayload(
+                reader.ReadVarUInt64(),
+                reader.ReadVarUInt64(),
+                reader.ReadVarUInt64(),
+                reader.ReadVarUInt64(),
+                reader.ReadShortUtf8String());
+        }
+
+        private readonly ulong _id;
+        private readonly ulong _mappingId;
+        private readonly ulong _startAddress;
+        private readonly ulong _endAddress;
+        private readonly string _name;
+
+        private ProcessSymbolPayload(ulong id, ulong mappingId, ulong startAddress, ulong endAddress, string name)
+        {
+            _id = id;
+            _mappingId = mappingId;
+            _startAddress = startAddress;
+            _endAddress = endAddress;
+            _name = name;
+        }
+
+        public int Count => FieldDefinitions.Length;
+
+        public object this[string key] => TryGetValue(key, out object? val)
+            ? val
+            : throw new KeyNotFoundException($"The given key '{key}' was not present in the dictionary.");
+
+        public IEnumerable<string> Keys => FieldDefinitions.Select(d => d.Name);
+
+        public bool ContainsKey(string key)
+        {
+            return TryGetValue(key, out _);
+        }
+
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+        {
+            switch (key)
+            {
+                case "Id":
+                    value = _id;
+                    return true;
+                case "MappingId":
+                    value = _mappingId;
+                    return true;
+                case "StartAddress":
+                    value = _startAddress;
+                    return true;
+                case "EndAddress":
+                    value = _endAddress;
+                    return true;
+                case "Name":
+                    value = _name;
+                    return true;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
+        public IEnumerable<object> Values => GetKeyValues().Select(kvp => kvp.Value);
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+        {
+            return GetKeyValues().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private IEnumerable<KeyValuePair<string, object>> GetKeyValues()
+        {
+            yield return new KeyValuePair<string, object>("Id", _id);
+            yield return new KeyValuePair<string, object>("MappingId", _mappingId);
+            yield return new KeyValuePair<string, object>("StartAddress", _startAddress);
+            yield return new KeyValuePair<string, object>("EndAddress", _endAddress);
+            yield return new KeyValuePair<string, object>("Name", _name);
+        }
+    }
+
+    public delegate IReadOnlyDictionary<string, object> EventParser(ref FastSerializerSequenceReader reader);
 }
