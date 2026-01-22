@@ -1113,6 +1113,12 @@ public sealed class NetTraceReader(Stream stream)
 
     private void HandleSpecialEvent(Event evt)
     {
+        if (evt.Metadata.ProviderName == KnownEvent.UniversalSystemProvider)
+        {
+            HandleUniversalSystemEvent(evt);
+            return;
+        }
+
         if (evt.Metadata.ProviderName == KnownEvent.RundownProvider)
         {
             switch (evt.Metadata.EventId)
@@ -1128,6 +1134,35 @@ public sealed class NetTraceReader(Stream stream)
                     break;
                 }
             }
+        }
+    }
+
+    private void HandleUniversalSystemEvent(Event evt)
+    {
+        switch (evt.Metadata.EventId)
+        {
+            case 3: // ProcessMapping
+                {
+                    var id = (ulong)evt.Payload["Id"];
+                    var startAddress = (ulong)evt.Payload["StartAddress"];
+                    var endAddress = (ulong)evt.Payload["EndAddress"];
+                    var fileOffset = (ulong)evt.Payload["FileOffset"];
+                    var fileName = (string)evt.Payload["FileName"];
+                    var metadataId = (ulong)evt.Payload["MetadataId"];
+
+                    _stackResolver.AddProcessMapping(id, startAddress, endAddress, fileOffset, fileName, metadataId);
+                    break;
+                }
+            case 4: // ProcessSymbol
+                {
+                    var mappingId = (ulong)evt.Payload["MappingId"];
+                    var startAddress = (ulong)evt.Payload["StartAddress"];
+                    var endAddress = (ulong)evt.Payload["EndAddress"];
+                    var name = (string)evt.Payload["Name"];
+
+                    _stackResolver.AddProcessSymbol(mappingId, startAddress, endAddress, name);
+                    break;
+                }
         }
     }
 

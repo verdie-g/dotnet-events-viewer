@@ -2,6 +2,25 @@
 
 namespace NetTrace;
 
+/// <summary>
+/// Resolves stack trace addresses to method symbols.
+///
+/// Stack traces in nettrace files are stored as arrays of instruction pointer addresses. This class
+/// collects symbol information from the trace and uses it to resolve those addresses to method names.
+///
+/// Symbol information comes from two different sources depending on the trace format:
+///
+/// <b>Pre-V6 format:</b> Uses Microsoft-Windows-DotNETRuntimeRundown events (MethodDCEndVerbose)
+/// which provide JIT-compiled method addresses. Symbols are added via <see cref="AddMethodSymbolInfo"/>.
+///
+/// <b>V6+ format:</b> Uses Universal.System events for native Linux profiling:
+/// - ProcessMapping (EventId=3): Maps memory regions to files (e.g., shared libraries)
+/// - ProcessSymbol (EventId=4): Associates address ranges with symbol names within a mapping
+/// Symbols are added via <see cref="AddProcessMapping"/> and <see cref="AddProcessSymbol"/>.
+///
+/// Both formats ultimately populate the same <see cref="_methodDescriptions"/> list, which is then
+/// used by <see cref="ResolveEventStackTraces"/> to convert addresses to symbols via binary search.
+/// </summary>
 internal class StackResolver
 {
     private static readonly MethodDescription UnresolvedMethodDescription = new("??", "", "", 0, 0);
@@ -9,12 +28,27 @@ internal class StackResolver
     private readonly Dictionary<ulong[], StackTraceGroup> _groupedStackTraces;
     private readonly Dictionary<ulong[], StackTraceGroup>.AlternateLookup<ReadOnlySpan<ulong>> _groupedStackTracesAlternate;
     private readonly List<MethodDescription> _methodDescriptions;
+    private readonly Dictionary<ulong, ProcessMapping> _processMappings = [];
 
     public StackResolver()
     {
         _groupedStackTraces = new Dictionary<ulong[], StackTraceGroup>(new UInt64ArrayComparer());
         _groupedStackTracesAlternate = _groupedStackTraces.GetAlternateLookup<ReadOnlySpan<ulong>>();
         _methodDescriptions = [];
+    }
+
+    public void AddProcessMapping(ulong id, ulong startAddress, ulong endAddress, ulong fileOffset, string fileName, ulong metadataId)
+    {
+        _processMappings[id] = new ProcessMapping(startAddress, endAddress, fileOffset, fileName, metadataId);
+    }
+
+    public void AddProcessSymbol(ulong mappingId, ulong startAddress, ulong endAddress, string name)
+    {
+        if (_processMappings.TryGetValue(mappingId, out var mapping))
+        {
+            var size = (uint)(endAddress - startAddress);
+            _methodDescriptions.Add(new MethodDescription(name, mapping.FileName, "", startAddress, size));
+        }
     }
 
     public void AddStackAddresses(int stackIndex, ReadOnlySpan<ulong> addresses)
@@ -143,7 +177,6 @@ internal class StackResolver
         public StackTrace? StackTrace { get; set; }
     }
 
-
     private sealed class UInt64ArrayComparer : IEqualityComparer<ulong[]>, IAlternateEqualityComparer<ReadOnlySpan<ulong>, ulong[]>
     {
         public bool Equals(ulong[]? x, ulong[]? y)
@@ -177,4 +210,6 @@ internal class StackResolver
             return alternate.ToArray();
         }
     }
+
+    private sealed record ProcessMapping(ulong StartAddress, ulong EndAddress, ulong FileOffset, string FileName, ulong MetadataId);
 }
