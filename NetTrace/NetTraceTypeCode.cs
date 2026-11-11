@@ -76,4 +76,10 @@ public enum NetTraceTypeCode
 
     /// <summary>A 1 byte boolean with value 0=false and 1=true.</summary>
     Boolean8 = 26,
+
+    /// <summary>A pointer-sized CLR schema field, normalized to UInt32 or UInt64 before payload decoding.</summary>
+    Pointer = 27,
+
+    /// <summary>Four bytes of layout padding, consumed without producing a payload property. Not a serialized type code.</summary>
+    Padding32 = 28,
 }

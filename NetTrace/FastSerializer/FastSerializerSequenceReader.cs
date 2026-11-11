@@ -42,6 +42,13 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
         return value;
     }
 
+    public ReadOnlySequence<byte> ReadRemainingBytes()
+    {
+        var value = _reader.UnreadSequence;
+        _reader.Advance(_reader.Remaining);
+        return value;
+    }
+
     public bool TryReadBytes(int count, out ReadOnlySequence<byte> value)
     {
         return _reader.TryReadExact(count, out value);
@@ -106,7 +113,7 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
         var unreadSpan = _reader.UnreadSpan;
         if (unreadSpan.Length >= sizeof(float))
         {
-            value = BinaryPrimitives.ReadSingleBigEndian(unreadSpan[..sizeof(float)]);
+            value = BinaryPrimitives.ReadSingleLittleEndian(unreadSpan[..sizeof(float)]);
             Advance(sizeof(float));
             return true;
         }
@@ -119,7 +126,7 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
 
         Span<byte> singleBytes = stackalloc byte[(int)singleSeq.Length];
         singleSeq.CopyTo(singleBytes);
-        value = BinaryPrimitives.ReadSingleBigEndian(singleBytes);
+        value = BinaryPrimitives.ReadSingleLittleEndian(singleBytes);
         return true;
     }
 
@@ -134,7 +141,7 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
         var unreadSpan = _reader.UnreadSpan;
         if (unreadSpan.Length >= sizeof(double))
         {
-            value = BinaryPrimitives.ReadDoubleBigEndian(unreadSpan[..sizeof(double)]);
+            value = BinaryPrimitives.ReadDoubleLittleEndian(unreadSpan[..sizeof(double)]);
             Advance(sizeof(double));
             return true;
         }
@@ -147,7 +154,7 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
 
         Span<byte> doubleBytes = stackalloc byte[(int)doubleSeq.Length];
         doubleSeq.CopyTo(doubleBytes);
-        value = BinaryPrimitives.ReadDoubleBigEndian(doubleBytes);
+        value = BinaryPrimitives.ReadDoubleLittleEndian(doubleBytes);
         return true;
     }
 
@@ -208,7 +215,7 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
                     break;
                 }
 
-                sb.Append(Convert.ToChar(c));
+                sb.Append((char)(ushort)c);
             }
 
             return sb.ToString();
@@ -296,6 +303,12 @@ internal ref struct FastSerializerSequenceReader(ReadOnlySequence<byte> buffer, 
     public ulong ReadVarUInt64()
     {
         return (ulong)ReadVarInt64();
+    }
+
+    public long ReadZigZagInt64()
+    {
+        ulong value = ReadVarUInt64();
+        return (long)(value >> 1) ^ -(long)(value & 1);
     }
 
     public bool TryReadVarInt64(out long value)
