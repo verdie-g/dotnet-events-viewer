@@ -8,90 +8,87 @@
 
 @inject StateContainer State
 
-<EditForm EditContext="_editContext" OnValidSubmit="@HandleValidSubmit" FormName="query-builder" novalidate>
+<EditForm EditContext="_editContext" OnValidSubmit="@HandleValidSubmit" FormName="query-builder" class="query-builder" novalidate>
     <FluentStack Orientation="Orientation.Vertical">
 
-        <FluentAutocomplete TOption="EventKey"
-                            AutoComplete="off"
+        <FluentAutocomplete TOption="EventKey" TValue="EventKey"
+                            Multiple="true"
                             Placeholder="Select event names"
                             OnOptionsSearch="@OnEventKeySearch"
                             MaximumSelectedOptions="4"
-                            OptionText="k => k.EventName"
-                            @bind-SelectedOptions:get="Query.EventKeys"
-                            @bind-SelectedOptions:set="(IEnumerable<EventKey>? k) => Query.EventKeys = k!.ToArray()"
-                            Width="521px" />
+                            OptionText="k => k!.EventName"
+                            OptionValueToString="k => k.ToString()"
+                            @bind-SelectedItems:get="Query.EventKeys"
+                            @bind-SelectedItems:set="(IEnumerable<EventKey> k) => Query.EventKeys = k.ToArray()"
+                            Style="width: min(521px, 100%)" />
 
         @for (int i = 0; i < Query.Filters.Length; i += 1)
         {
             int idx = i;
             <div>
-                <FluentStack Orientation="Orientation.Horizontal">
-                    <FluentCombobox TOption="Field"
+                <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" Wrap="true">
+                    <FluentCombobox TOption="Field" TValue="Field"
                                     Width="200px"
                                     Placeholder="Select the field to filter on"
                                     Items="GetFields()"
-                                    Autocomplete="ComboboxAutocomplete.Both"
-                                    OptionText="@(f => f.Name)"
-                                    @bind-SelectedOption="Query.Filters[idx].Field"
-                                    Required/>
-                    <FluentSelect TOption="IOperator"
+                                    OptionText="@(f => f!.Name)"
+                                    OptionValueToString="f => f.Name"
+                                    @bind-Value="Query.Filters[idx].Field"
+                                    Required="true"/>
+                    <FluentSelect TOption="IOperator" TValue="IOperator"
                                   Width="80px"
                                   Items="AllOperators"
-                                  OptionText="@(o => o.Text)"
-                                  @bind-SelectedOption="Query.Filters[idx].Operator"/>
-                    <FluentTextField @bind-Value="Query.Filters[idx].Value"
+                                  OptionText="@(o => o!.Text)"
+                                  OptionValueToString="o => o.Text"
+                                  @bind-Value="Query.Filters[idx].Operator"/>
+                    <FluentTextInput @bind-Value="Query.Filters[idx].Value"
                                      Minlength="1"
-                                     Required/>
+                                     Required="true"/>
                     <FluentButton Title="Remove filter"
                                   IconStart="@(new Icons.Regular.Size24.Dismiss())"
                                   OnClick="_ => OnRemoveFilter(idx)"/>
                 </FluentStack>
-                <FluentValidationMessage For="() => Query.Filters[idx]"/>
+                <ValidationMessage For="() => Query.Filters[idx]"/>
             </div>
         }
 
-        <FluentStack Orientation="Orientation.Horizontal">
+        <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" Wrap="true">
             <FluentButton OnClick="@OnAddFilter"
                           IconStart="@(new Icons.Regular.Size24.Add())">
                 Add Filter
             </FluentButton>
             @if (QueryType == QueryType.List)
             {
-                <FluentAutocomplete TOption="Field"
-                                    Width="500px"
-                                    AutoComplete="off"
+                <FluentAutocomplete TOption="Field" TValue="Field"
+                                    Multiple="true"
+                                    Style="width: min(500px, 100%)"
                                     Placeholder="Select column"
                                     OnOptionsSearch="@OnColumnFieldSearch"
                                     MaximumSelectedOptions="8"
-                                    OptionText="@(f => f.Name)"
-                                    @bind-SelectedOptions="Query.SelectedColumnFields"/>
+                                    OptionText="@(f => f!.Name)"
+                                    OptionValueToString="f => f.Name"
+                                    @bind-SelectedItems="Query.SelectedColumnFields"/>
             }
             else if (QueryType == QueryType.Tree)
             {
-                <FluentSelect TOption="ICallTreeCountAggregator"
+                <FluentSelect TOption="ICallTreeCountAggregator" TValue="ICallTreeCountAggregator"
                               Items="AllAggregators"
-                              OptionText="@(d => d.Name)"
+                              OptionText="@(d => d!.Name)"
+                              OptionValueToString="d => d.Name"
                               OptionDisabled="IsAggregatorDisabled"
-                              @bind-SelectedOption="Query.SelectedAggregator"/>
+                              @bind-Value="Query.SelectedAggregator"/>
                 <FluentButton
                     id="extra-options"
-                    Appearance="Appearance.Neutral"
-                    @onclick="() => _extraOptionsOpen = !_extraOptionsOpen"
+                    Appearance="ButtonAppearance.Default"
+                    OnClick="() => _extraOptionsOpen = !_extraOptionsOpen"
                     IconStart="@(new Icons.Filled.Size20.Settings())">
                 </FluentButton>
-                <FluentPopover AnchorId="extra-options" @bind-Open="_extraOptionsOpen">
-                    <Body>
-                        <FluentMenuItem
-                            Role="MenuItemRole.MenuItemCheckbox"
-                            Checked="@Query.BottomUpTree"
-                            OnClick="() => Query.BottomUpTree = !Query.BottomUpTree">
-                            Bottom-up Tree
-                        </FluentMenuItem>
-                    </Body>
+                <FluentPopover AnchorId="extra-options" @bind-Opened="_extraOptionsOpen">
+                    <FluentCheckbox @bind-Value="Query.BottomUpTree" Label="Bottom-up Tree" />
                 </FluentPopover>
             }
             <FluentButton Type="ButtonType.Submit"
-                          Appearance="Appearance.Accent"
+                          Appearance="ButtonAppearance.Primary"
                           IconStart="@(new Icons.Regular.Size24.ArrowSync())">
                 Run query
             </FluentButton>
@@ -181,7 +178,7 @@
         List<Field> fields = new(eventMetadataByFieldName.Count);
         foreach (var eventMetadataForFieldName in eventMetadataByFieldName)
         {
-            // FluentCombobox.SelectedOption is expected to exist in FluentCombobox.Items but if the field is
+            // FluentCombobox.Value is expected to exist in FluentCombobox.Items but if the field is
             // created dynamically, the reference comparison will fail and the filter will be set to null when
             // changing page. The hack here, is to reuse existing fields before creating a new instance.
             var filter = filters.FirstOrDefault(x => x.Field.Name == eventMetadataForFieldName.Key);
@@ -251,9 +248,9 @@
         }
     }
 
-    private bool IsAggregatorDisabled(ICallTreeCountAggregator aggregator)
+    private bool IsAggregatorDisabled(ICallTreeCountAggregator? aggregator)
     {
-        if (aggregator.StartEventKey == null)
+        if (aggregator?.StartEventKey == null)
         {
             return false;
         }

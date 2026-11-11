@@ -1,22 +1,26 @@
 body {
-    --body-font: Segoe UI, sans-serif;
-    font-family: var(--body-font);
-    font-size: var(--type-ramp-base-font-size);
-    line-height: var(--type-ramp-base-line-height);
+    font-family: var(--fontFamilyBase);
+    font-size: var(--fontSizeBase300);
+    line-height: var(--lineHeightBase300);
     margin: 0;
 }
 
 .main {
     height: calc(100dvh - 94px);
-    color: var(--neutral-foreground-rest);
+    color: var(--colorNeutralForeground1);
 }
 
 .content {
     margin: 0 10px;
 }
 
+.query-builder fluent-button,
+.query-builder .fluent-badge[auto-complete] {
+    font-weight: var(--fontWeightRegular);
+}
+
 .alert {
-    border: 1px dashed var(--accent-fill-rest);
+    border: 1px dashed var(--colorBrandBackground);
     padding: 5px;
 }
 

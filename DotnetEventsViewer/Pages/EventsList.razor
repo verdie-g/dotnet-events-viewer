@@ -55,14 +55,14 @@
             return;
         }
 
-        await DialogService.ShowPanelAsync<EventDialogContent>(evt, new DialogParameters<Event>
+        await DialogService.ShowDrawerAsync<EventDialogContent>(options =>
         {
-            Content = evt,
-            Alignment = HorizontalAlignment.Right,
-            Width = "600px",
-            Title = $"{evt.Metadata.EventName} {evt.Index}",
-            PrimaryAction = null,
-            SecondaryAction = null,
+            options.Parameters[nameof(EventDialogContent.Content)] = evt;
+            options.Alignment = DialogAlignment.End;
+            options.Width = "600px";
+            options.Header.Title = $"{evt.Metadata.EventName} {evt.Index}";
+            options.Footer.PrimaryAction.Visible = false;
+            options.Footer.SecondaryAction.Visible = false;
         });
     }
 

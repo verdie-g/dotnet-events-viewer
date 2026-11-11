@@ -1,7 +1,27 @@
-﻿<nav>
-    <FluentNavMenu Width="250" Collapsible="true" Expanded="false" Title="Events Viewer">
-        <FluentNavLink Href="list" Icon="@(new Icons.Filled.Size20.AppsList())" IconColor="Color.Accent">List View</FluentNavLink>
-        <FluentNavLink Href="tree" Icon="@(new Icons.Filled.Size24.CubeTree())" IconColor="Color.Accent">Tree View</FluentNavLink>
-        <FluentNavLink Href="./" Icon="@(new Icons.Regular.Size20.ArrowExit())" IconColor="Color.Accent" Match="NavLinkMatch.All">Close Trace</FluentNavLink>
-    </FluentNavMenu>
-</nav>
+﻿<FluentAppBar Orientation="Orientation" Style="height: 100%" aria-label="Viewer navigation">
+    <FluentAppBarItem Href="list"
+                      IconRest="@(new Icons.Regular.Size24.AppsList())"
+                      IconActive="@(new Icons.Filled.Size24.AppsList())"
+                      Text="List View"
+                      OnClick="OnItemClick" />
+    <FluentAppBarItem Href="tree"
+                      IconRest="@(new Icons.Regular.Size24.CubeTree())"
+                      IconActive="@(new Icons.Filled.Size24.CubeTree())"
+                      Text="Tree View"
+                      OnClick="OnItemClick" />
+    <FluentAppBarItem Href="./"
+                      Match="NavLinkMatch.All"
+                      IconRest="@(new Icons.Regular.Size24.ArrowExit())"
+                      IconActive="@(new Icons.Filled.Size24.ArrowExit())"
+                      Text="Close"
+                      Tooltip="Close Trace"
+                      OnClick="OnItemClick" />
+</FluentAppBar>
+
+@code {
+    [Parameter]
+    public Orientation Orientation { get; set; } = Orientation.Vertical;
+
+    [Parameter]
+    public EventCallback<IAppBarItem> OnItemClick { get; set; }
+}

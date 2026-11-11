@@ -1,6 +1,6 @@
 ﻿@inherits LayoutComponentBase
 <FluentLayout>
-    <FluentBodyContent>
+    <FluentLayoutItem Area="LayoutArea.Content">
         <ErrorBoundary>
             <ChildContent>
                 <div style="max-width: 600px; margin: 10px auto">
@@ -11,5 +11,5 @@
                 <div class="blazor-error-boundary">@ex.Message</div>
             </ErrorContent>
         </ErrorBoundary>
-    </FluentBodyContent>
+    </FluentLayoutItem>
 </FluentLayout>

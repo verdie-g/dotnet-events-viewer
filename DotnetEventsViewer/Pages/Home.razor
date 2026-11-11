@@ -8,7 +8,7 @@
 
 @inject StateContainer StateContainer
 @inject NavigationManager NavigationManager
-@inject IMessageService MessageService
+@inject INotificationService NotificationService
 
 <PageTitle>.NET Events Viewer</PageTitle>
 
@@ -35,7 +35,7 @@
                  @bind-ProgressPercent="@_progressPercent"
                  OnCompleted="OnCompletedAsync"
                  OnFileUploaded="@OnFileUploadedAsync"
-                 Style="height: 300px; border: 1px dashed var(--accent-fill-rest);">
+                 Style="height: 300px; border: 1px dashed var(--colorBrandBackground);">
     <ChildContent>
         <label for="input-nettrace-file">
             <FluentIcon Value="@(new Icons.Regular.Size24.ArrowUpload())" />
@@ -126,11 +126,11 @@
 
     private void ShowFileError(string errorMessage)
     {
-        MessageService.ShowMessageBar(options =>
+        _ = NotificationService.ShowMessageBarAsync(options =>
         {
             options.Title = errorMessage;
             options.Section = "FileUploadError";
-            options.Intent = MessageIntent.Error;
+            options.Intent = MessageBarIntent.Error;
         });
     }
 
