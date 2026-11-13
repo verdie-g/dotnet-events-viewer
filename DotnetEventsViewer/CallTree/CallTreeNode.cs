@@ -13,26 +13,29 @@ public class CallTreeNode
         CallTreeNode root = new(0, new MethodDescription("root", ""));
 
         int id = 1;
+        var eventList = events as IReadOnlyList<Event> ?? events.ToArray();
+        Dictionary<NetTrace.StackTrace, CallTreeNode> leaves = new(ReferenceEqualityComparer.Instance);
         // Process in reverse order so that ProcessEvent observes a stop event before its associated start event.
-        foreach (var evt in events.Reverse())
+        for (int eventIndex = eventList.Count - 1; eventIndex >= 0; eventIndex -= 1)
         {
+            var evt = eventList[eventIndex];
             processor.ProcessEvent(evt);
 
-            var currentNode = root;
-
-            if (bottomUp)
+            if (!leaves.TryGetValue(evt.StackTrace, out var currentNode))
             {
-                for (int i = 0; i < evt.StackTrace.Frames.Length; i += 1)
+                currentNode = root;
+                var frames = evt.StackTrace.Frames;
+                if (bottomUp)
                 {
-                    AddCallToNode(evt.StackTrace.Frames[i], ref currentNode, ref id);
+                    for (int i = 0; i < frames.Length; i += 1)
+                        AddCallToNode(frames[i], ref currentNode, ref id);
                 }
-            }
-            else
-            {
-                for (int i = evt.StackTrace.Frames.Length - 1; i >= 0; i -= 1)
+                else
                 {
-                    AddCallToNode(evt.StackTrace.Frames[i], ref currentNode, ref id);
+                    for (int i = frames.Length - 1; i >= 0; i -= 1)
+                        AddCallToNode(frames[i], ref currentNode, ref id);
                 }
+                leaves.Add(evt.StackTrace, currentNode);
             }
 
             processor.UpdateLeafNode(ref currentNode._count, evt);

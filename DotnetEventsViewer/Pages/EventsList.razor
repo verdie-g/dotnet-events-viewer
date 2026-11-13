@@ -1,6 +1,7 @@
 ﻿@page "/list"
 
 @using NetTrace
+@using System.Linq.Expressions
 @using DotnetEventsViewer.Components
 @using DotnetEventsViewer.Querying
 @using DotnetEventsViewer.State
@@ -18,17 +19,19 @@
 {
     <FluentDataGrid
         TGridItem="Event"
-        Items="@_events"
+        @ref="_grid"
+        ItemsProvider="@_events.Provide"
         ItemKey="@(e => e.Index)"
         Virtualize="true"
+        DisplayMode="DataGridDisplayMode.Table"
         ResizableColumns="true"
         OnRowClick="OnRowClick"
         ShowHover="true"
         ItemSize="32">
         <ChildContent>
-            @foreach (var f in _columnFields!)
+            @foreach (var column in _columns)
             {
-                <PropertyColumn Title="@f.Name" Property="@(e => f.Selector(e))" Sortable="true"/>
+                <PropertyColumn @key="column.Field" Title="@column.Field.Name" Property="@column.Property" Sortable="true"/>
             }
         </ChildContent>
         <EmptyContent>
@@ -38,13 +41,23 @@
 }
 
 @code {
-    private IQueryable<Event>? _events;
-    private IEnumerable<Field>? _columnFields;
+    private EventGridDataSource? _events;
+    private FluentDataGrid<Event>? _grid;
+    private (Field Field, Expression<Func<Event, object?>> Property)[] _columns = [];
 
-    private void OnQuery(QueryResult queryResult)
+    private Task OnQuery(QueryResult queryResult)
     {
-        _events = queryResult.FilteredEvents.AsQueryable();
-        _columnFields = queryResult.ColumnFields;
+        var columns = queryResult.ColumnFields!.Select(field =>
+        {
+            var existing = _columns.FirstOrDefault(column => ReferenceEquals(column.Field, field));
+            return existing.Property != null ? existing : (Field: field, Property: (Expression<Func<Event, object?>>)(evt => field.Selector(evt)));
+        }).ToArray();
+        bool clearSort = _grid != null && _grid.SortColumns.Any(sort => !columns.Any(column =>
+            sort.Column is PropertyColumn<Event, object?> propertyColumn
+            && ReferenceEquals(propertyColumn.Property, column.Property)));
+        _events = new EventGridDataSource(queryResult.FilteredEvents);
+        _columns = columns;
+        return clearSort ? _grid!.RemoveSortByColumnAsync() : Task.CompletedTask;
     }
 
     private async Task OnRowClick(FluentDataGridRow<Event> eventRow)

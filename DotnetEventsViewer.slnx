@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="DotnetEventsViewer/DotnetEventsViewer.csproj" />
+  <Project Path="DotnetEventsViewer.Test/DotnetEventsViewer.Test.csproj" />
   <Project Path="NetTrace.Test/NetTrace.Test.csproj" />
   <Project Path="NetTrace/NetTrace.csproj" />
 </Solution>

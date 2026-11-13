@@ -1,7 +1,6 @@
 ﻿@page "/tree"
 
 @using DotnetEventsViewer.CallTree
-@using DotnetEventsViewer.CallTree.CountAggregators
 @using DotnetEventsViewer.Components
 @using DotnetEventsViewer.Querying
 @using DotnetEventsViewer.State
@@ -15,59 +14,17 @@
 <QueryBuilder QueryType="QueryType.Tree" OnQuery="OnQuery" />
 @if (_treeView != null)
 {
-    <FluentTreeView Items="_treeView" LazyLoadItems="true" />
+    <FluentTreeView @key="_treeView" Items="_treeView" LazyLoadItems="true" />
 }
 
 @code {
-    private CallTreeNode? _callTree;
-    private ICallTreeCountAggregator? _callTreeAggregator;
     private IEnumerable<ITreeViewItem>? _treeView;
 
     private void OnQuery(QueryResult queryResult)
     {
-        var processor = queryResult.CallTreeAggregator!.CreateProcessor();
-        _callTree = CallTreeNode.Create(queryResult.FilteredEvents, processor, queryResult.BottomUpTree);
-        _callTreeAggregator = queryResult.CallTreeAggregator;
-        _treeView = [CallTreeToView(_callTree)];
+        var aggregator = queryResult.CallTreeAggregator!;
+        var callTree = CallTreeNode.Create(queryResult.FilteredEvents, aggregator.CreateProcessor(), queryResult.BottomUpTree);
+        var view = new CallTreeView(callTree, aggregator);
+        _treeView = [view.Root];
     }
-
-    private ITreeViewItem CallTreeToView(CallTreeNode node)
-    {
-        List<ITreeViewItem>? children = null;
-        if (node.Children != null)
-        {
-            children = new List<ITreeViewItem>();
-            foreach (var child in node.Children.Values.OrderByDescending(n => n.Count))
-            {
-                children.Add(CallTreeToView(child));
-            }
-        }
-
-        return new TreeViewItem
-        {
-            Id = node.Id.ToString(),
-            Text = GenerateNodeText(_callTree!, node),
-            Items = children,
-            OnExpandedAsync = OnNodeExpandedAsync,
-        };
-    }
-
-    private string GenerateNodeText(CallTreeNode root, CallTreeNode node)
-    {
-        float ratio = node.Count / (float)root.Count;
-        return $"({100 * ratio:0.00}% - {_callTreeAggregator!.Format(node.Count)}) {node.MethodDescription}";
-    }
-
-    private Task OnNodeExpandedAsync(TreeViewItemExpandedEventArgs e)
-    {
-        var item = e.CurrentItem;
-        while (item.Items != null && item.Items.Count() == 1)
-        {
-            item = item.Items.First();
-            item.Expanded = true;
-        }
-
-        return Task.CompletedTask;
-    }
-
 }

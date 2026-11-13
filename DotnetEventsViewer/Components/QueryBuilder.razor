@@ -334,7 +334,7 @@
 
     }
 
-    private void HandleValidSubmit()
+    private Task HandleValidSubmit()
     {
         IReadOnlyList<Event> filteredEvents;
         if (Query.EventKeys.Length == 0 && Query.Filters.Length == 0)
@@ -348,7 +348,7 @@
                 .ToArray();
         }
 
-        _ = OnQuery.InvokeAsync(new QueryResult(filteredEvents, Query.SelectedColumnFields, Query.SelectedAggregator, Query.BottomUpTree));
+        return OnQuery.InvokeAsync(new QueryResult(filteredEvents, Query.SelectedColumnFields, Query.SelectedAggregator, Query.BottomUpTree));
     }
 
     private bool FilterEvent(Event evt, Query query)
