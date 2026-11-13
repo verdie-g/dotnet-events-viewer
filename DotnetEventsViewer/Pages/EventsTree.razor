@@ -14,7 +14,13 @@
 <QueryBuilder QueryType="QueryType.Tree" OnQuery="OnQuery" />
 @if (_treeView != null)
 {
-    <FluentTreeView @key="_treeView" Items="_treeView" LazyLoadItems="true" />
+    <div class="events-tree">
+        <FluentTreeView @key="_treeView" Items="_treeView" LazyLoadItems="true" Style="width: max-content; min-width: 100%">
+            <ItemTemplate Context="item">
+                <span class="events-tree-label">@item.Text</span>
+            </ItemTemplate>
+        </FluentTreeView>
+    </div>
 }
 
 @code {
